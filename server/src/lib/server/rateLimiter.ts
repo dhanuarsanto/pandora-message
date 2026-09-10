@@ -2,12 +2,8 @@ const attempts = new Map<string, { count: number; resetAt: number }>();
 const WINDOW_MS = 60_000;
 const MAX_ATTEMPTS = 5;
 
-export function getClientIp(event: { request: Request }): string {
-	const forwarded = event.request.headers.get('X-Forwarded-For');
-	if (forwarded) {
-		return forwarded.split(',')[0].trim();
-	}
-	return event.request.headers.get('X-Real-IP') || 'unknown';
+export function getClientIp(event: { getClientAddress(): string }): string {
+	return event.getClientAddress() || 'unknown';
 }
 
 export function isRateLimited(ip: string): boolean {
