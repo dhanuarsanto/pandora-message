@@ -158,7 +158,11 @@
 	function buildQuery(cursor: number | null): URLSearchParams {
 		const u = new SvelteURLSearchParams();
 		if (cursor !== null) u.set('cursor', String(cursor));
-		for (const [k, v] of Object.entries(query)) u.set(k, v);
+		for (const [k, v] of Object.entries(query)) {
+			if (v === '') continue;
+			if ((k === 'limit' || k === 'pageSize') && !(Number(v) > 0)) continue;
+			u.set(k, v);
+		}
 		return u;
 	}
 
@@ -168,7 +172,7 @@
 	}
 
 	function goNext(meta: { has_next_page: boolean; next_cursor: number | null }) {
-		if (!meta.has_next_page) return;
+		if (!meta.has_next_page || navigating.type !== null) return;
 		saveScroll();
 		cursorStack.push(meta.next_cursor);
 		saveStack();
@@ -176,7 +180,7 @@
 	}
 
 	function goPrev(meta: { has_prev_page: boolean }) {
-		if (!meta.has_prev_page) return;
+		if (!meta.has_prev_page || navigating.type !== null) return;
 		saveScroll();
 		cursorStack.pop();
 		const prev = cursorStack[cursorStack.length - 1] ?? null;
@@ -185,6 +189,7 @@
 	}
 
 	function applyFilter() {
+		if (navigating.type !== null) return;
 		cursorStack = [null];
 		saveStack();
 		goto(resolve(urlFor(null)));
@@ -224,8 +229,9 @@
 	}
 
 	function formatDate(raw: string | number | undefined): string {
+		if (raw === null || raw === undefined) return '-';
 		if (typeof raw === 'string' && raw.includes('T')) return raw.slice(0, 16).replace('T', ' ');
-		return raw === null || raw === undefined ? '' : String(raw);
+		return String(raw);
 	}
 
 	function statusClasses(raw: string | number | undefined): string {
@@ -248,7 +254,7 @@
 				<select
 					bind:value={query['pageSize']}
 					onchange={applyFilter}
-					disabled={meta === null}
+					disabled={meta === null || navigating.type !== null}
 					class="h-8 rounded-md border border-(--c-border) bg-(--c-surface) px-2 text-xs text-(--c-fg) outline-none focus:border-(--c-accent) disabled:cursor-not-allowed disabled:opacity-40"
 				>
 					<option value="">10</option>
@@ -261,14 +267,14 @@
 		<div class="flex items-center gap-1.5">
 			<button
 				onclick={() => meta && goPrev(meta)}
-				disabled={meta === null || !meta.has_prev_page}
+				disabled={meta === null || navigating.type !== null || !meta.has_prev_page}
 				class="flex h-8 min-w-8 items-center justify-center rounded-md border border-(--c-border) bg-(--c-surface) px-2 text-xs font-medium text-(--c-fg-muted) transition-colors hover:border-(--c-accent) hover:text-(--c-accent) disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-(--c-border) disabled:hover:text-(--c-fg-muted)"
 			>
 				<ChevronLeft class="h-4 w-4" />
 			</button>
 			<button
 				onclick={() => meta && goNext(meta)}
-				disabled={meta === null || !meta.has_next_page}
+				disabled={meta === null || navigating.type !== null || !meta.has_next_page}
 				class="flex h-8 min-w-8 items-center justify-center rounded-md border border-(--c-border) bg-(--c-surface) px-2 text-xs font-medium text-(--c-fg-muted) transition-colors hover:border-(--c-accent) hover:text-(--c-accent) disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-(--c-border) disabled:hover:text-(--c-fg-muted)"
 			>
 				<ChevronRight class="h-4 w-4" />
@@ -390,6 +396,8 @@
 									{#each res.data.items as r (r.kode)}
 										<option value={r.kode}>{r.nama}</option>
 									{/each}
+								{:catch}
+									<option value="">-</option>
 								{/await}
 							</select>
 						{/if}
@@ -445,11 +453,11 @@
 					<tbody>
 						{#each skeletonRows as r (r)}
 							<tr class="animate-pulse border-b border-(--c-border)">
-{#each skeletonWidths as w, ci (ci)}
-								<td class="border-b border-(--c-border) px-3.5 py-3">
-									<div class="h-3.5 rounded bg-(--c-surface-2)" style="width: {w}px"></div>
-								</td>
-							{/each}
+								{#each skeletonWidths as w, ci (ci)}
+									<td class="border-b border-(--c-border) px-3.5 py-3">
+										<div class="h-3.5 rounded bg-(--c-surface-2)" style="width: {w}px"></div>
+									</td>
+								{/each}
 							</tr>
 						{/each}
 					</tbody>
@@ -474,7 +482,7 @@
 						</tr>
 					</thead>
 					<tbody>
-						{#each d.data.items as item (item.kode)}
+						{#each d.data.items as item, i (item.kode + '-' + i)}
 							<tr class="transition-colors hover:bg-(--c-row-hover)">
 								{#each cols as c (c.key)}
 									{@const raw = (item as Record<string, string | number>)[c.key]}
@@ -526,8 +534,11 @@
 				{#if is401(err)}
 					<button
 						onclick={async () => {
-							await fetch('/api/auth/logout', { method: 'POST' });
-							goto(resolve('/login'));
+							try {
+								await fetch('/api/auth/logout', { method: 'POST' });
+							} finally {
+								goto(resolve('/login'));
+							}
 						}}
 						class="mt-3 rounded-lg border border-(--c-border) px-4 py-1.5 text-xs font-medium text-(--c-fg) transition-colors hover:border-(--c-accent)"
 					>

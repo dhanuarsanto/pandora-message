@@ -54,8 +54,8 @@ export const POST: RequestHandler = async (event) => {
 			data: { username: data.data.username, rules: data.data.rules }
 		});
 	} catch (err: unknown) {
-		recordAttempt(ip);
 		if (err instanceof ApiError && err.status === 401) {
+			recordAttempt(ip);
 			return json({ status: 'gagal', message: 'Username atau password salah' }, { status: 401 });
 		}
 		return json({ status: 'gagal', message: 'Terjadi kesalahan, coba lagi' }, { status: 500 });

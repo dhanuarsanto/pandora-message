@@ -2,8 +2,27 @@ const attempts = new Map<string, { count: number; resetAt: number }>();
 const WINDOW_MS = 60_000;
 const MAX_ATTEMPTS = 5;
 
-export function getClientIp(event: { getClientAddress(): string }): string {
-	return event.getClientAddress() || 'unknown';
+function isPrivate(ip: string): boolean {
+	return (
+		ip === '127.0.0.1' ||
+		ip === '::1' ||
+		ip === '::ffff:127.0.0.1' ||
+		ip.startsWith('10.') ||
+		ip.startsWith('192.168.') ||
+		/^172\.(1[6-9]|2\d|3[01])\./.test(ip) ||
+		ip.startsWith('fc') ||
+		ip.startsWith('fd')
+	);
+}
+
+export function getClientIp(event: { getClientAddress(): string; request: Request }): string {
+	const direct = event.getClientAddress() || 'unknown';
+	if (isPrivate(direct)) {
+		const xff = event.request.headers.get('x-forwarded-for');
+		const first = xff?.split(',')[0]?.trim();
+		if (first) return first;
+	}
+	return direct;
 }
 
 export function isRateLimited(ip: string): boolean {

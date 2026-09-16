@@ -48,6 +48,7 @@
 		try {
 			await fetch('/api/auth/logout', { method: 'POST' });
 		} finally {
+			appBusy.value = true;
 			await goto(resolve('/login'));
 		}
 	}

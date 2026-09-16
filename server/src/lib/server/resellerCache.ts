@@ -17,6 +17,12 @@ export function getResellers(token: string): Promise<ResellerResponse> {
 
 	const p = apiGet<ResellerResponse>(`/api/v1/${APP_UNIT}/master/reseller-dropdown`, token)
 		.then((data) => {
+			if (cache.size > 8) {
+				const now = Date.now();
+				for (const [k, e] of cache) {
+					if (now - e.fetchedAt >= TTL_MS) cache.delete(k);
+				}
+			}
 			cache.set(token, { data, fetchedAt: Date.now() });
 			return data;
 		})
