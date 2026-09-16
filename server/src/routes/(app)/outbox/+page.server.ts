@@ -10,10 +10,7 @@ export const load: PageServerLoad = ({ cookies, url }) => {
 	if (!token) throw redirect(302, '/login');
 
 	const qs = url.searchParams.toString();
-	const outbox = apiGet<OutboxResponse>(
-		`/api/v1/${APP_UNIT}/outbox${qs ? '?' + qs : ''}`,
-		token
-	);
+	const outbox = apiGet<OutboxResponse>(`/api/v1/${APP_UNIT}/outbox${qs ? '?' + qs : ''}`, token);
 	const resellers = apiGet<ResellerResponse>(`/api/v1/${APP_UNIT}/master/reseller-dropdown`, token);
 
 	return { outbox, resellers };

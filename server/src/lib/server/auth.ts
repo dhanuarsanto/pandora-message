@@ -3,7 +3,7 @@ import type { Cookies, RequestEvent } from '@sveltejs/kit';
 export const COOKIE_TOKEN = 'token';
 export const COOKIE_USERNAME = 'username';
 export const COOKIE_RULES = 'rules';
-export const SESSION_TTL_SEC = 3600;
+export const SESSION_TTL_SEC = 86400;
 
 export function setToken(event: RequestEvent, token: string): void {
 	event.cookies.set(COOKIE_TOKEN, token, {

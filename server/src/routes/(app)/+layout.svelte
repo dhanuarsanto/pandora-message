@@ -2,6 +2,7 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
+	import { appBusy } from '$lib/appBusy.svelte.js';
 	import { APP_NAME, RULES } from '$lib/config';
 	import { theme } from '$lib/theme';
 	import { Inbox, LogOut, Mail, Menu, Moon, Send, Sun, X } from '@lucide/svelte';
@@ -13,6 +14,8 @@
 	let loggingOut = $state(false);
 	let menuOpen = $state(false);
 	let confirmTimer: ReturnType<typeof setTimeout> | null = null;
+
+	const navBusy = $derived(appBusy.value);
 
 	let isDark = $derived((page.data.theme ?? $theme) === 'dark');
 	let username = $derived(page.data.username ?? 'admin');
@@ -56,11 +59,13 @@
 </script>
 
 <div class="flex h-dvh flex-col overflow-hidden bg-(--c-bg)">
-	<header
-		class="z-20 shrink-0 border-b border-(--c-border) bg-(--c-surface)/80 backdrop-blur-xl"
-	>
+	<header class="z-20 shrink-0 border-b border-(--c-border) bg-(--c-surface)/80 backdrop-blur-xl">
 		<div class="mx-auto flex h-15 max-w-375 items-center gap-3.5 px-[clamp(16px,3vw,28px)]">
-			<a href={resolve('/inbox')} class="mr-auto flex items-center gap-2.5">
+			<a
+				href={resolve('/inbox')}
+				aria-disabled={navBusy}
+				class="mr-auto flex items-center gap-2.5 {navBusy ? 'pointer-events-none opacity-60' : ''}"
+			>
 				<div
 					class="flex h-8 w-8 items-center justify-center rounded-[10px] bg-linear-to-br from-(--c-accent) to-(--c-accent-strong) shadow-[0_6px_14px_-6px_rgba(14,122,74,0.5)]"
 				>
@@ -72,22 +77,28 @@
 			<nav class="hidden items-center gap-1 md:flex">
 				<a
 					href={resolve('/inbox')}
+					aria-disabled={navBusy}
 					class="flex items-center gap-1.75 rounded-[10px] px-3.5 py-2 text-[13px] font-semibold transition-colors {pathname.startsWith(
 						'/inbox'
 					)
 						? 'bg-(--c-accent-soft) text-(--c-accent-strong)'
-						: 'text-(--c-fg-muted) hover:bg-(--c-surface-3) hover:text-(--c-fg)'}"
+						: 'text-(--c-fg-muted) hover:bg-(--c-surface-3) hover:text-(--c-fg)'} {navBusy
+						? 'pointer-events-none opacity-60'
+						: ''}"
 				>
 					<Inbox class="h-4 w-4 stroke-2" />
 					Inbox
 				</a>
 				<a
 					href={resolve('/outbox')}
+					aria-disabled={navBusy}
 					class="flex items-center gap-1.75 rounded-[10px] px-3.5 py-2 text-[13px] font-semibold transition-colors {pathname.startsWith(
 						'/outbox'
 					)
 						? 'bg-(--c-accent-soft) text-(--c-accent-strong)'
-						: 'text-(--c-fg-muted) hover:bg-(--c-surface-3) hover:text-(--c-fg)'}"
+						: 'text-(--c-fg-muted) hover:bg-(--c-surface-3) hover:text-(--c-fg)'} {navBusy
+						? 'pointer-events-none opacity-60'
+						: ''}"
 				>
 					<Send class="h-4 w-4 stroke-2" />
 					Outbox
@@ -97,7 +108,7 @@
 			<div class="hidden items-center gap-2.5 text-(--c-fg-muted) md:flex">
 				<button
 					onclick={toggleTheme}
-					class="flex h-8 w-8 items-center justify-center rounded-[10px] text-(--c-fg-muted) transition-colors hover:bg-(--c-surface-3) hover:text-(--c-fg)"
+					class="flex h-8 w-8 items-center justify-center rounded-[10px] text-(--c-fg-muted) transition-colors hover:bg-(--c-surface-3) hover:text-(--c-fg) disabled:cursor-not-allowed disabled:opacity-60"
 					aria-label={isDark ? 'Mode terang' : 'Mode gelap'}
 					title={isDark ? 'Mode terang' : 'Mode gelap'}
 				>
@@ -136,7 +147,8 @@
 				{#if !confirmLogout}
 					<button
 						onclick={openConfirm}
-						class="flex items-center gap-1.5 rounded-[10px] border border-(--c-border) px-3 py-2 text-xs font-medium text-(--c-fg-muted) transition-colors hover:border-(--c-fg) hover:text-(--c-fg)"
+						disabled={navBusy}
+						class="flex items-center gap-1.5 rounded-[10px] border border-(--c-border) px-3 py-2 text-xs font-medium text-(--c-fg-muted) transition-colors hover:border-(--c-fg) hover:text-(--c-fg) disabled:cursor-not-allowed disabled:opacity-60"
 					>
 						<LogOut class="h-3.5 w-3.5" />
 						Keluar
@@ -145,7 +157,7 @@
 					<div class="flex items-center gap-1.5">
 						<button
 							onclick={confirmAndLogout}
-							disabled={loggingOut}
+							disabled={loggingOut || navBusy}
 							class="flex items-center gap-1.5 rounded-[10px] border border-(--c-danger) bg-(--c-danger-bg) px-3 py-2 text-xs font-semibold text-(--c-danger) transition-colors hover:bg-(--c-danger-bg-2) disabled:opacity-60"
 						>
 							{#if loggingOut}
@@ -159,7 +171,7 @@
 						</button>
 						<button
 							onclick={cancelConfirm}
-							disabled={loggingOut}
+							disabled={loggingOut || navBusy}
 							class="flex h-8 w-8 items-center justify-center rounded-[10px] border border-(--c-border) text-xs font-medium text-(--c-fg-muted) transition-colors hover:border-(--c-fg) hover:text-(--c-fg) disabled:opacity-60"
 							aria-label="Batal"
 						>
@@ -173,7 +185,7 @@
 			<div class="flex items-center gap-2 md:hidden">
 				<button
 					onclick={toggleTheme}
-					class="flex h-9 w-9 items-center justify-center rounded-[10px] text-(--c-fg-muted) transition-colors hover:bg-(--c-surface-3) hover:text-(--c-fg)"
+					class="flex h-9 w-9 items-center justify-center rounded-[10px] text-(--c-fg-muted) transition-colors hover:bg-(--c-surface-3) hover:text-(--c-fg) disabled:cursor-not-allowed disabled:opacity-60"
 					aria-label={isDark ? 'Mode terang' : 'Mode gelap'}
 				>
 					{#if isDark}
@@ -184,7 +196,7 @@
 				</button>
 				<button
 					onclick={() => (menuOpen = !menuOpen)}
-					class="flex h-9 w-9 items-center justify-center rounded-[10px] text-(--c-fg-muted) transition-colors hover:bg-(--c-surface-3) hover:text-(--c-fg)"
+					class="flex h-9 w-9 items-center justify-center rounded-[10px] text-(--c-fg-muted) transition-colors hover:bg-(--c-surface-3) hover:text-(--c-fg) disabled:cursor-not-allowed disabled:opacity-60"
 					aria-label="Menu"
 					aria-expanded={menuOpen}
 				>
@@ -226,24 +238,30 @@
 
 					<a
 						href={resolve('/inbox')}
+						aria-disabled={navBusy}
 						onclick={() => (menuOpen = false)}
 						class="flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors {pathname.startsWith(
 							'/inbox'
 						)
 							? 'bg-(--c-accent-soft) text-(--c-accent-strong)'
-							: 'text-(--c-fg-muted) hover:bg-(--c-surface-3) hover:text-(--c-fg)'}"
+							: 'text-(--c-fg-muted) hover:bg-(--c-surface-3) hover:text-(--c-fg)'} {navBusy
+							? 'pointer-events-none opacity-60'
+							: ''}"
 					>
 						<Inbox class="h-4 w-4" />
 						Inbox
 					</a>
 					<a
 						href={resolve('/outbox')}
+						aria-disabled={navBusy}
 						onclick={() => (menuOpen = false)}
 						class="flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors {pathname.startsWith(
 							'/outbox'
 						)
 							? 'bg-(--c-accent-soft) text-(--c-accent-strong)'
-							: 'text-(--c-fg-muted) hover:bg-(--c-surface-3) hover:text-(--c-fg)'}"
+							: 'text-(--c-fg-muted) hover:bg-(--c-surface-3) hover:text-(--c-fg)'} {navBusy
+							? 'pointer-events-none opacity-60'
+							: ''}"
 					>
 						<Send class="h-4 w-4" />
 						Outbox
@@ -254,7 +272,8 @@
 					{#if !confirmLogout}
 						<button
 							onclick={openConfirm}
-							class="flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-medium text-(--c-fg-muted) transition-colors hover:bg-(--c-surface-3) hover:text-(--c-fg)"
+							disabled={navBusy}
+							class="flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-medium text-(--c-fg-muted) transition-colors hover:bg-(--c-surface-3) hover:text-(--c-fg) disabled:cursor-not-allowed disabled:opacity-60"
 						>
 							<LogOut class="h-4 w-4" />
 							Keluar
@@ -263,7 +282,7 @@
 						<div class="flex items-center gap-2 px-3 py-1">
 							<button
 								onclick={confirmAndLogout}
-								disabled={loggingOut}
+								disabled={loggingOut || navBusy}
 								class="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-(--c-danger) bg-(--c-danger-bg) px-3 py-2.5 text-sm font-semibold text-(--c-danger) transition-colors hover:bg-(--c-danger-bg-2) disabled:opacity-60"
 							>
 								{#if loggingOut}
@@ -277,7 +296,7 @@
 							</button>
 							<button
 								onclick={cancelConfirm}
-								disabled={loggingOut}
+								disabled={loggingOut || navBusy}
 								class="flex h-9 w-9 items-center justify-center rounded-lg border border-(--c-border) text-(--c-fg-muted) transition-colors hover:border-(--c-fg) hover:text-(--c-fg) disabled:opacity-60"
 								aria-label="Batal"
 							>
@@ -291,6 +310,6 @@
 	</header>
 
 	<div id="app-scroll" class="min-h-0 flex-1 overflow-y-auto md:overflow-hidden">
-	{@render children()}
-</div>
+		{@render children()}
+	</div>
 </div>
