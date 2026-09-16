@@ -6,12 +6,12 @@
 
 	const COLS: ColSpec[] = [
 		{ key: 'kode', label: 'Kode', mono: true, strong: true, trunc: true, maxWidth: 200 },
-		{ key: 'tgl_entri', label: 'Tgl Entri', muted: true },
+		{ key: 'tgl_entri', label: 'Tgl Entri', muted: true, date: true },
 		{ key: 'penerima', label: 'Penerima', strong: true, trunc: true, maxWidth: 220 },
 		{ key: 'tipe_penerima', label: 'Tipe Penerima', badge: true },
 		{ key: 'pesan', label: 'Pesan', muted: true, trunc: true, maxWidth: 260 },
-		{ key: 'status', label: 'Status' },
-		{ key: 'tgl_status', label: 'Tgl Status', muted: true },
+		{ key: 'status', label: 'Status', status: true },
+		{ key: 'tgl_status', label: 'Tgl Status', muted: true, date: true },
 		{ key: 'kode_inbox', label: 'Kode Inbox', mono: true },
 		{ key: 'kode_transaksi', label: 'Kode Transaksi', mono: true, trunc: true, maxWidth: 150 },
 		{ key: 'kode_reseller', label: 'Kode Reseller', mono: true, trunc: true, maxWidth: 150 },

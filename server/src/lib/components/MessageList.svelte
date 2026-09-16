@@ -17,6 +17,8 @@
 		strong?: boolean;
 		muted?: boolean;
 		trunc?: boolean;
+		date?: boolean;
+		status?: boolean;
 		maxWidth?: number;
 	};
 
@@ -219,6 +221,20 @@
 		if (raw === null || raw === undefined) return '-';
 		const s = String(raw);
 		return c.trunc && s.length > 24 ? s.slice(0, 24) + '…' : s;
+	}
+
+	function formatDate(raw: string | number | undefined): string {
+		if (typeof raw === 'string' && raw.includes('T')) return raw.slice(0, 16).replace('T', ' ');
+		return raw === null || raw === undefined ? '' : String(raw);
+	}
+
+	function statusClasses(raw: string | number | undefined): string {
+		const s = Number(raw);
+		if (s === 20) return 'bg-(--c-success-bg) text-(--c-success)';
+		if (s >= 40 && s < 50) return 'bg-(--c-danger-bg) text-(--c-danger)';
+		if (s === 50 || s === 52 || s === 55 || s === 69)
+			return 'bg-(--c-warning-bg) text-(--c-warning)';
+		return 'bg-(--c-surface-2) text-(--c-fg-muted)';
 	}
 </script>
 
@@ -429,11 +445,11 @@
 					<tbody>
 						{#each skeletonRows as r (r)}
 							<tr class="animate-pulse border-b border-(--c-border)">
-								{#each skeletonWidths as w, ci (ci)}
-									<td class="border-b border-(--c-border) px-3.5 py-3">
-										<div class="h-3.5 rounded bg-(--c-surface-2)" style="width: {w}px"></div>
-									</td>
-								{/each}
+{#each skeletonWidths as w, ci (ci)}
+								<td class="border-b border-(--c-border) px-3.5 py-3">
+									<div class="h-3.5 rounded bg-(--c-surface-2)" style="width: {w}px"></div>
+								</td>
+							{/each}
 							</tr>
 						{/each}
 					</tbody>
@@ -469,11 +485,20 @@
 												>{cellText(raw, c)}</span
 											>
 										</td>
+									{:else if c.status}
+										<td class="border-b border-(--c-border) px-3.5 py-3">
+											<span
+												class="inline-block rounded-full px-2.5 py-0.5 text-[11px] font-semibold whitespace-nowrap {statusClasses(
+													raw
+												)}">{cellText(raw, c)}</span
+											>
+										</td>
 									{:else}
 										<td
 											class={cellClass(c)}
 											style={c.maxWidth ? `max-width: ${c.maxWidth}px` : undefined}
-											title={c.trunc ? String(raw) : undefined}>{cellText(raw, c)}</td
+											title={c.trunc ? String(raw) : undefined}
+											>{c.date ? formatDate(raw) : cellText(raw, c)}</td
 										>
 									{/if}
 								{/each}

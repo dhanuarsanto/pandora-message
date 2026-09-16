@@ -73,3 +73,22 @@ html.dark {
 		transform: none;
 	}
 }
+
+*::-webkit-scrollbar {
+	width: 8px;
+	height: 8px;
+}
+*::-webkit-scrollbar-track {
+	background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+	background: var(--c-border);
+	border-radius: 8px;
+}
+*::-webkit-scrollbar-thumb:hover {
+	background: var(--c-fg-faint);
+}
+* {
+	scrollbar-width: thin;
+	scrollbar-color: var(--c-border) transparent;
+}
