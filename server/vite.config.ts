@@ -3,6 +3,8 @@ import { sveltekit } from '@sveltejs/kit/vite';
 import tailwindcss from '@tailwindcss/vite';
 import { defineConfig } from 'vite';
 
+const isProd = process.env.NODE_ENV === 'production';
+
 export default defineConfig({
 	server: {
 		host: '0.0.0.0',
@@ -16,7 +18,18 @@ export default defineConfig({
 				runes: ({ filename }) =>
 					filename.split(/[/\\]/).includes('node_modules') ? undefined : true
 			},
-			adapter: adapter()
+			adapter: adapter(),
+			csp: isProd
+				? {
+						mode: 'nonce',
+						directives: {
+							'script-src': ['self'],
+							'style-src': ['self', 'unsafe-inline'],
+							'img-src': ['self', 'data:'],
+							'frame-ancestors': ['none']
+						}
+					}
+				: undefined
 		})
 	]
 });

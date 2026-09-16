@@ -9,8 +9,6 @@ export const POST: RequestHandler = async (event) => {
 	const ip = getClientIp(event);
 
 	if (isRateLimited(ip)) {
-		recordAttempt(ip);
-
 		return json(
 			{ status: 'gagal', message: 'Terlalu banyak percobaan, coba lagi dalam 1 menit' },
 			{ status: 429 }

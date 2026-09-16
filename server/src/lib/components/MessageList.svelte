@@ -3,7 +3,7 @@
 	import { resolve } from '$app/paths';
 	import { navigating, page } from '$app/state';
 	import { appBusy } from '$lib/appBusy.svelte.js';
-import { INBOX_STATUS, KODE_TERMINAL } from '$lib/config';
+	import { INBOX_STATUS, KODE_TERMINAL } from '$lib/config';
 	import type { InboxItem, OutboxItem, ResellerResponse } from '$lib/types';
 	import { ChevronLeft, ChevronRight, SlidersHorizontal } from '@lucide/svelte';
 	import { SvelteURLSearchParams } from 'svelte/reactivity';
@@ -86,16 +86,7 @@ import { INBOX_STATUS, KODE_TERMINAL } from '$lib/config';
 		}
 	}
 
-	function initQuery(): Record<string, string> {
-		const out: Record<string, string> = {};
-		for (const f of filters) {
-			const v = page.url.searchParams.get(f.param);
-			if (f.type === 'checkbox' ? v === 'true' : v) out[f.param] = v as string;
-		}
-		return out;
-	}
-
-	let query = $state<Record<string, string>>(initQuery());
+	let query = $state<Record<string, string>>({});
 
 	$effect(() => {
 		const params = page.url.searchParams;

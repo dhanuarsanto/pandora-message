@@ -15,22 +15,19 @@ export function setToken(event: RequestEvent, token: string): void {
 	});
 }
 
-export function clearToken(event: RequestEvent): void {
-	event.cookies.set(COOKIE_TOKEN, '', {
-		path: '/',
-		maxAge: 0,
-		httpOnly: true,
-		secure: import.meta.env.PROD,
-		sameSite: 'strict'
-	});
-}
-
 export function getToken(cookies: RequestEvent['cookies']): string | null {
 	return cookies.get(COOKIE_TOKEN) ?? null;
 }
 
 export function clearAllCookies(cookies: Cookies): void {
-	cookies.set(COOKIE_TOKEN, '', { path: '/', maxAge: 0 });
-	cookies.set(COOKIE_USERNAME, '', { path: '/', maxAge: 0 });
-	cookies.set(COOKIE_RULES, '', { path: '/', maxAge: 0 });
+	const opts = {
+		path: '/',
+		maxAge: 0,
+		httpOnly: true,
+		secure: import.meta.env.PROD,
+		sameSite: 'strict' as const
+	};
+	cookies.set(COOKIE_TOKEN, '', opts);
+	cookies.set(COOKIE_USERNAME, '', opts);
+	cookies.set(COOKIE_RULES, '', opts);
 }

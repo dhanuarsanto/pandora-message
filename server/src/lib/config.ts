@@ -8,18 +8,6 @@ export const RULES: Record<string, string> = {
 	opout: 'Operator Out'
 };
 
-// export const INBOX_STATUS: Record<number, string> = {
-// 	1: 'Sedang Proses',
-// 	20: 'Sukses',
-// 	40: 'Gagal',
-// 	47: 'Produk Gangguan',
-// 	50: 'Dibatalkan',
-// 	52: 'Tujuan Salah',
-// 	55: 'Timeout',
-// 	61: 'Qty Tidak Sesuai',
-// 	69: 'Cutoff'
-// };
-
 export const INBOX_STATUS: Record<number, string> = {
 	20: '20',
 	21: '21',

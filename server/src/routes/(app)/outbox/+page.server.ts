@@ -1,7 +1,8 @@
 import { APP_UNIT } from '$lib/config';
 import { apiGet } from '$lib/server/api';
 import { getToken } from '$lib/server/auth';
-import type { OutboxResponse, ResellerResponse } from '$lib/types';
+import { getResellers } from '$lib/server/resellerCache';
+import type { OutboxResponse } from '$lib/types';
 import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
@@ -11,7 +12,7 @@ export const load: PageServerLoad = ({ cookies, url }) => {
 
 	const qs = url.searchParams.toString();
 	const outbox = apiGet<OutboxResponse>(`/api/v1/${APP_UNIT}/outbox${qs ? '?' + qs : ''}`, token);
-	const resellers = apiGet<ResellerResponse>(`/api/v1/${APP_UNIT}/master/reseller-dropdown`, token);
+	const resellers = getResellers(token);
 
 	return { outbox, resellers };
 };
