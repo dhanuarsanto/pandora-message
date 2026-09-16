@@ -1,23 +1,9 @@
+import { APP_UNIT } from '$lib/config';
 import { ApiError, apiPost } from '$lib/server/api';
-import { setToken } from '$lib/server/auth';
+import { COOKIE_RULES, COOKIE_USERNAME, SESSION_TTL_SEC, setToken } from '$lib/server/auth';
 import { getClientIp, isRateLimited, recordAttempt, resetAttempts } from '$lib/server/rateLimiter';
+import type { LoginRequest, LoginResponse } from '$lib/types';
 import { json, type RequestHandler } from '@sveltejs/kit';
-
-type LoginRequest = {
-	username: string;
-	password: string;
-};
-
-type LoginData = {
-	rules: string;
-	token: string;
-	username: string;
-};
-
-type LoginResponse = {
-	status: string;
-	data: LoginData;
-};
 
 export const POST: RequestHandler = async (event) => {
 	const ip = getClientIp(event);
@@ -40,7 +26,7 @@ export const POST: RequestHandler = async (event) => {
 			return json({ status: 'gagal', message: validationError }, { status: 400 });
 		}
 
-		const data = await apiPost<LoginResponse>('/api/v1/pandora/auth/login', body);
+		const data = await apiPost<LoginResponse>(`/api/v1/${APP_UNIT}/auth/login`, body);
 
 		if (data.status !== 'sukses' || !data.data?.token) {
 			recordAttempt(ip);
@@ -49,9 +35,17 @@ export const POST: RequestHandler = async (event) => {
 
 		resetAttempts(ip);
 		setToken(event, data.data.token);
-		event.cookies.set('username', data.data.username, {
+		event.cookies.set(COOKIE_USERNAME, data.data.username, {
 			path: '/',
-			maxAge: 3600,
+			maxAge: SESSION_TTL_SEC,
+			httpOnly: true,
+			secure: import.meta.env.PROD,
+			sameSite: 'strict'
+		});
+
+		event.cookies.set(COOKIE_RULES, data.data.rules, {
+			path: '/',
+			maxAge: SESSION_TTL_SEC,
 			httpOnly: true,
 			secure: import.meta.env.PROD,
 			sameSite: 'strict'

@@ -1,516 +1,553 @@
-﻿<script lang="ts">
-	let dateStart = $state('');
-	let dateEnd = $state('');
-	let limitVal = $state('24');
-	let terminalFilter = $state('all');
-	let resellerInput = $state('');
-	let pengirimInput = $state('');
-	let tipeFilter = $state('all');
-	let statusFilter = $state('all');
-	let pesanInput = $state('');
-	let reqReseller = $state(false);
-	let jawabanProvider = $state(false);
-	let sortKey = $state('tgl_entry');
-	let sortDir = $state<'asc' | 'desc'>('desc');
-	let page = $state(1);
-	let showFilter = $state(true);
-	const PER_PAGE = 10;
+<script lang="ts">
+	import { APP_NAME, INBOX_STATUS } from '$lib/config';
+	import type { InboxItem } from '$lib/types';
+	import { afterNavigate, goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
+	import { page, navigating } from '$app/state';
+	import { ChevronLeft, ChevronRight, SlidersHorizontal } from '@lucide/svelte';
+	import { SvelteURLSearchParams } from 'svelte/reactivity';
 
-	interface InboxMsg {
-		kode: string;
-		tgl_entry: string;
-		pengirim: string;
-		penerima: string;
-		tipe_pengirim: string;
-		pesan: string;
-		status: string;
-		kode_terminal: string;
-		tgl_status: string;
-		kode_reseller: string;
-		kode_transaksi: string;
-		is_jawaban: string;
-		service_center: string;
-		is_cs: string;
-		kode_jawaban_cs: string;
-		request_dari_reseller: string;
+	let { data } = $props();
+
+	const loading = $derived(navigating.type !== null);
+
+	const STACK_KEY = 'pandora-inbox-cursor-stack';
+
+	function initStack(): (number | null)[] {
+		try {
+			const raw = sessionStorage.getItem(STACK_KEY);
+			if (raw) {
+				const saved: unknown = JSON.parse(raw);
+				if (Array.isArray(saved) && saved.every((x) => x === null || typeof x === 'number')) {
+					return saved as (number | null)[];
+				}
+			}
+		} catch {
+			// corrupt -> mulai dari halaman pertama
+		}
+		return [null];
 	}
+
+	let cursorStack = $state<(number | null)[]>(initStack());
+
+	function saveStack() {
+		if (cursorStack.length === 1 && cursorStack[0] === null) {
+			sessionStorage.removeItem(STACK_KEY);
+		} else {
+			sessionStorage.setItem(STACK_KEY, JSON.stringify(cursorStack));
+		}
+	}
+
+	let showFilter = $state(false);
+
+	$effect(() => {
+		if (typeof window === 'undefined') return;
+		const mq = window.matchMedia('(min-width: 768px)');
+		showFilter = mq.matches;
+		mq.addEventListener('change', () => (showFilter = mq.matches));
+		return () => mq.removeEventListener('change', () => (showFilter = mq.matches));
+	});
+
+	function initQuery(key: string): string {
+		return page.url.searchParams.get(key) ?? '';
+	}
+
+	let startDate = $state(initQuery('startDate'));
+	let endDate = $state(initQuery('endDate'));
+	let itemsPerPage = $state(initQuery('limit'));
+	let pageSizeValue = $state(initQuery('pageSize'));
+	let terminalFilter = $state(initQuery('terminal'));
+	let resellerInput = $state(initQuery('reseller'));
+	let pengirimInput = $state(initQuery('pengirim'));
+	let tipeFilter = $state(initQuery('tipe'));
+	let statusFilter = $state(initQuery('status'));
+	let pesanInput = $state(initQuery('pesan'));
+	let reqReseller = $state(initQuery('requestFromReseller') === 'true');
+	let jawabanProvider = $state(initQuery('jawabanFromProvider') === 'true');
 
 	const COLS = [
 		{ key: 'kode', label: 'Kode' },
-		{ key: 'tgl_entry', label: 'Tgl Entry' },
+		{ key: 'tgl_entri', label: 'Tgl Entri' },
+		{ key: 'tgl_status', label: 'Tgl Status' },
 		{ key: 'pengirim', label: 'Pengirim' },
-		{ key: 'penerima', label: 'Penerima' },
 		{ key: 'tipe_pengirim', label: 'Tipe Pengirim' },
 		{ key: 'pesan', label: 'Pesan' },
 		{ key: 'status', label: 'Status' },
-		{ key: 'kode_terminal', label: 'Kode Terminal' },
-		{ key: 'tgl_status', label: 'Tgl Status' },
 		{ key: 'kode_reseller', label: 'Kode Reseller' },
 		{ key: 'kode_transaksi', label: 'Kode Transaksi' },
 		{ key: 'is_jawaban', label: 'Jawaban' },
-		{ key: 'service_center', label: 'Service Center' },
-		{ key: 'is_cs', label: 'CS' },
-		{ key: 'kode_jawaban_cs', label: 'Kode Jawaban CS' },
-		{ key: 'request_dari_reseller', label: 'Req dari Reseller' }
+		{ key: 'hash', label: 'Hash' }
 	];
 
-	const TIPES = ['SMS', 'Whatsapp', 'Telegram', 'API', 'Web'];
-	const TERMINALS = ['T001', 'T002', 'T003', 'T004', 'T005'];
-	const RESELLERS = ['R001', 'R002', 'R003', '-'];
-	const SCS = ['SC-JKT', 'SC-BDG', 'SC-SBY', '-'];
+	function uniqueTipes(rows: InboxItem[]): string[] {
+		return ['', ...new Set(rows.map((r) => r.tipe_pengirim))];
+	}
+	const terminalOptions = ['', '1', '2', '3', '4', '5'];
 
-	const inbox: InboxMsg[] = [];
-	for (let i = 0; i < 48; i++) {
-		const day = String(Math.max(1, 9 - Math.floor(i / 6))).padStart(2, '0');
-		const hh = String(8 + ((i * 2) % 12)).padStart(2, '0');
-		const mm = String((i * 13) % 60).padStart(2, '0');
-		const st =
-			i % 5 === 0 ? 'Gagal' : i % 4 === 0 ? 'Pending' : i % 3 === 0 ? 'Dibaca' : 'Terkirim';
-		const reqRes = i % 3 === 0 ? 'Ya' : 'Tidak';
-		inbox.push({
-			kode: 'IN-202609' + day + '-' + String(i + 1).padStart(3, '0'),
-			tgl_entry: `${day} Sep, ${hh}:${mm}`,
-			pengirim: [
-				'0812XXXX' + (1000 + i),
-				'CS-Pandora',
-				'System',
-				'0813XXXX' + (2000 + i),
-				'0856XXXX' + (4000 + i)
-			][i % 5],
-			penerima: 'Pandora',
-			tipe_pengirim: TIPES[i % TIPES.length],
-			pesan: `Pesan contoh ${i + 1} terkait layanan ${['tagihan', 'pengiriman', 'akun', 'promo', 'konsultasi'][i % 5]}.`,
-			status: st,
-			kode_terminal: TERMINALS[i % TERMINALS.length],
-			tgl_status: `${day} Sep, ${hh}:${String((+mm + 5) % 60).padStart(2, '0')}`,
-			kode_reseller: RESELLERS[i % RESELLERS.length],
-			kode_transaksi: 'TRX-' + (90000 + i),
-			is_jawaban: i % 2 === 0 ? 'Ya' : 'Tidak',
-			service_center: SCS[i % SCS.length],
-			is_cs: i % 6 === 0 ? 'Ya' : 'Tidak',
-			kode_jawaban_cs: i % 6 === 0 ? 'JWB-' + (500 + i) : '-',
-			request_dari_reseller: reqRes
+	const skeletonRows = $derived(
+		Array.from({ length: Number(pageSizeValue) || 10 }, (_, i) => i)
+	);
+	const skeletonWidths = [48, 84, 84, 100, 52, 180, 56, 80, 96, 56, 120];
+
+	type InboxUrl = '/inbox' | `/inbox?${string}`;
+
+	function buildQuery(cursor: number | null): URLSearchParams {
+		const u = new SvelteURLSearchParams();
+		if (cursor !== null) u.set('cursor', String(cursor));
+		if (startDate) u.set('startDate', startDate);
+		if (endDate) u.set('endDate', endDate);
+		if (itemsPerPage) u.set('limit', itemsPerPage);
+		if (pageSizeValue) u.set('pageSize', pageSizeValue);
+		if (terminalFilter) u.set('terminal', terminalFilter);
+		if (resellerInput) u.set('reseller', resellerInput);
+		if (pengirimInput) u.set('pengirim', pengirimInput);
+		if (tipeFilter) u.set('tipe', tipeFilter);
+		if (statusFilter) u.set('status', statusFilter);
+		if (pesanInput) u.set('pesan', pesanInput);
+		if (reqReseller) u.set('requestFromReseller', 'true');
+		if (jawabanProvider) u.set('jawabanFromProvider', 'true');
+		return u;
+	}
+
+	function urlFor(cursor: number | null): InboxUrl {
+		const qs = buildQuery(cursor).toString();
+		return qs ? `/inbox?${qs}` : '/inbox';
+	}
+
+	const SCROLL_KEY = 'pandora-inbox-scroll';
+
+	function saveScroll() {
+		const el = document.getElementById('app-scroll');
+		if (el) sessionStorage.setItem(SCROLL_KEY, String(el.scrollTop));
+	}
+
+	function restoreScroll() {
+		const el = document.getElementById('app-scroll');
+		const pos = Number(sessionStorage.getItem(SCROLL_KEY) ?? 0);
+		if (!el || !pos) return;
+		requestAnimationFrame(() => {
+			el.scrollTop = pos;
+			setTimeout(() => (el.scrollTop = pos), 80);
 		});
 	}
 
-	const terminalOptions = $derived(['all', ...new Set(inbox.map((r) => r.kode_terminal))]);
-	const statusOptions = $derived(['all', ...new Set(inbox.map((r) => r.status))]);
-	const tipeOptions = ['all', ...TIPES];
+	afterNavigate(restoreScroll);
 
-	const filteredData = $derived(() => {
-		let rows = inbox.filter((r) => {
-			if (dateStart && r.tgl_entry.replace(/(\d{2}) Sep.*/, '2026-09-$1') < dateStart) return false;
-			if (dateEnd && r.tgl_entry.replace(/(\d{2}) Sep.*/, '2026-09-$1') > dateEnd) return false;
-			if (terminalFilter !== 'all' && r.kode_terminal !== terminalFilter) return false;
-			if (resellerInput && !r.kode_reseller.toLowerCase().includes(resellerInput.toLowerCase()))
-				return false;
-			if (pengirimInput && !r.pengirim.toLowerCase().includes(pengirimInput.toLowerCase()))
-				return false;
-			if (tipeFilter !== 'all' && r.tipe_pengirim !== tipeFilter) return false;
-			if (statusFilter !== 'all' && r.status !== statusFilter) return false;
-			if (pesanInput && !r.pesan.toLowerCase().includes(pesanInput.toLowerCase())) return false;
-			if (reqReseller && r.request_dari_reseller !== 'Ya') return false;
-			if (jawabanProvider && r.is_jawaban !== 'Ya') return false;
-			return true;
-		});
-		const limit = parseInt(limitVal) || rows.length;
-		if (rows.length > limit) rows = rows.slice(0, limit);
-		rows.sort((a, b) => {
-			const av = String(a[sortKey as keyof InboxMsg] ?? '');
-			const bv = String(b[sortKey as keyof InboxMsg] ?? '');
-			return sortDir === 'asc' ? av.localeCompare(bv) : bv.localeCompare(av);
-		});
-		return rows;
-	});
+	function goNext(meta: { has_next_page: boolean; next_cursor: number | null }) {
+		if (!meta.has_next_page) return;
+		saveScroll();
+		cursorStack.push(meta.next_cursor);
+		saveStack();
+		goto(resolve(urlFor(meta.next_cursor)));
+	}
 
-	const totalPages = $derived(Math.max(1, Math.ceil(filteredData().length / PER_PAGE)));
-	const pagedData = $derived(() => filteredData().slice((page - 1) * PER_PAGE, page * PER_PAGE));
-	const activeFilters = $derived(() => {
-		let c = 0;
-		if (dateStart) c++;
-		if (dateEnd) c++;
-		if (terminalFilter !== 'all') c++;
-		if (resellerInput) c++;
-		if (pengirimInput) c++;
-		if (tipeFilter !== 'all') c++;
-		if (statusFilter !== 'all') c++;
-		if (pesanInput) c++;
-		if (reqReseller) c++;
-		if (jawabanProvider) c++;
-		return c;
-	});
+	function goPrev(meta: { has_prev_page: boolean }) {
+		if (!meta.has_prev_page) return;
+		saveScroll();
+		cursorStack.pop();
+		const prev = cursorStack[cursorStack.length - 1] ?? null;
+		saveStack();
+		goto(resolve(urlFor(prev)));
+	}
+
+	function applyFilter() {
+		cursorStack = [null];
+		saveStack();
+		goto(resolve(urlFor(null)));
+	}
 
 	function resetFilters() {
-		dateStart = '';
-		dateEnd = '';
-		limitVal = '24';
-		terminalFilter = 'all';
+		startDate = '';
+		endDate = '';
+		itemsPerPage = '';
+		pageSizeValue = '';
+		terminalFilter = '';
 		resellerInput = '';
 		pengirimInput = '';
-		tipeFilter = 'all';
-		statusFilter = 'all';
+		tipeFilter = '';
+		statusFilter = '';
 		pesanInput = '';
 		reqReseller = false;
 		jawabanProvider = false;
-		page = 1;
+		cursorStack = [null];
+		saveStack();
+		goto(resolve('/inbox'));
 	}
 
-	function statusBadge(s: string) {
-		if (s === 'Gagal') return 'bg-[#fee2e2] text-[#b91c1c]';
-		if (s === 'Pending') return 'bg-[#fef3c7] text-[#b45309]';
-		if (s === 'Dibaca') return 'bg-[#f1f4f1] text-[#5b6b60]';
-		return 'bg-[#ecfdf3] text-[#167a4a]';
-	}
-
-	function toggleSort(key: string) {
-		if (sortKey === key) sortDir = sortDir === 'asc' ? 'desc' : 'asc';
-		else {
-			sortKey = key;
-			sortDir = 'desc';
-		}
-	}
-	function goPage(p: number) {
-		if (p >= 1 && p <= totalPages) page = p;
-	}
-	function arrow(key: string) {
-		return sortKey === key ? (sortDir === 'asc' ? ' ▲' : ' ▼') : '';
-	}
-	function triggerReset() {
-		page = 1;
+	function is401(err: unknown): boolean {
+		return typeof err === 'object' && err !== null && 'status' in err && (err as { status: number }).status === 401;
 	}
 </script>
 
-<svelte:head><title>Inbox — Pandora</title></svelte:head>
+<svelte:head><title>Inbox — {APP_NAME}</title></svelte:head>
 
-<main class="mx-auto max-w-375 p-7">
-	<div class="mb-5 flex items-end justify-between">
+<main class="mx-auto flex min-h-full w-full max-w-375 flex-col px-4 py-4 sm:px-7 md:h-full">
+	<div class="mb-5 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
 		<div>
 			<h1 class="text-2xl font-bold tracking-tight">Kotak Masuk</h1>
-			<p class="mt-0.5 text-[13px] text-[#5b6b60]">Pesan masuk dari sistem.</p>
+			<p class="mt-0.5 text-[13px] text-(--c-fg-muted)">Pesan masuk dari sistem.</p>
 		</div>
-		<div class="flex items-center gap-3">
-			{#if activeFilters() > 0}
-				<button
-					onclick={resetFilters}
-					class="rounded-lg border border-[#fee2e2] bg-[#fef2f2] px-3 py-1.5 text-xs font-medium text-[#b91c1c] transition-colors hover:bg-red-100"
-				>
-					Reset ({activeFilters()})
-				</button>
-			{/if}
+		<div class="flex flex-wrap items-center gap-3">
 			<button
 				onclick={() => (showFilter = !showFilter)}
-				class="flex items-center gap-2 rounded-lg border border-[#dfe4df] bg-white px-3 py-1.5 text-xs font-medium text-[#5b6b60] transition-colors hover:border-[#0e7a4a] hover:text-[#0e7a4a]"
+				class="flex items-center gap-2 rounded-lg border border-(--c-border) bg-(--c-surface) px-3 py-1.5 text-xs font-medium text-(--c-fg-muted) transition-colors hover:border-(--c-accent) hover:text-(--c-accent)"
 			>
-				<svg
-					class="h-3.5 w-3.5"
-					fill="none"
-					viewBox="0 0 24 24"
-					stroke="currentColor"
-					stroke-width="2"
-					><path
-						d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
-					/></svg
-				>
+				<SlidersHorizontal class="h-3.5 w-3.5" />
 				{showFilter ? 'Sembunyikan Filter' : 'Tampilkan Filter'}
 			</button>
-			<span class="rounded-full border border-[#dfe4df] bg-white px-2.5 py-1 text-xs text-[#89968d]"
-				>{filteredData().length} pesan</span
-			>
 		</div>
 	</div>
 
 	{#if showFilter}
-		<div class="mb-5 rounded-xl border border-[#dfe4df] bg-white p-5">
+		<div class="mb-5 rounded-xl border border-(--c-border) bg-(--c-surface) p-5">
 			<div class="mb-3 flex items-center justify-between">
-				<h3 class="text-[13px] font-semibold text-[#14211b]">Filter Lanjutan</h3>
-				{#if activeFilters() > 0}
-					<button
-						onclick={resetFilters}
-						class="text-[12px] font-medium text-[#b91c1c] hover:underline">Reset semua</button
-					>
-				{/if}
+				<h3 class="text-[13px] font-semibold text-(--c-fg)">Filter</h3>
+				<button
+					onclick={resetFilters}
+					class="text-[12px] font-medium text-(--c-danger) hover:underline">Reset semua</button
+				>
 			</div>
-			<div class="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-5">
+			<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5">
 				<div>
 					<label
-						for="f-tgl-start"
-						class="mb-1.5 block text-[11px] font-semibold tracking-widest text-[#5b6b60] uppercase"
+						for="fs-start"
+						class="mb-1.5 block text-[11px] font-semibold tracking-widest text-(--c-fg-muted) uppercase"
 						>Tgl Mulai</label
 					>
 					<input
-						id="f-tgl-start"
+						id="fs-start"
 						type="date"
-						bind:value={dateStart}
-						oninput={triggerReset}
-						class="h-9 w-full rounded-lg border border-[#dfe4df] bg-white px-2.5 text-[13px] text-[#14211b] transition-colors outline-none focus:border-[#0e7a4a]"
+						bind:value={startDate}
+						class="h-9 w-full rounded-lg border border-(--c-border) bg-(--c-surface) px-2.5 text-[13px] text-(--c-fg) outline-none focus:border-(--c-accent)"
 					/>
 				</div>
 				<div>
 					<label
-						for="f-tgl-end"
-						class="mb-1.5 block text-[11px] font-semibold tracking-widest text-[#5b6b60] uppercase"
+						for="fs-end"
+						class="mb-1.5 block text-[11px] font-semibold tracking-widest text-(--c-fg-muted) uppercase"
 						>Tgl Akhir</label
 					>
 					<input
-						id="f-tgl-end"
+						id="fs-end"
 						type="date"
-						bind:value={dateEnd}
-						oninput={triggerReset}
-						class="h-9 w-full rounded-lg border border-[#dfe4df] bg-white px-2.5 text-[13px] text-[#14211b] transition-colors outline-none focus:border-[#0e7a4a]"
+						bind:value={endDate}
+						class="h-9 w-full rounded-lg border border-(--c-border) bg-(--c-surface) px-2.5 text-[13px] text-(--c-fg) outline-none focus:border-(--c-accent)"
 					/>
 				</div>
 				<div>
 					<label
-						for="f-limit"
-						class="mb-1.5 block text-[11px] font-semibold tracking-widest text-[#5b6b60] uppercase"
+						for="fs-limit"
+						class="mb-1.5 block text-[11px] font-semibold tracking-widest text-(--c-fg-muted) uppercase"
 						>Limit</label
 					>
 					<input
-						id="f-limit"
+						id="fs-limit"
 						type="number"
 						min="1"
-						max="500"
-						bind:value={limitVal}
-						oninput={triggerReset}
-						class="h-9 w-full rounded-lg border border-[#dfe4df] bg-white px-2.5 text-[13px] text-[#14211b] transition-colors outline-none focus:border-[#0e7a4a]"
+						bind:value={itemsPerPage}
+						placeholder="Jumlah per halaman"
+						class="h-9 w-full rounded-lg border border-(--c-border) bg-(--c-surface) px-2.5 text-[13px] text-(--c-fg) outline-none focus:border-(--c-accent)"
 					/>
 				</div>
 				<div>
 					<label
-						for="f-terminal"
-						class="mb-1.5 block text-[11px] font-semibold tracking-widest text-[#5b6b60] uppercase"
+						for="fs-terminal"
+						class="mb-1.5 block text-[11px] font-semibold tracking-widest text-(--c-fg-muted) uppercase"
 						>Terminal</label
 					>
 					<select
-						id="f-terminal"
+						id="fs-terminal"
 						bind:value={terminalFilter}
-						onchange={triggerReset}
-						class="h-9 w-full rounded-lg border border-[#dfe4df] bg-white px-2.5 text-[13px] text-[#14211b] outline-none focus:border-[#0e7a4a]"
+						class="h-9 w-full rounded-lg border border-(--c-border) bg-(--c-surface) px-2.5 text-[13px] text-(--c-fg) outline-none focus:border-(--c-accent)"
 					>
-						{#each terminalOptions as t (t)}<option value={t}>{t === 'all' ? 'Semua' : t}</option
-							>{/each}
+						{#each terminalOptions as t (t)}
+							<option value={t}>{t === '' ? 'Semua' : t}</option>
+						{/each}
 					</select>
 				</div>
 				<div>
 					<label
-						for="f-reseller"
-						class="mb-1.5 block text-[11px] font-semibold tracking-widest text-[#5b6b60] uppercase"
+						for="fs-reseller"
+						class="mb-1.5 block text-[11px] font-semibold tracking-widest text-(--c-fg-muted) uppercase"
 						>Reseller</label
 					>
-					<input
-						id="f-reseller"
-						type="text"
+					<select
+						id="fs-reseller"
 						bind:value={resellerInput}
-						oninput={triggerReset}
-						placeholder="Cari kode reseller..."
-						class="h-9 w-full rounded-lg border border-[#dfe4df] bg-white px-2.5 text-[13px] text-[#14211b] placeholder-[#89968d] transition-colors outline-none focus:border-[#0e7a4a]"
-					/>
+						class="h-9 w-full rounded-lg border border-(--c-border) bg-(--c-surface) px-2.5 text-[13px] text-(--c-fg) outline-none focus:border-(--c-accent)"
+					>
+						<option value="">Semua</option>
+						{#await data.resellers}
+							<option value="">Memuat…</option>
+						{:then res}
+							{#each res.data.items as r (r.kode)}
+								<option value={r.kode}>{r.kode} — {r.nama}</option>
+							{/each}
+						{/await}
+					</select>
 				</div>
 				<div>
 					<label
-						for="f-pengirim"
-						class="mb-1.5 block text-[11px] font-semibold tracking-widest text-[#5b6b60] uppercase"
+						for="fs-pengirim"
+						class="mb-1.5 block text-[11px] font-semibold tracking-widest text-(--c-fg-muted) uppercase"
 						>Pengirim</label
 					>
 					<input
-						id="f-pengirim"
+						id="fs-pengirim"
 						type="text"
 						bind:value={pengirimInput}
-						oninput={triggerReset}
-						placeholder="Cari pengirim..."
-						class="h-9 w-full rounded-lg border border-[#dfe4df] bg-white px-2.5 text-[13px] text-[#14211b] placeholder-[#89968d] transition-colors outline-none focus:border-[#0e7a4a]"
+						placeholder="Cari pengirim…"
+						class="h-9 w-full rounded-lg border border-(--c-border) bg-(--c-surface) px-2.5 text-[13px] text-(--c-fg) outline-none focus:border-(--c-accent)"
 					/>
 				</div>
 				<div>
 					<label
-						for="f-tipe"
-						class="mb-1.5 block text-[11px] font-semibold tracking-widest text-[#5b6b60] uppercase"
+						for="fs-tipe"
+						class="mb-1.5 block text-[11px] font-semibold tracking-widest text-(--c-fg-muted) uppercase"
 						>Tipe</label
 					>
 					<select
-						id="f-tipe"
+						id="fs-tipe"
 						bind:value={tipeFilter}
-						onchange={triggerReset}
-						class="h-9 w-full rounded-lg border border-[#dfe4df] bg-white px-2.5 text-[13px] text-[#14211b] outline-none focus:border-[#0e7a4a]"
+						class="h-9 w-full rounded-lg border border-(--c-border) bg-(--c-surface) px-2.5 text-[13px] text-(--c-fg) outline-none focus:border-(--c-accent)"
 					>
-						{#each tipeOptions as t (t)}<option value={t}>{t === 'all' ? 'Semua' : t}</option
-							>{/each}
+						<option value="">Semua</option>
+						{#await data.inbox}
+							<option value="">Memuat…</option>
+						{:then d}
+							{#each uniqueTipes(d.data.items) as t (t)}
+								<option value={t}>{t === '' ? 'Semua' : t}</option>
+							{/each}
+						{/await}
 					</select>
 				</div>
 				<div>
 					<label
-						for="f-status"
-						class="mb-1.5 block text-[11px] font-semibold tracking-widest text-[#5b6b60] uppercase"
+						for="fs-status"
+						class="mb-1.5 block text-[11px] font-semibold tracking-widest text-(--c-fg-muted) uppercase"
 						>Status</label
 					>
 					<select
-						id="f-status"
+						id="fs-status"
 						bind:value={statusFilter}
-						onchange={triggerReset}
-						class="h-9 w-full rounded-lg border border-[#dfe4df] bg-white px-2.5 text-[13px] text-[#14211b] outline-none focus:border-[#0e7a4a]"
+						class="h-9 w-full rounded-lg border border-(--c-border) bg-(--c-surface) px-2.5 text-[13px] text-(--c-fg) outline-none focus:border-(--c-accent)"
 					>
-						{#each statusOptions as s (s)}<option value={s}>{s === 'all' ? 'Semua' : s}</option
-							>{/each}
+						<option value="">Semua</option>
+						{#each Object.entries(INBOX_STATUS) as [val, label] (val)}
+							<option value={val}>{label} ({val})</option>
+						{/each}
 					</select>
 				</div>
 				<div>
 					<label
-						for="f-pesan"
-						class="mb-1.5 block text-[11px] font-semibold tracking-widest text-[#5b6b60] uppercase"
+						for="fs-pesan"
+						class="mb-1.5 block text-[11px] font-semibold tracking-widest text-(--c-fg-muted) uppercase"
 						>Pesan</label
 					>
 					<input
-						id="f-pesan"
+						id="fs-pesan"
 						type="text"
 						bind:value={pesanInput}
-						oninput={triggerReset}
-						placeholder="Cari isi pesan..."
-						class="h-9 w-full rounded-lg border border-[#dfe4df] bg-white px-2.5 text-[13px] text-[#14211b] placeholder-[#89968d] transition-colors outline-none focus:border-[#0e7a4a]"
+						placeholder="Isi pesan…"
+						class="h-9 w-full rounded-lg border border-(--c-border) bg-(--c-surface) px-2.5 text-[13px] text-(--c-fg) outline-none focus:border-(--c-accent)"
 					/>
 				</div>
 			</div>
-			<div class="mt-4 flex flex-wrap items-center gap-6 border-t border-[#dfe4df] pt-4">
-				<label class="flex cursor-pointer items-center gap-2 text-[13px] text-[#5b6b60]">
-					<input
-						type="checkbox"
-						bind:checked={reqReseller}
-						onchange={triggerReset}
-						class="h-4 w-4 rounded border-[#dfe4df] accent-[#0e7a4a]"
-					/>
-					Request dari Reseller
-				</label>
-				<label class="flex cursor-pointer items-center gap-2 text-[13px] text-[#5b6b60]">
-					<input
-						type="checkbox"
-						bind:checked={jawabanProvider}
-						onchange={triggerReset}
-						class="h-4 w-4 rounded border-[#dfe4df] accent-[#0e7a4a]"
-					/>
-					Jawaban dari Provider
-				</label>
+			<div class="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-(--c-border) pt-4">
+				<div class="flex flex-wrap items-center gap-6">
+					<label class="flex cursor-pointer items-center gap-2 text-[13px] text-(--c-fg-muted)">
+						<input
+							type="checkbox"
+							bind:checked={reqReseller}
+							class="h-4 w-4 rounded border-(--c-border) accent-(--c-accent)"
+						/>
+						Request dari Reseller
+					</label>
+					<label class="flex cursor-pointer items-center gap-2 text-[13px] text-(--c-fg-muted)">
+						<input
+							type="checkbox"
+							bind:checked={jawabanProvider}
+							class="h-4 w-4 rounded border-(--c-border) accent-(--c-accent)"
+						/>
+						Jawaban dari Provider
+					</label>
+				</div>
+				<button
+					onclick={applyFilter}
+					class="rounded-lg bg-(--c-accent) px-5 py-2 text-[13px] font-semibold text-white transition-colors hover:opacity-90"
+				>
+					Terapkan Filter
+				</button>
 			</div>
 		</div>
 	{/if}
 
-	<div class="overflow-hidden rounded-xl border border-[#dfe4df] bg-white">
-		<div class="max-h-140 overflow-auto">
-			<table class="w-full border-collapse">
-				<thead>
-					<tr>
-						{#each COLS as c (c.key)}
-							<th
-								onclick={() => toggleSort(c.key)}
-								class="sticky top-0 cursor-pointer border-b border-[#dfe4df] bg-[#fafafa] px-3.5 py-2.5 text-left text-[11px] font-semibold tracking-widest whitespace-nowrap text-[#89968d] uppercase transition-colors select-none hover:text-[#0e7a4a]"
-								>{c.label}<span class="text-[10px] text-[#0e7a4a]">{arrow(c.key)}</span></th
-							>
-						{/each}
-					</tr>
-				</thead>
-				<tbody>
-					{#each pagedData() as msg (msg.kode)}
-						<tr class="transition-colors hover:bg-[#eef6f0]">
-							<td
-								class="max-w-50 overflow-hidden border-b border-[#dfe4df] px-3.5 py-3 text-[11px] font-semibold text-ellipsis whitespace-nowrap"
-								style="font-family: ui-monospace, monospace">{msg.kode}</td
-							>
-							<td
-								class="border-b border-[#dfe4df] px-3.5 py-3 text-[12px] whitespace-nowrap text-[#89968d]"
-								>{msg.tgl_entry}</td
-							>
-							<td
-								class="border-b border-[#dfe4df] px-3.5 py-3 text-[12px] font-semibold whitespace-nowrap"
-								>{msg.pengirim}</td
-							>
-							<td
-								class="border-b border-[#dfe4df] px-3.5 py-3 text-[12px] font-semibold whitespace-nowrap"
-								>{msg.penerima}</td
-							>
-							<td class="border-b border-[#dfe4df] px-3.5 py-3"
-								><span
-									class="inline-block rounded bg-[#f1f4f1] px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap text-[#5b6b60]"
-									>{msg.tipe_pengirim}</span
-								></td
-							>
-							<td
-								class="max-w-65 overflow-hidden border-b border-[#dfe4df] px-3.5 py-3 text-[12px] text-ellipsis whitespace-nowrap text-[#89968d]"
-								title={msg.pesan}
-								>{msg.pesan.length > 34 ? msg.pesan.slice(0, 34) + '…' : msg.pesan}</td
-							>
-							<td class="border-b border-[#dfe4df] px-3.5 py-3"
-								><span
-									class="inline-block rounded px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap {statusBadge(
-										msg.status
-									)}">{msg.status}</span
-								></td
-							>
-							<td
-								class="border-b border-[#dfe4df] px-3.5 py-3 text-[11px] whitespace-nowrap"
-								style="font-family: ui-monospace, monospace">{msg.kode_terminal}</td
-							>
-							<td
-								class="border-b border-[#dfe4df] px-3.5 py-3 text-[12px] whitespace-nowrap text-[#89968d]"
-								>{msg.tgl_status}</td
-							>
-							<td
-								class="border-b border-[#dfe4df] px-3.5 py-3 text-[11px] whitespace-nowrap"
-								style="font-family: ui-monospace, monospace">{msg.kode_reseller}</td
-							>
-							<td
-								class="border-b border-[#dfe4df] px-3.5 py-3 text-[11px] whitespace-nowrap"
-								style="font-family: ui-monospace, monospace">{msg.kode_transaksi}</td
-							>
-							<td class="border-b border-[#dfe4df] px-3.5 py-3 text-[12px]">{msg.is_jawaban}</td>
-							<td
-								class="border-b border-[#dfe4df] px-3.5 py-3 text-[12px] whitespace-nowrap text-[#89968d]"
-								>{msg.service_center}</td
-							>
-							<td class="border-b border-[#dfe4df] px-3.5 py-3 text-[12px]">{msg.is_cs}</td>
-							<td
-								class="border-b border-[#dfe4df] px-3.5 py-3 text-[11px] whitespace-nowrap"
-								style="font-family: ui-monospace, monospace">{msg.kode_jawaban_cs}</td
-							>
-							<td class="border-b border-[#dfe4df] px-3.5 py-3 text-[12px]"
-								>{msg.request_dari_reseller}</td
-							>
+	{#await data.inbox}
+		<div class="flex flex-1 min-h-0 flex-col overflow-hidden rounded-xl border border-(--c-border) bg-(--c-surface)">
+			<div class="min-h-0 flex-1 overflow-auto">
+				<table class="w-full border-collapse">
+					<thead>
+						<tr>
+							{#each COLS as c (c.key)}
+								<th
+									class="sticky top-0 border-b border-(--c-border) bg-(--c-table-head) px-3.5 py-2.5 text-left text-[11px] font-semibold tracking-widest whitespace-nowrap text-(--c-fg-soft) uppercase select-none"
+									>{c.label}</th
+								>
+							{/each}
 						</tr>
-					{:else}
-						<tr
-							><td colspan={COLS.length} class="py-16 text-center text-sm text-[#89968d]"
-								>Tidak ada pesan yang cocok dengan filter.</td
-							></tr
-						>
-					{/each}
-				</tbody>
-			</table>
-		</div>
-		<div class="flex items-center justify-between border-t border-[#dfe4df] px-5 py-3.5">
-			<span class="text-[12px] text-[#5b6b60]"
-				>{filteredData().length} pesan — hal {page} dari {totalPages}</span
-			>
-			<div class="flex flex-wrap gap-1.5">
-				<button
-					onclick={() => goPage(page - 1)}
-					disabled={page <= 1}
-					class="flex h-8 min-w-8 items-center justify-center rounded-md border border-[#dfe4df] bg-white px-2 text-xs font-medium text-[#5b6b60] transition-colors hover:border-[#0e7a4a] hover:text-[#0e7a4a] disabled:cursor-not-allowed disabled:opacity-40"
-					>&lsaquo;</button
-				>
-				{#each Array.from({ length: totalPages }, (_, index) => index) as i (i)}
+					</thead>
+					<tbody>
+						{#each skeletonRows as r (r)}
+							<tr class="animate-pulse border-b border-(--c-border)">
+								{#each skeletonWidths as w, ci (ci)}
+									<td class="border-b border-(--c-border) px-3.5 py-3">
+										<div class="h-3.5 rounded bg-(--c-surface-2)" style="width: {w}px"></div>
+									</td>
+								{/each}
+							</tr>
+						{/each}
+					</tbody>
+				</table>
+			</div>
+			<div class="sticky bottom-0 z-10 flex shrink-0 flex-wrap items-center justify-between gap-2 border-t border-(--c-border) bg-(--c-surface) px-5 py-3.5">
+				<span class="text-[12px] text-(--c-fg-muted)">Memuat data…</span>
+				<div class="flex items-center gap-1.5">
 					<button
-						onclick={() => goPage(i + 1)}
-						class="flex h-8 min-w-8 items-center justify-center rounded-md border px-2 text-xs font-medium transition-colors {page ===
-						i + 1
-							? 'border-[#0e7a4a] bg-[#0e7a4a] text-white'
-							: 'border-[#dfe4df] bg-white text-[#5b6b60] hover:border-[#0e7a4a] hover:text-[#0e7a4a]'}"
-						>{i + 1}</button
+						disabled
+						class="flex h-8 min-w-8 items-center justify-center rounded-md border border-(--c-border) bg-(--c-surface) px-2 text-xs font-medium text-(--c-fg-muted) opacity-40"
 					>
-				{/each}
-				<button
-					onclick={() => goPage(page + 1)}
-					disabled={page >= totalPages}
-					class="flex h-8 min-w-8 items-center justify-center rounded-md border border-[#dfe4df] bg-white px-2 text-xs font-medium text-[#5b6b60] transition-colors hover:border-[#0e7a4a] hover:text-[#0e7a4a] disabled:cursor-not-allowed disabled:opacity-40"
-					>&rsaquo;</button
-				>
+						<ChevronLeft class="h-4 w-4" />
+					</button>
+					<button
+						disabled
+						class="flex h-8 min-w-8 items-center justify-center rounded-md border border-(--c-border) bg-(--c-surface) px-2 text-xs font-medium text-(--c-fg-muted) opacity-40"
+					>
+						<ChevronRight class="h-4 w-4" />
+					</button>
+				</div>
 			</div>
 		</div>
-	</div>
+	{:then d}
+		<div class="flex flex-1 min-h-0 flex-col overflow-hidden rounded-xl border border-(--c-border) bg-(--c-surface)">
+			<div class="min-h-0 flex-1 overflow-auto">
+				<table class="w-full border-collapse">
+					<thead>
+						<tr>
+							{#each COLS as c (c.key)}
+								<th
+									class="sticky top-0 border-b border-(--c-border) bg-(--c-table-head) px-3.5 py-2.5 text-left text-[11px] font-semibold tracking-widest whitespace-nowrap text-(--c-fg-soft) uppercase select-none"
+									>{c.label}</th
+								>
+							{/each}
+						</tr>
+					</thead>
+					<tbody>
+						{#each d.data.items as msg (msg.kode)}
+							<tr class="transition-colors hover:bg-(--c-row-hover)">
+								<td
+									class="max-w-50 overflow-hidden border-b border-(--c-border) px-3.5 py-3 text-[11px] font-semibold text-ellipsis whitespace-nowrap"
+									style="font-family: ui-monospace, monospace">{msg.kode}</td
+								>
+								<td
+									class="border-b border-(--c-border) px-3.5 py-3 text-[12px] whitespace-nowrap text-(--c-fg-soft)"
+									>{msg.tgl_entri}</td
+								>
+								<td
+									class="border-b border-(--c-border) px-3.5 py-3 text-[12px] whitespace-nowrap text-(--c-fg-soft)"
+									>{msg.tgl_status}</td
+								>
+								<td
+									class="max-w-35 overflow-hidden border-b border-(--c-border) px-3.5 py-3 text-[12px] font-semibold text-ellipsis whitespace-nowrap"
+									>{msg.pengirim}</td
+								>
+								<td class="border-b border-(--c-border) px-3.5 py-3"
+									><span
+										class="inline-block rounded bg-(--c-surface-2) px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap text-(--c-fg-muted)"
+										>{msg.tipe_pengirim}</span
+									></td
+								>
+								<td
+									class="max-w-65 overflow-hidden border-b border-(--c-border) px-3.5 py-3 text-[12px] text-ellipsis whitespace-nowrap text-(--c-fg-soft)"
+									title={msg.pesan}
+									>{msg.pesan.length > 34 ? msg.pesan.slice(0, 34) + '…' : msg.pesan}</td
+								>
+								<td class="border-b border-(--c-border) px-3.5 py-3 text-[12px]">{msg.status}</td>
+								<td
+									class="border-b border-(--c-border) px-3.5 py-3 text-[11px] whitespace-nowrap"
+									style="font-family: ui-monospace, monospace">{msg.kode_reseller}</td
+								>
+								<td
+									class="border-b border-(--c-border) px-3.5 py-3 text-[11px] whitespace-nowrap"
+									style="font-family: ui-monospace, monospace">{msg.kode_transaksi}</td
+								>
+								<td class="border-b border-(--c-border) px-3.5 py-3 text-[12px]">{msg.is_jawaban}</td>
+								<td
+									class="max-w-40 overflow-hidden border-b border-(--c-border) px-3.5 py-3 text-[11px] text-ellipsis whitespace-nowrap text-(--c-fg-soft)"
+									style="font-family: ui-monospace, monospace"
+									title={msg.hash}
+									>{msg.hash.length > 26 ? msg.hash.slice(0, 26) + '…' : msg.hash}</td
+								>
+							</tr>
+						{:else}
+							<tr
+								><td colspan={COLS.length} class="py-16 text-center text-sm text-(--c-fg-soft)"
+									>Tidak ada pesan.</td
+								></tr
+							>
+						{/each}
+					</tbody>
+				</table>
+			</div>
+			<div class="sticky bottom-0 z-10 flex shrink-0 flex-wrap items-center justify-between gap-2 border-t border-(--c-border) bg-(--c-surface) px-5 py-3.5">
+				<div class="flex items-center gap-3">
+					<label class="flex items-center gap-2 text-[12px] text-(--c-fg-muted)">
+						Baris/halaman
+						<select
+							bind:value={pageSizeValue}
+							onchange={applyFilter}
+							class="h-8 rounded-md border border-(--c-border) bg-(--c-surface) px-2 text-xs text-(--c-fg) outline-none focus:border-(--c-accent)"
+						>
+							<option value="">10</option>
+							<option value="25">25</option>
+							<option value="50">50</option>
+							<option value="100">100</option>
+						</select>
+					</label>
+				</div>
+				<div class="flex items-center gap-1.5">
+					<button
+						onclick={() => goPrev(d.data.meta)}
+						disabled={!d.data.meta.has_prev_page}
+						class="flex h-8 min-w-8 items-center justify-center rounded-md border border-(--c-border) bg-(--c-surface) px-2 text-xs font-medium text-(--c-fg-muted) transition-colors hover:border-(--c-accent) hover:text-(--c-accent) disabled:cursor-not-allowed disabled:opacity-40"
+					>
+						<ChevronLeft class="h-4 w-4" />
+					</button>
+					<button
+						onclick={() => goNext(d.data.meta)}
+						disabled={!d.data.meta.has_next_page}
+						class="flex h-8 min-w-8 items-center justify-center rounded-md border border-(--c-border) bg-(--c-surface) px-2 text-xs font-medium text-(--c-fg-muted) transition-colors hover:border-(--c-accent) hover:text-(--c-accent) disabled:cursor-not-allowed disabled:opacity-40"
+					>
+						<ChevronRight class="h-4 w-4" />
+					</button>
+				</div>
+			</div>
+		</div>
+	{:catch err}
+		<div class="flex flex-1 items-center justify-center rounded-xl border border-(--c-border) bg-(--c-surface)">
+			<div class="text-center">
+				<p class="text-[14px] font-semibold text-(--c-fg)">
+					{is401(err) ? 'Sesi berakhir' : 'Gagal memuat data'}
+				</p>
+				{#if !is401(err)}
+					<p class="mt-1 text-[12px] text-(--c-fg-muted)">Silakan coba lagi.</p>
+					<button
+						onclick={() => goto(resolve('/inbox'))}
+						class="mt-3 rounded-lg border border-(--c-border) px-4 py-1.5 text-xs font-medium text-(--c-fg) transition-colors hover:border-(--c-accent)"
+					>
+						Muat ulang
+					</button>
+				{/if}
+			</div>
+		</div>
+	{/await}
 </main>

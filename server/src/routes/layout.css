@@ -1,2 +1,75 @@
 @import 'tailwindcss';
 @plugin '@tailwindcss/typography';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+	--c-bg: #f4f6f3;
+	--c-surface: #ffffff;
+	--c-surface-2: #fbfcfa;
+	--c-surface-3: #f0f3ee;
+	--c-input: #fbfcfa;
+	--c-border: #e4e8e2;
+	--c-fg: #14201a;
+	--c-fg-muted: #5b6b60;
+	--c-fg-soft: #89968d;
+	--c-fg-faint: #97a39b;
+	--c-accent: #0e7a4a;
+	--c-accent-strong: #0a5f3a;
+	--c-accent-soft: #e4f4ea;
+	--c-table-head: #fafafa;
+	--c-row-hover: #eef6f0;
+	--c-danger: #b91c1c;
+	--c-danger-bg: #fef2f2;
+	--c-danger-bg-2: #fee2e2;
+	--c-warning: #b45309;
+	--c-warning-bg: #fef3c7;
+	--c-success: #167a4a;
+	--c-success-bg: #ecfdf3;
+	--c-muted-bg: #f1f4f1;
+	--c-focus: rgba(14, 122, 74, 0.14);
+}
+
+html.dark {
+	--c-bg: #111814;
+	--c-surface: #182019;
+	--c-surface-2: #202b23;
+	--c-surface-3: #202b23;
+	--c-input: #1b241d;
+	--c-border: #26342b;
+	--c-fg: #e8eee9;
+	--c-fg-muted: #a3b0a7;
+	--c-fg-soft: #6f7d73;
+	--c-fg-faint: #6f7d73;
+	--c-accent: #16a34a;
+	--c-accent-strong: #7fd4a8;
+	--c-accent-soft: #1b2a21;
+	--c-table-head: #202b23;
+	--c-row-hover: #202b23;
+	--c-danger: #fca5a5;
+	--c-danger-bg: #2b1a19;
+	--c-danger-bg-2: #2b1a19;
+	--c-warning: #fbbf24;
+	--c-warning-bg: #2a2313;
+	--c-success: #4ade80;
+	--c-success-bg: #10241a;
+	--c-muted-bg: #202b23;
+	--c-focus: rgba(22, 163, 74, 0.25);
+	color-scheme: dark;
+}
+
+@keyframes spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+@keyframes slideDown {
+	from {
+		opacity: 0;
+		transform: translateY(-6px);
+	}
+	to {
+		opacity: 1;
+		transform: none;
+	}
+}

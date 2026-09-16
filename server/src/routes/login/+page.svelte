@@ -1,34 +1,31 @@
 ﻿<script lang="ts">
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
+	import { APP_NAME } from '$lib/config';
+	import { ArrowRight, CircleAlert, Clock, Eye, EyeOff, Lock, Mail, User } from '@lucide/svelte';
 
 	let username = $state('');
 	let password = $state('');
 	let loading = $state(false);
-	let toastMessage = $state('');
-
 	let showPassword = $state(false);
+	let alertMessage = $state('');
+	let alertTimer: ReturnType<typeof setTimeout> | null = null;
 
-	function showToast(msg: string) {
-		toastMessage = msg;
-		setTimeout(() => {
-			toastMessage = '';
-		}, 3500);
-	}
-
-	function clearToast() {
-		toastMessage = '';
+	function showAlert(msg: string) {
+		alertMessage = msg;
+		if (alertTimer) clearTimeout(alertTimer);
+		alertTimer = setTimeout(() => (alertMessage = ''), 4000);
 	}
 
 	async function handleSubmit(e: Event) {
 		e.preventDefault();
 		if (!username.trim() || !password) {
-			showToast('Lengkapi username dan password.');
+			showAlert('Lengkapi username dan password.');
 			return;
 		}
 		if (loading) return;
 
-		clearToast();
+		alertMessage = '';
 		loading = true;
 		try {
 			const res = await fetch('/api/auth/login', {
@@ -41,196 +38,176 @@
 			if (data.status === 'sukses') {
 				goto(resolve('/inbox'));
 			} else {
-				showToast(data.message || 'Username atau password salah.');
+				showAlert(data.message || 'Username atau password salah.');
 			}
 		} catch {
-			showToast('Terjadi kesalahan, coba lagi.');
+			showAlert('Terjadi kesalahan, coba lagi.');
 		} finally {
 			loading = false;
 		}
 	}
 </script>
 
-<svelte:head><title>Masuk — Pandora</title></svelte:head>
+<svelte:head><title>Masuk — {APP_NAME}</title></svelte:head>
 
-<div class="grid min-h-screen grid-cols-1 lg:grid-cols-2">
-	<!-- Kiri: Visual -->
-	<div class="relative flex flex-col justify-between overflow-hidden bg-white p-10 lg:flex">
-		<div
-			class="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(14,122,74,0.06),transparent_55%)]"
-		></div>
-		<div class="absolute right-0 bottom-0 left-0 h-px bg-[#dfe4df]"></div>
-
-		<div class="relative flex items-center gap-3">
+<div class="flex min-h-screen items-center justify-center bg-(--c-bg) p-[clamp(16px,4vw,40px)]">
+	<div
+		class="grid min-h-160 w-full max-w-260 grid-cols-1 overflow-hidden rounded-3xl border border-(--c-border) bg-(--c-surface) shadow-[0_2px_4px_rgba(20,32,26,0.04),0_16px_40px_-8px_rgba(20,32,26,0.14)] lg:min-h-0 lg:grid-cols-[1.05fr_1fr]"
+	>
+		<!-- Panel kiri (visual) -->
+		<div class="relative hidden overflow-hidden text-white lg:block">
+			<div class="absolute inset-0 bg-[linear-gradient(160deg,#0c1613,#10201a_55%,#0f2e20)]"></div>
 			<div
-				class="flex h-11 w-11 items-center justify-center rounded-[10px] bg-linear-to-br from-[#0e7a4a] to-[#0a5f3a] text-lg font-bold text-white"
-			>
-				P
-			</div>
-			<span class="text-[17px] font-bold text-[#14211b]">Pandora</span>
-		</div>
-
-		<div class="relative">
-			<h1
-				class="text-[clamp(40px,5vw,68px)] leading-[0.94] font-bold tracking-[-0.04em] text-[#14211b]"
-			>
-				Sistem<br />Internal<span class="text-[#0e7a4a]">.</span>
-			</h1>
-		</div>
-
-		<div class="relative mt-6 flex items-center gap-4">
-			<span class="text-[11px] font-medium tracking-[0.18em] text-[#89968d] uppercase"
-				>Akses pesan masuk &amp; keluar</span
-			>
-			<span class="h-px flex-1 bg-[#dfe4df]"></span>
-		</div>
-	</div>
-
-	<!-- Kanan: Form -->
-	<div class="relative flex items-center justify-center bg-[#0c1510] p-8 lg:p-10">
-		{#if toastMessage}
+				class="absolute inset-0 bg-[radial-gradient(60%_50%_at_20%_0%,rgba(14,122,74,0.35),transparent_60%),radial-gradient(50%_40%_at_100%_100%,rgba(255,255,255,0.05),transparent_60%)]"
+			></div>
 			<div
-				class="absolute top-5 right-6 left-6 z-10 flex items-start gap-2.5 rounded-r-lg border-l-[3px] border-[#ef4444] bg-[#1a2e22] p-3 text-[13px] leading-normal text-[#fca5a5]"
-				style="animation: toastIn 0.3s ease"
-			>
-				<svg
-					class="mt-0.5 h-4 w-4 shrink-0 text-[#ef4444]"
-					fill="none"
-					viewBox="0 0 24 24"
-					stroke="currentColor"
-					stroke-width="2"><circle cx="12" cy="12" r="10" /><path d="M12 8v4M12 16h.01" /></svg
-				>
-				<span>{toastMessage}</span>
-				<button
-					onclick={clearToast}
-					class="ml-auto shrink-0 bg-transparent text-[16px] leading-none text-[#fca5a5] opacity-60 hover:opacity-100"
-					>×</button
-				>
-			</div>
-		{/if}
+				class="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.5)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.5)_1px,transparent_1px)] bg-size-[42px_42px] opacity-5"
+			></div>
 
-		<div class="w-full max-w-85">
-			<div class="mb-4 text-[11px] font-semibold tracking-[0.22em] text-[#0e7a4a] uppercase">
-				Auth / Pandora
-			</div>
-			<h2 class="mb-8 text-[26px] font-bold tracking-[-0.02em] text-white">Masuk</h2>
-
-			<form onsubmit={handleSubmit} class="flex flex-col gap-5">
-				<div>
-					<label
-						for="username"
-						class="mb-2 block text-[11px] font-semibold tracking-[0.08em] text-[#8ba392] uppercase"
-						>Username</label
+			<div class="relative flex h-full flex-col justify-between p-9 lg:p-11">
+				<div class="flex items-center gap-3">
+					<div
+						class="flex h-9 w-9 items-center justify-center rounded-[11px] bg-linear-to-br from-[#16a34a] to-[#0a5f3a] shadow-[0_8px_20px_-6px_rgba(14,122,74,0.6)]"
 					>
-					<div class="relative">
-						<svg
-							class="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-[#4c5e53]"
-							fill="none"
-							viewBox="0 0 24 24"
-							stroke="currentColor"
-							stroke-width="1.8"
-							><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg
-						>
-						<input
-							type="text"
-							id="username"
-							placeholder="Masukkan username"
-							autocomplete="username"
-							disabled={loading}
-							bind:value={username}
-							oninput={clearToast}
-							class="h-11.5 w-full rounded-lg border border-[#2b3d32] bg-white/6 px-9.5 pr-3.5 font-[15px] text-white placeholder-[#4c5e53] transition-colors focus:border-[#0e7a4a] focus:bg-white/9 focus:outline-none disabled:opacity-50"
-						/>
+						<Mail class="h-5 w-5 text-white" />
 					</div>
+					<span class="text-base font-bold tracking-[-0.01em]">{APP_NAME}</span>
 				</div>
 
-				<div>
-					<label
-						for="password"
-						class="mb-2 block text-[11px] font-semibold tracking-[0.08em] text-[#8ba392] uppercase"
-						>Password</label
+				<div class="flex flex-1 flex-col justify-center py-6">
+					<span
+						class="mb-5 inline-flex w-max items-center gap-2 rounded-full border border-[rgba(127,212,168,0.25)] px-3 py-1 text-[11px] font-semibold tracking-[0.14em] text-[#7fd4a8] uppercase"
 					>
-					<div class="relative">
-						<svg
-							class="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-[#4c5e53]"
-							fill="none"
-							viewBox="0 0 24 24"
-							stroke="currentColor"
-							stroke-width="1.8"
-							><path d="M12 15a2 2 0 100-4 2 2 0 000 4z" /><path
-								d="M17 11V8a5 5 0 00-10 0v3"
-							/><path d="M5 11h14v8a2 2 0 01-2 2H7a2 2 0 01-2-2v-8z" /></svg
-						>
-						<input
-							type={showPassword ? 'text' : 'password'}
-							id="password"
-							placeholder="Masukkan password"
-							autocomplete="current-password"
-							disabled={loading}
-							bind:value={password}
-							oninput={clearToast}
-							class="h-11.5 w-full rounded-lg border border-[#2b3d32] bg-white/6 px-9.5 pr-9 font-[15px] text-white placeholder-[#4c5e53] transition-colors focus:border-[#0e7a4a] focus:bg-white/9 focus:outline-none disabled:opacity-50"
-						/>
-						<button
-							type="button"
-							onclick={() => (showPassword = !showPassword)}
-							aria-label={showPassword ? 'Sembunyikan password' : 'Lihat password'}
-							class="absolute top-1/2 right-2.5 -translate-y-1/2 rounded p-1 text-[#4c5e53] transition-colors hover:text-white"
-						>
-							{#if showPassword}
-								<svg
-									class="h-4 w-4"
-									fill="none"
-									viewBox="0 0 24 24"
-									stroke="currentColor"
-									stroke-width="1.8"
-									><path
-										d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18"
-									/></svg
-								>
-							{:else}
-								<svg
-									class="h-4 w-4"
-									fill="none"
-									viewBox="0 0 24 24"
-									stroke="currentColor"
-									stroke-width="1.8"
-									><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path
-										d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-									/></svg
-								>
-							{/if}
-						</button>
-					</div>
+						<Clock class="h-3 w-3 text-[#7fd4a8]" />
+						Internal System
+					</span>
+					<h1 class="text-[clamp(38px,4.4vw,56px)] leading-[1.02] font-bold tracking-[-0.035em]">
+						Sistem Internal.
+					</h1>
+					<p class="mt-4 max-w-85 text-[15px] leading-[1.6] text-white/65">
+						Kelola semua pesan masuk dan keluar dalam satu dashboard yang aman.
+					</p>
 				</div>
 
-				<button
-					type="submit"
-					disabled={loading}
-					class="mt-1 h-12 rounded-lg bg-[#0e7a4a] text-[14px] font-semibold tracking-widest text-white uppercase transition-all hover:bg-[#0a5f3a] active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50"
+				<div
+					class="flex items-center gap-3.5 text-[11px] tracking-[0.18em] text-white/40 uppercase"
 				>
-					{#if loading}
-						<span
-							class="inline-block h-4.5 w-4.5 animate-spin rounded-full border-2 border-white/30 border-t-white align-middle"
-						></span>
-					{:else}
-						Masuk
-					{/if}
-				</button>
-			</form>
+					{APP_NAME} &copy; 2026
+					<span class="h-px flex-1 bg-white/10"></span>
+				</div>
+			</div>
+		</div>
+
+		<!-- Panel kanan (form) -->
+		<div class="flex items-center justify-center p-[clamp(28px,5vw,56px)]">
+			<div class="w-full max-w-92.5">
+				<div class="mb-7 flex items-center gap-2.5 lg:hidden">
+					<div
+						class="flex h-10 w-10 items-center justify-center rounded-xl bg-linear-to-br from-[#16a34a] to-[#0a5f3a] shadow-[0_8px_18px_-6px_rgba(14,122,74,0.45)]"
+					>
+						<Mail class="h-5 w-5 text-white" />
+					</div>
+					<span class="text-[17px] font-bold tracking-[-0.01em] text-(--c-fg)">{APP_NAME}</span>
+				</div>
+
+				<div
+					class="mb-2.5 flex items-center gap-2 text-[11px] font-semibold tracking-[0.18em] text-(--c-fg-faint) uppercase"
+				>
+					<Lock class="h-3 w-3 text-(--c-accent)" />
+					Autentikasi
+				</div>
+				<h1 class="text-[28px] leading-[1.1] font-bold tracking-[-0.02em] text-(--c-fg)">
+					Masuk ke dashboard
+				</h1>
+				<p class="mt-1.5 mb-7 text-sm text-(--c-fg-muted)">
+					Gunakan akun yang telah terdaftar untuk mengakses dashboard.
+				</p>
+
+				{#if alertMessage}
+					<div
+						class="mb-4 flex animate-[slideDown_0.25s_ease] items-start gap-2.5 rounded-[11px] border border-(--c-danger-bg-2) bg-(--c-danger-bg) p-3 text-[13px] leading-normal text-(--c-danger)"
+					>
+						<CircleAlert class="mt-0.5 h-4.5 w-4.5 shrink-0 text-(--c-danger)" />
+						<span>{alertMessage}</span>
+					</div>
+				{/if}
+
+				<form onsubmit={handleSubmit}>
+					<div class="mb-4.5">
+						<label
+							for="username"
+							class="mb-2 block text-xs font-semibold tracking-[0.06em] text-(--c-fg-muted) uppercase"
+							>Username</label
+						>
+						<div class="group relative">
+							<User
+								class="pointer-events-none absolute top-1/2 left-3 h-4.5 w-4.5 -translate-y-1/2 text-(--c-fg-faint) transition-[color] duration-200 group-focus-within:text-(--c-accent)"
+							/>
+							<input
+								type="text"
+								id="username"
+								placeholder="Masukkan username"
+								autocomplete="username"
+								bind:value={username}
+								disabled={loading}
+								oninput={() => (alertMessage = '')}
+								class="h-12 w-full rounded-xl border border-(--c-border) bg-(--c-surface-2) pr-3 pl-10.5 font-[15px] text-(--c-fg) transition-[border-color,box-shadow,background] duration-200 placeholder:text-(--c-fg-faint) focus:border-(--c-accent) focus:bg-(--c-surface) focus:shadow-[0_0_0_4px_var(--c-focus)] focus:outline-none"
+							/>
+						</div>
+					</div>
+
+					<div class="mb-4.5">
+						<label
+							for="password"
+							class="mb-2 block text-xs font-semibold tracking-[0.06em] text-(--c-fg-muted) uppercase"
+							>Password</label
+						>
+						<div class="group relative">
+							<Lock
+								class="pointer-events-none absolute top-1/2 left-3 h-4.5 w-4.5 -translate-y-1/2 text-(--c-fg-faint) transition-[color] duration-200 group-focus-within:text-(--c-accent)"
+							/>
+							<input
+								type={showPassword ? 'text' : 'password'}
+								id="password"
+								placeholder="Masukkan password"
+								autocomplete="current-password"
+								bind:value={password}
+								disabled={loading}
+								oninput={() => (alertMessage = '')}
+								class="h-12 w-full rounded-xl border border-(--c-border) bg-(--c-surface-2) pr-12 pl-10.5 font-[15px] text-(--c-fg) transition-[border-color,box-shadow,background] duration-200 placeholder:text-(--c-fg-faint) focus:border-(--c-accent) focus:bg-(--c-surface) focus:shadow-[0_0_0_4px_var(--c-focus)] focus:outline-none"
+							/>
+							<button
+								type="button"
+								class="absolute top-1/2 right-2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-lg text-(--c-fg-faint) transition-[color,background] duration-200 hover:bg-(--c-surface-3) hover:text-(--c-fg)"
+								onclick={() => (showPassword = !showPassword)}
+								aria-label={showPassword ? 'Sembunyikan password' : 'Tampilkan password'}
+							>
+								{#if showPassword}
+									<EyeOff class="h-4.75 w-4.75" />
+								{:else}
+									<Eye class="h-4.75 w-4.75" />
+								{/if}
+							</button>
+						</div>
+					</div>
+
+					<button
+						type="submit"
+						class="mt-1.5 flex h-12.5 w-full cursor-pointer items-center justify-center gap-2.5 rounded-xl border-none bg-linear-to-br from-[#10965a] to-[#0a5f3a] text-[15px] font-semibold tracking-[0.02em] text-white shadow-[0_10px_24px_-10px_rgba(14,122,74,0.55)] transition-[transform,box-shadow,filter] duration-200 hover:shadow-[0_14px_30px_-10px_rgba(14,122,74,0.6)] hover:brightness-105 active:translate-y-px active:scale-[0.995] disabled:cursor-not-allowed disabled:opacity-75"
+						disabled={loading}
+					>
+						{#if loading}
+							<span
+								class="h-4.5 w-4.5 animate-spin rounded-full border-2 border-white/35 border-t-white"
+							></span>
+							<span>Memproses...</span>
+						{:else}
+							<ArrowRight class="h-4.5 w-4.5 text-white" />
+							<span>Masuk</span>
+						{/if}
+					</button>
+				</form>
+			</div>
 		</div>
 	</div>
 </div>
-
-<style>
-	@keyframes toastIn {
-		from {
-			opacity: 0;
-			transform: translateY(-10px);
-		}
-		to {
-			opacity: 1;
-			transform: translateY(0);
-		}
-	}
-</style>

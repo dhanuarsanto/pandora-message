@@ -1,8 +1,9 @@
 import { PRIVATE_API_BASE_URL, PRIVATE_API_KEY } from '$env/static/private';
+import { APP_UNIT } from '$lib/config';
 
-const TIMEOUT_MS = 8000;
+const TIMEOUT_MS = 180000;
 
-const PUBLIC_ENDPOINTS = ['/api/v1/pandora/auth/login'];
+const PUBLIC_ENDPOINTS = [`/api/v1/${APP_UNIT}/auth/login`];
 
 export class ApiError extends Error {
 	status: number;
