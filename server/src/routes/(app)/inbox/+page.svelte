@@ -1,6 +1,7 @@
 <script lang="ts">
-	import MessageList, { type ColSpec, type FilterField } from '$lib/components/MessageList.svelte';
+	import MessageList from '$lib/components/MessageList.svelte';
 	import { APP_NAME, TIPE_PENGIRIM } from '$lib/config';
+	import type { ColSpec, FilterField } from '$lib/types';
 
 	let { data } = $props();
 

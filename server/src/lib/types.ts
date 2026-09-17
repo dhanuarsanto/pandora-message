@@ -68,3 +68,34 @@ export type OutboxResponse = {
 	status: string;
 	data: { items: OutboxItem[]; meta: InboxMeta; trace_id: string };
 };
+
+export type ColSpec = {
+	key: string;
+	label: string;
+	mono?: boolean;
+	badge?: boolean;
+	strong?: boolean;
+	muted?: boolean;
+	trunc?: boolean;
+	date?: boolean;
+	status?: boolean;
+	maxWidth?: number;
+};
+
+export type FilterField =
+	| { type: 'date'; param: string; label: string }
+	| { type: 'text'; param: string; label: string; placeholder?: string }
+	| { type: 'number'; param: string; label: string; placeholder?: string }
+	| { type: 'terminal'; param: string; label: string }
+	| { type: 'status'; param: string; label: string }
+	| { type: 'tipe'; param: string; label: string; source: Record<string, string> }
+	| { type: 'reseller'; param: string; label: string }
+	| { type: 'checkbox'; param: string; label: string };
+
+export type FooterMeta = {
+	has_next_page: boolean;
+	has_prev_page: boolean;
+	next_cursor: number | null;
+};
+
+export type MessageItem = InboxItem | OutboxItem;
