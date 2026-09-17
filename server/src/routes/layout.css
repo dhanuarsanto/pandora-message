@@ -92,3 +92,7 @@ html.dark {
 	scrollbar-width: thin;
 	scrollbar-color: var(--c-border) transparent;
 }
+
+.overflow-clip {
+	overflow: clip;
+}

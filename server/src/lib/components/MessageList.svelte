@@ -6,8 +6,8 @@
 	import { INBOX_STATUS, KODE_TERMINAL } from '$lib/config';
 	import type { InboxItem, OutboxItem, ResellerResponse } from '$lib/types';
 	import { ChevronLeft, ChevronRight, SlidersHorizontal } from '@lucide/svelte';
-	import { SvelteURLSearchParams } from 'svelte/reactivity';
 	import { untrack } from 'svelte';
+	import { SvelteURLSearchParams } from 'svelte/reactivity';
 
 	export type ColSpec = {
 		key: string;
@@ -90,6 +90,8 @@
 
 	let query = $state<Record<string, string>>({});
 
+	let pageSize = $state(page.url.searchParams.get('pageSize') ?? '');
+
 	$effect(() => {
 		const params = page.url.searchParams;
 		const fresh: Record<string, string> = {};
@@ -119,6 +121,22 @@
 
 	const controlsDisabled = $derived(!dataReady || navigating.type !== null);
 
+	let scrollable = $state(false);
+	let tableContainer: HTMLDivElement | null = $state(null);
+
+	$effect(() => {
+		if (typeof window === 'undefined' || !tableContainer) return;
+		const check = () => {
+			const el = tableContainer as HTMLDivElement;
+			if (!el) return;
+			scrollable = el.scrollWidth > el.clientWidth;
+		};
+		check();
+		const ro = new ResizeObserver(check);
+		ro.observe(tableContainer);
+		return () => ro.disconnect();
+	});
+
 	$effect(() => {
 		if (typeof window === 'undefined') return;
 		const mq = window.matchMedia('(min-width: 768px)');
@@ -145,11 +163,14 @@
 		});
 	}
 
-	afterNavigate(restoreScroll);
+	afterNavigate(() => {
+		restoreScroll();
+		pageSize = page.url.searchParams.get('pageSize') ?? '';
+	});
 
 	const statusOptions = Object.entries(INBOX_STATUS);
 	const limitN = $derived(Number(query['limit']));
-	const pageSizeN = $derived(Number(query['pageSize']));
+	const pageSizeN = $derived(Number(pageSize));
 	const skeletonCount = $derived(Math.min(limitN || pageSizeN || 10, pageSizeN || limitN || 10));
 	const skeletonRows = $derived(Array.from({ length: skeletonCount }, (_, i) => i));
 
@@ -158,9 +179,9 @@
 	function buildQuery(cursor: number | null): URLSearchParams {
 		const u = new SvelteURLSearchParams();
 		if (cursor !== null) u.set('cursor', String(cursor));
+		if (pageSize !== '' && Number(pageSize) > 0) u.set('pageSize', pageSize);
 		for (const [k, v] of Object.entries(query)) {
 			if (v === '') continue;
-			if ((k === 'limit' || k === 'pageSize') && !(Number(v) > 0)) continue;
 			u.set(k, v);
 		}
 		return u;
@@ -199,7 +220,7 @@
 		query = {};
 		cursorStack = [null];
 		saveStack();
-		goto(resolve(path));
+		goto(resolve(urlFor(null)));
 	}
 
 	function is401(err: unknown): boolean {
@@ -252,8 +273,11 @@
 			<label class="flex items-center gap-2 text-[12px] text-(--c-fg-muted)">
 				Baris/halaman
 				<select
-					bind:value={query['pageSize']}
-					onchange={applyFilter}
+					value={pageSize}
+					onchange={(e) => {
+						pageSize = e.currentTarget.value;
+						applyFilter();
+					}}
 					disabled={meta === null || navigating.type !== null}
 					class="h-8 rounded-md border border-(--c-border) bg-(--c-surface) px-2 text-xs text-(--c-fg) outline-none focus:border-(--c-accent) disabled:cursor-not-allowed disabled:opacity-40"
 				>
@@ -436,15 +460,15 @@
 
 	{#await load}
 		<div
-			class="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-(--c-border) bg-(--c-surface)"
+			class="relative flex min-h-0 flex-1 flex-col overflow-clip rounded-xl border border-(--c-border) bg-(--c-surface)"
 		>
-			<div class="min-h-0 flex-1 overflow-auto">
-				<table class="w-full border-collapse">
+			<div class="min-h-0 flex-1 overflow-auto" bind:this={tableContainer}>
+				<table class="w-full border-separate border-spacing-0">
 					<thead>
 						<tr>
 							{#each cols as c (c.key)}
 								<th
-									class="sticky top-0 border-b border-(--c-border) bg-(--c-table-head) px-3.5 py-2.5 text-left text-[11px] font-semibold tracking-widest whitespace-nowrap text-(--c-fg-soft) uppercase select-none"
+									class="border-b border-(--c-border) bg-(--c-table-head) px-3.5 py-2.5 text-left text-[11px] font-semibold tracking-widest whitespace-nowrap text-(--c-fg-soft) uppercase select-none"
 									>{c.label}</th
 								>
 							{/each}
@@ -452,7 +476,11 @@
 					</thead>
 					<tbody>
 						{#each skeletonRows as r (r)}
-							<tr class="animate-pulse border-b border-(--c-border)">
+							<tr
+								class="animate-pulse border-b border-(--c-border) {r % 2
+									? 'bg-(--c-surface-2)'
+									: ''}"
+							>
 								{#each skeletonWidths as w, ci (ci)}
 									<td class="border-b border-(--c-border) px-3.5 py-3">
 										<div class="h-3.5 rounded bg-(--c-surface-2)" style="width: {w}px"></div>
@@ -463,19 +491,24 @@
 					</tbody>
 				</table>
 			</div>
+			{#if scrollable}
+				<div
+					class="pointer-events-none absolute right-0 bottom-12 z-20 w-6 bg-linear-to-l from-(--c-surface) to-transparent"
+				></div>
+			{/if}
 			{@render footer(null)}
 		</div>
 	{:then d}
 		<div
-			class="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-(--c-border) bg-(--c-surface)"
+			class="relative flex min-h-0 flex-1 flex-col overflow-clip rounded-xl border border-(--c-border) bg-(--c-surface)"
 		>
-			<div class="min-h-0 flex-1 overflow-auto">
-				<table class="w-full border-collapse">
+			<div class="min-h-0 flex-1 overflow-auto" bind:this={tableContainer}>
+				<table class="w-full border-separate border-spacing-0">
 					<thead>
 						<tr>
 							{#each cols as c (c.key)}
 								<th
-									class="sticky top-0 border-b border-(--c-border) bg-(--c-table-head) px-3.5 py-2.5 text-left text-[11px] font-semibold tracking-widest whitespace-nowrap text-(--c-fg-soft) uppercase select-none"
+									class="border-b border-(--c-border) bg-(--c-table-head) px-3.5 py-2.5 text-left text-[11px] font-semibold tracking-widest whitespace-nowrap text-(--c-fg-soft) uppercase select-none"
 									>{c.label}</th
 								>
 							{/each}
@@ -483,7 +516,11 @@
 					</thead>
 					<tbody>
 						{#each d.data.items as item, i (item.kode + '-' + i)}
-							<tr class="transition-colors hover:bg-(--c-row-hover)">
+							<tr
+								class="transition-colors hover:bg-(--c-row-hover) {i % 2
+									? 'bg-(--c-surface-2)'
+									: ''}"
+							>
 								{#each cols as c (c.key)}
 									{@const raw = (item as Record<string, string | number>)[c.key]}
 									{#if c.badge}
@@ -521,6 +558,11 @@
 					</tbody>
 				</table>
 			</div>
+			{#if scrollable}
+				<div
+					class="pointer-events-none absolute right-0 bottom-12 z-20 w-6 bg-linear-to-l from-(--c-surface) to-transparent"
+				></div>
+			{/if}
 			{@render footer(d.data.meta)}
 		</div>
 	{:catch err}

@@ -5,12 +5,16 @@ export const COOKIE_USERNAME = 'username';
 export const COOKIE_RULES = 'rules';
 export const SESSION_TTL_SEC = 86400;
 
+export function secureCookie(): boolean {
+	return import.meta.env.PROD && process.env.COOKIE_SECURE !== 'false';
+}
+
 export function setToken(event: RequestEvent, token: string): void {
 	event.cookies.set(COOKIE_TOKEN, token, {
 		path: '/',
 		maxAge: SESSION_TTL_SEC,
 		httpOnly: true,
-		secure: import.meta.env.PROD,
+		secure: secureCookie(),
 		sameSite: 'strict'
 	});
 }
@@ -24,7 +28,7 @@ export function clearAllCookies(cookies: Cookies): void {
 		path: '/',
 		maxAge: 0,
 		httpOnly: true,
-		secure: import.meta.env.PROD,
+		secure: secureCookie(),
 		sameSite: 'strict' as const
 	};
 	cookies.set(COOKIE_TOKEN, '', opts);

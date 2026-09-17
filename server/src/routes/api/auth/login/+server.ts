@@ -1,6 +1,12 @@
 import { APP_UNIT } from '$lib/config';
 import { ApiError, apiPost } from '$lib/server/api';
-import { COOKIE_RULES, COOKIE_USERNAME, SESSION_TTL_SEC, setToken } from '$lib/server/auth';
+import {
+	COOKIE_RULES,
+	COOKIE_USERNAME,
+	SESSION_TTL_SEC,
+	secureCookie,
+	setToken
+} from '$lib/server/auth';
 import { getClientIp, isRateLimited, recordAttempt, resetAttempts } from '$lib/server/rateLimiter';
 import type { LoginRequest, LoginResponse } from '$lib/types';
 import { json, type RequestHandler } from '@sveltejs/kit';
@@ -37,7 +43,7 @@ export const POST: RequestHandler = async (event) => {
 			path: '/',
 			maxAge: SESSION_TTL_SEC,
 			httpOnly: true,
-			secure: import.meta.env.PROD,
+			secure: secureCookie(),
 			sameSite: 'strict'
 		});
 
@@ -45,7 +51,7 @@ export const POST: RequestHandler = async (event) => {
 			path: '/',
 			maxAge: SESSION_TTL_SEC,
 			httpOnly: true,
-			secure: import.meta.env.PROD,
+			secure: secureCookie(),
 			sameSite: 'strict'
 		});
 
