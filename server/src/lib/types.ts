@@ -24,25 +24,35 @@ export type OutboxItem = {
 	pesan: string;
 	status: number;
 	tgl_status: string;
+	kode_inbox: number;
 	kode_transaksi: number;
 	kode_reseller: string;
 	bebas_biaya: number;
 	is_perintah: number;
+	kode_modul: number;
 	prioritas: number;
 	modul_proses: string;
+	pengirim: string;
+	kode_terminal: number;
+	ctr_kirim: number;
 };
 
 export type InboxItem = {
 	kode: number;
 	tgl_entri: string;
-	tgl_status: string;
+	penerima: string;
 	pengirim: string;
 	tipe_pengirim: string;
 	pesan: string;
 	status: number;
+	kode_terminal: number;
+	tgl_status: string;
 	kode_reseller: string;
 	kode_transaksi: number;
 	is_jawaban: number;
+	service_center: string;
+	is_cs: number;
+	kode_jawaban_cs: number;
 	hash: string;
 };
 export type InboxMeta = {
