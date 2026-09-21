@@ -17,7 +17,9 @@
 		onGoPrev,
 		reloadPath
 	}: {
-		load: Promise<{ data: { items: MessageItem[]; meta: FooterMeta } }>;
+		load:
+			| { data: { items: MessageItem[]; meta: FooterMeta } }
+			| Promise<{ data: { items: MessageItem[]; meta: FooterMeta } }>;
 		cols: ColSpec[];
 		skeletonRows: number[];
 		skeletonWidths: number[];

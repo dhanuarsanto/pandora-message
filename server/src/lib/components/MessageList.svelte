@@ -28,7 +28,7 @@
 		skeletonWidths,
 		stackKey
 	}: {
-		load: Promise<MessagePage>;
+		load: MessagePage | Promise<MessagePage>;
 		resellers: Promise<ResellerResponse>;
 		path: '/inbox' | '/outbox';
 		title: string;
@@ -58,7 +58,7 @@
 	$effect(() => {
 		dataReady = false;
 		const p = load;
-		p.then(
+		Promise.resolve(p).then(
 			() => (dataReady = true),
 			() => (dataReady = true)
 		);
@@ -97,10 +97,17 @@
 		});
 	}
 
-	afterNavigate(() => {
+	afterNavigate((nav) => {
 		restoreScroll();
 		pageSize = page.url.searchParams.get('pageSize') ?? '';
 		query = initFilterFromUrl(filters, page.url.searchParams);
+		if (nav && nav.type === 'popstate') {
+			const raw = page.url.searchParams.get('cursor');
+			const cur = raw === null ? null : Number(raw);
+			const idx = cursorStack.findIndex((x) => x === cur);
+			cursorStack = idx >= 0 ? cursorStack.slice(0, idx + 1) : [cur];
+			saveStack();
+		}
 	});
 
 	const statusOptions = Object.entries(INBOX_STATUS);

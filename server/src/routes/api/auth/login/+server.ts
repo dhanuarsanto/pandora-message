@@ -21,9 +21,14 @@ export const POST: RequestHandler = async (event) => {
 		);
 	}
 
+	let body: LoginRequest;
 	try {
-		const body: LoginRequest = await event.request.json();
+		body = await event.request.json();
+	} catch {
+		return json({ status: 'gagal', message: 'Format permintaan tidak valid' }, { status: 400 });
+	}
 
+	try {
 		const validationError = validateInput(body);
 		if (validationError) {
 			recordAttempt(ip);

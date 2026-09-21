@@ -151,7 +151,7 @@
 								bind:value={username}
 								disabled={loading}
 								oninput={() => (alertMessage = '')}
-								class="h-12 w-full rounded-xl border border-(--c-border) bg-(--c-surface-2) pr-3 pl-10.5 font-[15px] text-(--c-fg) transition-[border-color,box-shadow,background] duration-200 placeholder:text-(--c-fg-faint) focus:border-(--c-accent) focus:bg-(--c-surface) focus:shadow-[0_0_0_4px_var(--c-focus)] focus:outline-none"
+								class="h-12 w-full rounded-xl border border-(--c-border) bg-(--c-surface-2) pr-3 pl-10.5 text-[15px] text-(--c-fg) transition-[border-color,box-shadow,background] duration-200 placeholder:text-(--c-fg-faint) focus:border-(--c-accent) focus:bg-(--c-surface) focus:shadow-[0_0_0_4px_var(--c-focus)] focus:outline-none"
 							/>
 						</div>
 					</div>
@@ -174,7 +174,7 @@
 								bind:value={password}
 								disabled={loading}
 								oninput={() => (alertMessage = '')}
-								class="h-12 w-full rounded-xl border border-(--c-border) bg-(--c-surface-2) pr-12 pl-10.5 font-[15px] text-(--c-fg) transition-[border-color,box-shadow,background] duration-200 placeholder:text-(--c-fg-faint) focus:border-(--c-accent) focus:bg-(--c-surface) focus:shadow-[0_0_0_4px_var(--c-focus)] focus:outline-none"
+								class="h-12 w-full rounded-xl border border-(--c-border) bg-(--c-surface-2) pr-12 pl-10.5 text-[15px] text-(--c-fg) transition-[border-color,box-shadow,background] duration-200 placeholder:text-(--c-fg-faint) focus:border-(--c-accent) focus:bg-(--c-surface) focus:shadow-[0_0_0_4px_var(--c-focus)] focus:outline-none"
 							/>
 							<button
 								type="button"

@@ -5,8 +5,19 @@ import type { ResellerResponse } from '$lib/types';
 const cache = new Map<string, { data: ResellerResponse; fetchedAt: number }>();
 const inflight = new Map<string, Promise<ResellerResponse>>();
 const TTL_MS = 5 * 60 * 1000;
+const MAX_ENTRIES = 100;
+
+function prune(now = Date.now()): void {
+	for (const [k, e] of cache) {
+		if (now - e.fetchedAt >= TTL_MS) cache.delete(k);
+	}
+	while (cache.size > MAX_ENTRIES) {
+		cache.delete(cache.keys().next().value as string);
+	}
+}
 
 export function getResellers(token: string): Promise<ResellerResponse> {
+	prune();
 	const cached = cache.get(token);
 	if (cached && Date.now() - cached.fetchedAt < TTL_MS) {
 		return Promise.resolve(cached.data);
@@ -17,12 +28,6 @@ export function getResellers(token: string): Promise<ResellerResponse> {
 
 	const p = apiGet<ResellerResponse>(`/api/v1/${APP_UNIT}/master/reseller-dropdown`, token)
 		.then((data) => {
-			if (cache.size > 8) {
-				const now = Date.now();
-				for (const [k, e] of cache) {
-					if (now - e.fetchedAt >= TTL_MS) cache.delete(k);
-				}
-			}
 			cache.set(token, { data, fetchedAt: Date.now() });
 			return data;
 		})
