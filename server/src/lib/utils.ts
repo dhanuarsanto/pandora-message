@@ -34,10 +34,19 @@ export function is401(err: unknown): boolean {
 	);
 }
 
+const BULAN = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+
+function pad2(n: number): string {
+	return String(n).padStart(2, '0');
+}
+
 export function formatDate(raw: string | number | undefined): string {
 	if (raw === null || raw === undefined) return '-';
-	if (typeof raw === 'string' && raw.includes('T')) return raw.slice(0, 16).replace('T', ' ');
-	return String(raw);
+	const d = new Date(raw);
+	if (Number.isNaN(d.getTime())) return String(raw);
+	return `${pad2(d.getDate())} ${BULAN[d.getMonth()]} ${d.getFullYear()} ${pad2(d.getHours())}:${pad2(
+		d.getMinutes()
+	)}`;
 }
 
 export function statusClasses(raw: string | number | undefined): string {
@@ -50,10 +59,9 @@ export function statusClasses(raw: string | number | undefined): string {
 	return 'bg-(--c-surface-2) text-(--c-fg-muted)';
 }
 
-export function cellText(raw: string | number | undefined, c: ColSpec): string {
+export function cellText(raw: string | number | undefined): string {
 	if (raw === null || raw === undefined) return '-';
-	const s = String(raw);
-	return c.trunc && s.length > 24 ? s.slice(0, 24) + '…' : s;
+	return String(raw);
 }
 
 export function cellClass(c: ColSpec): string {

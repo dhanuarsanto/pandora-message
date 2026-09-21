@@ -2,11 +2,13 @@
 	import { afterNavigate } from '$app/navigation';
 	import { navigating, page } from '$app/state';
 	import { appBusy } from '$lib/appBusy.svelte.js';
+	import { clearColPrefs, loadColPrefs, saveColPrefs, visibleOf } from '$lib/colPrefs';
 	import { INBOX_STATUS } from '$lib/config';
 	import type { ColSpec, FilterField, FooterMeta, MessageItem, ResellerResponse } from '$lib/types';
 	import { buildQuery, initFilterFromUrl, initStack, navigate } from '$lib/utils';
-	import { SlidersHorizontal } from '@lucide/svelte';
+	import { Columns3, SlidersHorizontal } from '@lucide/svelte';
 	import { untrack } from 'svelte';
+	import ColumnPanel from './ColumnPanel.svelte';
 	import MessageFilters from './MessageFilters.svelte';
 	import MessageTable from './MessageTable.svelte';
 
@@ -52,6 +54,58 @@
 	let query = $state<Record<string, string>>({});
 	let pageSize = $state(page.url.searchParams.get('pageSize') ?? '');
 	let showFilter = $state(false);
+	let showColumns = $state(false);
+
+	const colKey = $derived(stackKey.replace('-cursor-stack', '-cols'));
+
+	let colPrefs = $state<ReturnType<typeof loadColPrefs>>(untrack(() => loadColPrefs(colKey, cols)));
+	let columnsRef = $state<HTMLElement | null>(null);
+
+	const orderedCols = $derived(
+		colPrefs.order.map((k) => cols.find((c) => c.key === k)).filter((c): c is ColSpec => !!c)
+	);
+	const visibleCols = $derived(visibleOf(orderedCols, colPrefs.hidden));
+
+	$effect(() => {
+		if (typeof window === 'undefined' || !showColumns) return;
+		const onPointer = (e: PointerEvent) => {
+			const target = e.target as Node;
+			if (columnsRef && !columnsRef.contains(target)) showColumns = false;
+		};
+		const onKey = (e: KeyboardEvent) => {
+			if (e.key === 'Escape') showColumns = false;
+		};
+		window.addEventListener('pointerdown', onPointer);
+		window.addEventListener('keydown', onKey);
+		return () => {
+			window.removeEventListener('pointerdown', onPointer);
+			window.removeEventListener('keydown', onKey);
+		};
+	});
+
+	function setColPrefs(next: typeof colPrefs) {
+		colPrefs = next;
+		saveColPrefs(colKey, next);
+	}
+
+	function toggleCol(key: string) {
+		const isHidden = colPrefs.hidden.includes(key);
+		if (!isHidden && visibleCols.length <= 1) return;
+		setColPrefs({
+			...colPrefs,
+			hidden: isHidden ? colPrefs.hidden.filter((h) => h !== key) : [...colPrefs.hidden, key]
+		});
+	}
+
+	function reorderFromVisible(visibleKeys: string[]) {
+		const hiddenKeys = colPrefs.order.filter((k) => colPrefs.hidden.includes(k));
+		setColPrefs({ ...colPrefs, order: [...visibleKeys, ...hiddenKeys] });
+	}
+
+	function resetColumns() {
+		clearColPrefs(colKey);
+		colPrefs = loadColPrefs(colKey, cols);
+	}
 
 	let dataReady = $state(false);
 
@@ -160,6 +214,30 @@
 			<p class="mt-0.5 text-[13px] text-(--c-fg-muted)">{subtitle}</p>
 		</div>
 		<div class="flex flex-wrap items-center gap-3">
+			<div class="relative" bind:this={columnsRef}>
+				<button
+					onclick={() => {
+						if (!dataReady) return;
+						showColumns = !showColumns;
+					}}
+					class="flex items-center gap-2 rounded-lg border border-(--c-border) bg-(--c-surface) px-3 py-1.5 text-xs font-medium text-(--c-fg-muted) transition-colors hover:border-(--c-accent) hover:text-(--c-accent)"
+				>
+					<Columns3 class="h-3.5 w-3.5" />
+					Kolom
+				</button>
+				{#if showColumns}
+					<ColumnPanel
+						cols={orderedCols}
+						order={colPrefs.order}
+						hidden={colPrefs.hidden}
+						onReorder={(keys) => {
+							setColPrefs({ ...colPrefs, order: keys });
+						}}
+						onToggle={toggleCol}
+						onReset={resetColumns}
+					/>
+				{/if}
+			</div>
 			<button
 				onclick={() => (showFilter = !showFilter)}
 				class="flex items-center gap-2 rounded-lg border border-(--c-border) bg-(--c-surface) px-3 py-1.5 text-xs font-medium text-(--c-fg-muted) transition-colors hover:border-(--c-accent) hover:text-(--c-accent)"
@@ -184,7 +262,7 @@
 
 	<MessageTable
 		{load}
-		{cols}
+		cols={visibleCols}
 		{skeletonRows}
 		{skeletonWidths}
 		{pageSize}
@@ -192,6 +270,7 @@
 		onPageSizeChange={changePageSize}
 		onGoNext={goNext}
 		onGoPrev={goPrev}
+		onReorderColumns={reorderFromVisible}
 		reloadPath={path}
 	/>
 </main>

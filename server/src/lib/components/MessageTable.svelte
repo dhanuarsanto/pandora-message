@@ -1,9 +1,11 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
+	import { reorderKeys } from '$lib/colPrefs';
 	import type { ColSpec, FooterMeta, MessageItem } from '$lib/types';
 	import { cellClass, cellText, formatDate, is401, statusClasses } from '$lib/utils';
 	import { ChevronLeft, ChevronRight } from '@lucide/svelte';
+	import CellPopover from './CellPopover.svelte';
 
 	let {
 		load,
@@ -15,6 +17,7 @@
 		onPageSizeChange,
 		onGoNext,
 		onGoPrev,
+		onReorderColumns,
 		reloadPath
 	}: {
 		load:
@@ -28,11 +31,102 @@
 		onPageSizeChange: (value: string) => void;
 		onGoNext: (meta: FooterMeta) => void;
 		onGoPrev: (meta: FooterMeta) => void;
+		onReorderColumns: (keys: string[]) => void;
 		reloadPath: '/inbox' | '/outbox';
 	} = $props();
 
 	let scrollable = $state(false);
 	let tableContainer: HTMLDivElement | null = $state(null);
+	let dragKey = $state<string | null>(null);
+	let dropInfo = $state<{ key: string; side: 'before' | 'after' } | null>(null);
+
+	function onHeaderDragStart(key: string, e: DragEvent) {
+		if (cols.length < 2) return;
+		dragKey = key;
+		dropInfo = null;
+		e.dataTransfer!.effectAllowed = 'move';
+	}
+
+	function onHeaderDragOver(key: string, e: DragEvent) {
+		if (!dragKey || dragKey === key) return;
+		e.preventDefault();
+		const el = e.currentTarget as HTMLTableCellElement;
+		const rect = el.getBoundingClientRect();
+		dropInfo = { key, side: e.clientX < rect.left + rect.width / 2 ? 'before' : 'after' };
+	}
+
+	function onHeaderDrop(e: DragEvent) {
+		e.preventDefault();
+		if (!dragKey || !dropInfo) {
+			onHeaderDragEnd();
+			return;
+		}
+		const visibleKeys = cols.map((c) => c.key);
+		onReorderColumns(reorderKeys(visibleKeys, dragKey, dropInfo.key, dropInfo.side));
+		onHeaderDragEnd();
+	}
+
+	function onHeaderDragEnd() {
+		dragKey = null;
+		dropInfo = null;
+	}
+
+	type CellDetail = { key: string; label: string; value: string; x: number; y: number };
+
+	let cellDetail = $state<CellDetail | null>(null);
+	let returnFocus: HTMLElement | null = null;
+
+	function cellTitle(raw: string | number | undefined): string | undefined {
+		return raw === null || raw === undefined ? undefined : String(raw);
+	}
+
+	function openCellDetail(
+		c: ColSpec,
+		raw: string | number | undefined,
+		e: MouseEvent | KeyboardEvent
+	) {
+		if (!c.trunc) return;
+		returnFocus = e.currentTarget as HTMLElement;
+		const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
+		const popH = Math.min(window.innerHeight * 0.4, 320);
+		const x = Math.min(Math.max(12, r.left), window.innerWidth - 404);
+		const y =
+			r.bottom + 6 + popH > window.innerHeight ? Math.max(12, r.top - popH - 6) : r.bottom + 6;
+		cellDetail = {
+			key: c.key,
+			label: c.label,
+			value: raw === null || raw === undefined ? '-' : String(raw),
+			x,
+			y
+		};
+	}
+
+	function closeCellDetail() {
+		const el = returnFocus;
+		cellDetail = null;
+		returnFocus = null;
+		if (el) requestAnimationFrame(() => el.focus());
+	}
+
+	$effect(() => {
+		if (!cellDetail) return;
+		const onPointer = (e: PointerEvent) => {
+			const t = e.target;
+			if (!(t instanceof HTMLElement) || !t.closest('[data-cell-popover]')) closeCellDetail();
+		};
+		const onKey = (e: KeyboardEvent) => {
+			if (e.key === 'Escape') closeCellDetail();
+		};
+		const cont = tableContainer;
+		window.addEventListener('pointerdown', onPointer);
+		window.addEventListener('keydown', onKey);
+		cont?.addEventListener('scroll', closeCellDetail, { capture: true });
+		return () => {
+			window.removeEventListener('pointerdown', onPointer);
+			window.removeEventListener('keydown', onKey);
+			cont?.removeEventListener('scroll', closeCellDetail, { capture: true });
+		};
+	});
 
 	$effect(() => {
 		if (typeof window === 'undefined' || !tableContainer) return;
@@ -97,8 +191,18 @@
 					<tr>
 						{#each cols as c (c.key)}
 							<th
-								class="border-b border-(--c-border) bg-(--c-table-head) px-3.5 py-2.5 text-left text-[11px] font-semibold tracking-widest whitespace-nowrap text-(--c-fg-soft) uppercase select-none"
-								>{c.label}</th
+								class="sticky top-0 z-2 border-b border-(--c-border) bg-(--c-table-head) px-3.5 py-2.5 text-left text-[11px] font-semibold tracking-widest whitespace-nowrap text-(--c-fg-soft) uppercase select-none {c.key ===
+									dropInfo?.key && dropInfo.side === 'before'
+									? 'shadow-[-3px_0_0_0_var(--c-accent)] '
+									: ''}{c.key === dropInfo?.key && dropInfo.side === 'after'
+									? 'shadow-[3px_0_0_0_var(--c-accent)] '
+									: ''}"
+								draggable={cols.length > 1}
+								title={cols.length > 1 ? 'Seret untuk memindahkan kolom' : undefined}
+								ondragstart={(e) => onHeaderDragStart(c.key, e)}
+								ondragover={(e) => onHeaderDragOver(c.key, e)}
+								ondrop={(e) => onHeaderDrop(e)}
+								ondragend={() => onHeaderDragEnd()}>{c.label}</th
 							>
 						{/each}
 					</tr>
@@ -108,9 +212,12 @@
 						<tr
 							class="animate-pulse border-b border-(--c-border) {r % 2 ? 'bg-(--c-surface-2)' : ''}"
 						>
-							{#each skeletonWidths as w, ci (ci)}
+							{#each cols, ci (ci)}
 								<td class="border-b border-(--c-border) px-3.5 py-3">
-									<div class="h-3.5 rounded bg-(--c-surface-2)" style="width: {w}px"></div>
+									<div
+										class="h-3.5 rounded bg-(--c-surface-2)"
+										style="width: {skeletonWidths[ci % skeletonWidths.length]}px"
+									></div>
 								</td>
 							{/each}
 						</tr>
@@ -135,8 +242,18 @@
 					<tr>
 						{#each cols as c (c.key)}
 							<th
-								class="border-b border-(--c-border) bg-(--c-table-head) px-3.5 py-2.5 text-left text-[11px] font-semibold tracking-widest whitespace-nowrap text-(--c-fg-soft) uppercase select-none"
-								>{c.label}</th
+								class="sticky top-0 z-2 border-b border-(--c-border) bg-(--c-table-head) px-3.5 py-2.5 text-left text-[11px] font-semibold tracking-widest whitespace-nowrap text-(--c-fg-soft) uppercase select-none {c.key ===
+									dropInfo?.key && dropInfo.side === 'before'
+									? 'shadow-[-3px_0_0_0_var(--c-accent)] '
+									: ''}{c.key === dropInfo?.key && dropInfo.side === 'after'
+									? 'shadow-[3px_0_0_0_var(--c-accent)] '
+									: ''}"
+								draggable={cols.length > 1}
+								title={cols.length > 1 ? 'Seret untuk memindahkan kolom' : undefined}
+								ondragstart={(e) => onHeaderDragStart(c.key, e)}
+								ondragover={(e) => onHeaderDragOver(c.key, e)}
+								ondrop={(e) => onHeaderDrop(e)}
+								ondragend={() => onHeaderDragEnd()}>{c.label}</th
 							>
 						{/each}
 					</tr>
@@ -152,7 +269,7 @@
 									<td class="border-b border-(--c-border) px-3.5 py-3">
 										<span
 											class="inline-block rounded bg-(--c-surface-2) px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap text-(--c-fg-muted)"
-											>{cellText(raw, c)}</span
+											>{cellText(raw)}</span
 										>
 									</td>
 								{:else if c.status}
@@ -160,15 +277,29 @@
 										<span
 											class="inline-block rounded-full px-2.5 py-0.5 text-[11px] font-semibold whitespace-nowrap {statusClasses(
 												raw
-											)}">{cellText(raw, c)}</span
+											)}">{cellText(raw)}</span
 										>
 									</td>
+								{:else if c.trunc}
+									<td
+										class={cellClass(c) + ' cursor-pointer'}
+										style={c.maxWidth ? `max-width: ${c.maxWidth}px` : undefined}
+										title={cellTitle(raw)}
+										tabindex="0"
+										onclick={(e) => openCellDetail(c, raw, e)}
+										onkeydown={(e) => {
+											if (e.key === 'Enter' || e.key === ' ') {
+												e.preventDefault();
+												openCellDetail(c, raw, e);
+											}
+										}}>{c.date ? formatDate(raw) : cellText(raw)}</td
+									>
 								{:else}
 									<td
 										class={cellClass(c)}
 										style={c.maxWidth ? `max-width: ${c.maxWidth}px` : undefined}
-										title={c.trunc ? String(raw) : undefined}
-										>{c.date ? formatDate(raw) : cellText(raw, c)}</td
+										title={c.trunc ? cellTitle(raw) : undefined}
+										>{c.date ? formatDate(raw) : cellText(raw)}</td
 									>
 								{/if}
 							{/each}
@@ -223,3 +354,12 @@
 		</div>
 	</div>
 {/await}
+
+{#if cellDetail}
+	<CellPopover
+		value={cellDetail.value}
+		label={cellDetail.label}
+		x={cellDetail.x}
+		y={cellDetail.y}
+	/>
+{/if}
