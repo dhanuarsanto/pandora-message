@@ -14,6 +14,11 @@
 	} = $props();
 
 	let copied = $state(false);
+	let dialog = $state<HTMLDivElement | null>(null);
+
+	$effect(() => {
+		dialog?.focus();
+	});
 
 	async function copy() {
 		try {
@@ -28,6 +33,7 @@
 
 <div
 	data-cell-popover
+	bind:this={dialog}
 	role="dialog"
 	aria-label={label}
 	tabindex="-1"

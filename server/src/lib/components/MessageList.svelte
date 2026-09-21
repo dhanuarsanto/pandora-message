@@ -60,6 +60,7 @@
 
 	let colPrefs = $state<ReturnType<typeof loadColPrefs>>(untrack(() => loadColPrefs(colKey, cols)));
 	let columnsRef = $state<HTMLElement | null>(null);
+	let columnsBtn = $state<HTMLButtonElement | null>(null);
 
 	const orderedCols = $derived(
 		colPrefs.order.map((k) => cols.find((c) => c.key === k)).filter((c): c is ColSpec => !!c)
@@ -80,6 +81,7 @@
 		return () => {
 			window.removeEventListener('pointerdown', onPointer);
 			window.removeEventListener('keydown', onKey);
+			columnsBtn?.focus();
 		};
 	});
 
@@ -216,6 +218,7 @@
 		<div class="flex flex-wrap items-center gap-3">
 			<div class="relative" bind:this={columnsRef}>
 				<button
+					bind:this={columnsBtn}
 					onclick={() => {
 						if (!dataReady) return;
 						showColumns = !showColumns;

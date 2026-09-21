@@ -36,17 +36,12 @@ export function is401(err: unknown): boolean {
 
 const BULAN = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
 
-function pad2(n: number): string {
-	return String(n).padStart(2, '0');
-}
-
 export function formatDate(raw: string | number | undefined): string {
-	if (raw === null || raw === undefined) return '-';
-	const d = new Date(raw);
-	if (Number.isNaN(d.getTime())) return String(raw);
-	return `${pad2(d.getDate())} ${BULAN[d.getMonth()]} ${d.getFullYear()} ${pad2(d.getHours())}:${pad2(
-		d.getMinutes()
-	)}`;
+	if (raw === null || raw === undefined || raw === '') return '-';
+	const m = /^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})(?::(\d{2}))?/.exec(String(raw));
+	if (!m) return String(raw);
+	const detik = m[6] ? ':' + m[6] : '';
+	return `${m[3]} ${BULAN[+m[2] - 1]} ${m[1]} ${m[4]}:${m[5]}${detik}`;
 }
 
 export function statusClasses(raw: string | number | undefined): string {

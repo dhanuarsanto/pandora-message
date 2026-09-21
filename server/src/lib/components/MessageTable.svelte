@@ -71,6 +71,28 @@
 		dropInfo = null;
 	}
 
+	function moveColumn(key: string, dir: -1 | 1) {
+		const keys = cols.map((c) => c.key);
+		const i = keys.indexOf(key);
+		const j = i + dir;
+		if (i < 0 || j < 0 || j >= keys.length) return;
+		const arr = keys.slice();
+		arr.splice(i, 1);
+		arr.splice(j, 0, key);
+		onReorderColumns(arr);
+	}
+
+	function onHeaderKeydown(key: string, e: KeyboardEvent) {
+		if (!e.altKey) return;
+		if (e.key === 'ArrowLeft') {
+			e.preventDefault();
+			moveColumn(key, -1);
+		} else if (e.key === 'ArrowRight') {
+			e.preventDefault();
+			moveColumn(key, 1);
+		}
+	}
+
 	type CellDetail = { key: string; label: string; value: string; x: number; y: number };
 
 	let cellDetail = $state<CellDetail | null>(null);
@@ -191,6 +213,7 @@
 					<tr>
 						{#each cols as c (c.key)}
 							<th
+								scope="col"
 								class="sticky top-0 z-2 border-b border-(--c-border) bg-(--c-table-head) px-3.5 py-2.5 text-left text-[11px] font-semibold tracking-widest whitespace-nowrap text-(--c-fg-soft) uppercase select-none {c.key ===
 									dropInfo?.key && dropInfo.side === 'before'
 									? 'shadow-[-3px_0_0_0_var(--c-accent)] '
@@ -198,11 +221,13 @@
 									? 'shadow-[3px_0_0_0_var(--c-accent)] '
 									: ''}"
 								draggable={cols.length > 1}
-								title={cols.length > 1 ? 'Seret untuk memindahkan kolom' : undefined}
+								tabindex={cols.length > 1 ? 0 : undefined}
+								title={cols.length > 1 ? 'Seret, atau Alt+←/→ untuk memindahkan kolom' : undefined}
 								ondragstart={(e) => onHeaderDragStart(c.key, e)}
 								ondragover={(e) => onHeaderDragOver(c.key, e)}
 								ondrop={(e) => onHeaderDrop(e)}
-								ondragend={() => onHeaderDragEnd()}>{c.label}</th
+								ondragend={() => onHeaderDragEnd()}
+								onkeydown={(e) => onHeaderKeydown(c.key, e)}>{c.label}</th
 							>
 						{/each}
 					</tr>
@@ -242,6 +267,7 @@
 					<tr>
 						{#each cols as c (c.key)}
 							<th
+								scope="col"
 								class="sticky top-0 z-2 border-b border-(--c-border) bg-(--c-table-head) px-3.5 py-2.5 text-left text-[11px] font-semibold tracking-widest whitespace-nowrap text-(--c-fg-soft) uppercase select-none {c.key ===
 									dropInfo?.key && dropInfo.side === 'before'
 									? 'shadow-[-3px_0_0_0_var(--c-accent)] '
@@ -249,11 +275,13 @@
 									? 'shadow-[3px_0_0_0_var(--c-accent)] '
 									: ''}"
 								draggable={cols.length > 1}
-								title={cols.length > 1 ? 'Seret untuk memindahkan kolom' : undefined}
+								tabindex={cols.length > 1 ? 0 : undefined}
+								title={cols.length > 1 ? 'Seret, atau Alt+←/→ untuk memindahkan kolom' : undefined}
 								ondragstart={(e) => onHeaderDragStart(c.key, e)}
 								ondragover={(e) => onHeaderDragOver(c.key, e)}
 								ondrop={(e) => onHeaderDrop(e)}
-								ondragend={() => onHeaderDragEnd()}>{c.label}</th
+								ondragend={() => onHeaderDragEnd()}
+								onkeydown={(e) => onHeaderKeydown(c.key, e)}>{c.label}</th
 							>
 						{/each}
 					</tr>

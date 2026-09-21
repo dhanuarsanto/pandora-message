@@ -21,10 +21,17 @@
 	} = $props();
 </script>
 
-<div class="mb-5 rounded-xl border border-(--c-border) bg-(--c-surface) p-5">
+<form
+	class="mb-5 rounded-xl border border-(--c-border) bg-(--c-surface) p-5"
+	onsubmit={(e) => {
+		e.preventDefault();
+		onApply();
+	}}
+>
 	<div class="mb-3 flex items-center justify-between">
 		<h3 class="text-[13px] font-semibold text-(--c-fg)">Filter</h3>
 		<button
+			type="button"
 			onclick={onReset}
 			disabled={controlsDisabled}
 			class="text-[12px] font-medium text-(--c-danger) hover:underline disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:no-underline"
@@ -144,11 +151,11 @@
 			</div>
 		{/if}
 		<button
-			onclick={onApply}
+			type="submit"
 			disabled={controlsDisabled}
 			class="rounded-lg bg-(--c-accent) px-5 py-2 text-[13px] font-semibold text-white transition-colors hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
 		>
 			Terapkan Filter
 		</button>
 	</div>
-</div>
+</form>

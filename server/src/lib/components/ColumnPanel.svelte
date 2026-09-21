@@ -21,6 +21,16 @@
 	const visibleCount = $derived(order.filter((k) => !hidden.includes(k)).length);
 	let dragIdx = $state<number | null>(null);
 	let overIdx = $state<number | null>(null);
+	let activeIndex = $state(0);
+	let items = $state<(HTMLElement | null)[]>([]);
+
+	$effect(() => {
+		items[activeIndex]?.focus();
+	});
+
+	function setActive(i: number) {
+		activeIndex = Math.max(0, Math.min(order.length - 1, i));
+	}
 
 	function move(from: number, to: number) {
 		if (to < 0 || to >= order.length || from === to) return;
@@ -46,7 +56,13 @@
 		} else if (e.altKey && e.key === 'ArrowDown') {
 			e.preventDefault();
 			move(i, i + 1);
-		} else if (e.key === ' ') {
+		} else if (e.key === 'ArrowUp') {
+			e.preventDefault();
+			setActive(i - 1);
+		} else if (e.key === 'ArrowDown') {
+			e.preventDefault();
+			setActive(i + 1);
+		} else if (e.key === ' ' || e.key === 'Enter') {
 			e.preventDefault();
 			onToggle(key);
 		}
@@ -69,12 +85,18 @@
 		</button>
 	</div>
 
-	<div class="max-h-[min(60vh,22rem)] overflow-auto pr-0.5">
+	<div
+		class="max-h-[min(60vh,22rem)] overflow-auto pr-0.5"
+		role="menu"
+		aria-orientation="vertical"
+		aria-label="Pengaturan kolom"
+	>
 		{#each order as key, i (key)}
 			{@const col = cols.find((c) => c.key === key)}
 			{@const isHidden = hidden.includes(key)}
 			{@const isLastVisible = !isHidden && visibleCount <= 1}
 			<div
+				bind:this={items[i]}
 				class="flex items-center gap-1 rounded-lg px-1.5 py-1 transition-colors hover:bg-(--c-surface-2) {overIdx ===
 				i
 					? 'outline-2 -outline-offset-2 outline-(--c-accent) outline-solid'
@@ -82,7 +104,7 @@
 				class:opacity-50={isHidden}
 				role="menuitemcheckbox"
 				aria-checked={!isHidden}
-				tabindex="0"
+				tabindex={i === activeIndex ? 0 : -1}
 				aria-grabbed={dragIdx === i}
 				draggable={true}
 				aria-label={`Kolom ${col?.label ?? key}`}

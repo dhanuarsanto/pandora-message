@@ -27,6 +27,22 @@
 		if (pathname) menuOpen = false;
 	});
 
+	let menuBtn = $state<HTMLButtonElement | null>(null);
+	let menuPanel = $state<HTMLElement | null>(null);
+
+	$effect(() => {
+		if (typeof window === 'undefined' || !menuOpen) return;
+		menuPanel?.querySelector<HTMLElement>('a, button')?.focus();
+		const onKey = (e: KeyboardEvent) => {
+			if (e.key === 'Escape') {
+				menuOpen = false;
+				menuBtn?.focus();
+			}
+		};
+		window.addEventListener('keydown', onKey);
+		return () => window.removeEventListener('keydown', onKey);
+	});
+
 	function toggleTheme() {
 		theme.toggle();
 	}
@@ -196,6 +212,7 @@
 					{/if}
 				</button>
 				<button
+					bind:this={menuBtn}
 					onclick={() => (menuOpen = !menuOpen)}
 					class="flex h-9 w-9 items-center justify-center rounded-[10px] text-(--c-fg-muted) transition-colors hover:bg-(--c-surface-3) hover:text-(--c-fg) disabled:cursor-not-allowed disabled:opacity-60"
 					aria-label="Menu"
@@ -212,7 +229,7 @@
 
 		<!-- Mobile dropdown menu -->
 		{#if menuOpen}
-			<div class="border-t border-(--c-border) bg-(--c-surface) md:hidden">
+			<div bind:this={menuPanel} class="border-t border-(--c-border) bg-(--c-surface) md:hidden">
 				<div class="flex flex-col gap-1 px-4 py-3">
 					<div class="mb-2 flex items-center gap-3">
 						<div
