@@ -9,14 +9,20 @@ export function secureCookie(): boolean {
 	return import.meta.env.PROD && process.env.COOKIE_SECURE !== 'false';
 }
 
-export function setToken(event: RequestEvent, token: string): void {
-	event.cookies.set(COOKIE_TOKEN, token, {
+export function setSessionCookies(
+	event: RequestEvent,
+	session: { token: string; username: string; rules: string }
+): void {
+	const opts = {
 		path: '/',
 		maxAge: SESSION_TTL_SEC,
 		httpOnly: true,
 		secure: secureCookie(),
-		sameSite: 'strict'
-	});
+		sameSite: 'strict' as const
+	};
+	event.cookies.set(COOKIE_TOKEN, session.token, opts);
+	event.cookies.set(COOKIE_USERNAME, session.username, opts);
+	event.cookies.set(COOKIE_RULES, session.rules, opts);
 }
 
 export function getToken(cookies: RequestEvent['cookies']): string | null {

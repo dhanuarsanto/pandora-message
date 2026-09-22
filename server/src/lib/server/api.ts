@@ -34,8 +34,6 @@ export async function apiRequest<T>(path: string, options: RequestInit = {}): Pr
 		});
 
 		if (!res.ok) {
-			const text = await res.text().catch(() => '');
-			console.error(`[api] ${res.status} ${path}: ${text.slice(0, 300)}`);
 			throw new ApiError(res.status, 'Permintaan gagal');
 		}
 

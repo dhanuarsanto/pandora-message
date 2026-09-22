@@ -1,18 +1,10 @@
 <script lang="ts">
-	import { afterNavigate, goto } from '$app/navigation';
-	import { resolve } from '$app/paths';
+	import { afterNavigate } from '$app/navigation';
 	import { navigating, page } from '$app/state';
 	import { appBusy } from '$lib/appBusy.svelte.js';
 	import { clearColPrefs, loadColPrefs, saveColPrefs, visibleOf } from '$lib/colPrefs';
 	import { INBOX_STATUS, OUTBOX_STATUS } from '$lib/config';
-	import type {
-		ColSpec,
-		FilterField,
-		FooterMeta,
-		MessageItem,
-		ResellerResponse,
-		UnauthorizedFlag
-	} from '$lib/types';
+	import type { ColSpec, FilterField, FooterMeta, MessageItem, ResellerResponse } from '$lib/types';
 	import { buildQuery, initFilterFromUrl, initStack, navigate } from '$lib/utils';
 	import { Columns3, SlidersHorizontal } from '@lucide/svelte';
 	import { untrack } from 'svelte';
@@ -27,8 +19,6 @@
 		};
 	};
 
-	type LoadResult = MessagePage | UnauthorizedFlag;
-
 	let {
 		load,
 		resellers,
@@ -39,8 +29,8 @@
 		filters,
 		stackKey
 	}: {
-		load: LoadResult | Promise<LoadResult>;
-		resellers: Promise<ResellerResponse | null | UnauthorizedFlag>;
+		load: MessagePage | Promise<MessagePage>;
+		resellers: ResellerResponse | null | Promise<ResellerResponse | null>;
 		path: '/inbox' | '/outbox';
 		title: string;
 		subtitle: string;
@@ -127,31 +117,6 @@
 			() => (dataReady = true)
 		);
 	});
-
-	let authHandled = $state(false);
-
-	function forceLogout() {
-		if (authHandled) return;
-		authHandled = true;
-		fetch('/api/auth/logout', { method: 'POST' }).finally(() => {
-			goto(resolve('/login'));
-		});
-	}
-
-	const isUnauthorized = (r: unknown): r is UnauthorizedFlag =>
-		typeof r === 'object' && r !== null && '__unauthorized' in r;
-
-	$effect(() => {
-		Promise.resolve(load).then((r) => {
-			if (isUnauthorized(r)) forceLogout();
-		});
-	});
-
-	const safeLoad = $derived(
-		Promise.resolve(load).then((r) =>
-			isUnauthorized(r) ? new Promise<never>(() => {}) : (r as MessagePage)
-		)
-	);
 
 	$effect(() => {
 		appBusy.value = !dataReady;
@@ -297,7 +262,7 @@
 	{/if}
 
 	<MessageTable
-		load={safeLoad}
+		{load}
 		cols={visibleCols}
 		{skeletonRows}
 		{pageSize}

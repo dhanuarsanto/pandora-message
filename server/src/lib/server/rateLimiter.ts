@@ -34,7 +34,7 @@ export function resetAttempts(ip: string): void {
 	attempts.delete(ip);
 }
 
-setInterval(() => {
+const sweep = setInterval(() => {
 	const now = Date.now();
 	for (const [ip, entry] of attempts) {
 		if (now > entry.resetAt) {
@@ -42,3 +42,4 @@ setInterval(() => {
 		}
 	}
 }, WINDOW_MS);
+sweep.unref();
