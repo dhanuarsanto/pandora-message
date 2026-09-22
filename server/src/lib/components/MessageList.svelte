@@ -3,7 +3,7 @@
 	import { navigating, page } from '$app/state';
 	import { appBusy } from '$lib/appBusy.svelte.js';
 	import { clearColPrefs, loadColPrefs, saveColPrefs, visibleOf } from '$lib/colPrefs';
-	import { INBOX_STATUS } from '$lib/config';
+	import { INBOX_STATUS, OUTBOX_STATUS } from '$lib/config';
 	import type { ColSpec, FilterField, FooterMeta, MessageItem, ResellerResponse } from '$lib/types';
 	import { buildQuery, initFilterFromUrl, initStack, navigate } from '$lib/utils';
 	import { Columns3, SlidersHorizontal } from '@lucide/svelte';
@@ -27,7 +27,6 @@
 		subtitle,
 		cols,
 		filters,
-		skeletonWidths,
 		stackKey
 	}: {
 		load: MessagePage | Promise<MessagePage>;
@@ -37,7 +36,6 @@
 		subtitle: string;
 		cols: ColSpec[];
 		filters: FilterField[];
-		skeletonWidths: number[];
 		stackKey: string;
 	} = $props();
 
@@ -166,10 +164,12 @@
 		}
 	});
 
-	const statusOptions = Object.entries(INBOX_STATUS);
+	const statusOptions = $derived(Object.entries(path === '/outbox' ? OUTBOX_STATUS : INBOX_STATUS));
 	const limitN = $derived(Number(query['limit']));
 	const pageSizeN = $derived(Number(pageSize));
-	const skeletonCount = $derived(Math.min(limitN || pageSizeN || 10, pageSizeN || limitN || 10));
+	const skeletonCount = $derived(
+		Math.min(limitN || pageSizeN || 10, pageSizeN || limitN || 10, 15)
+	);
 	const skeletonRows = $derived(Array.from({ length: skeletonCount }, (_, i) => i));
 
 	function goNext(meta: FooterMeta) {
@@ -215,32 +215,30 @@
 			<h1 class="text-2xl font-bold tracking-tight">{title}</h1>
 			<p class="mt-0.5 text-[13px] text-(--c-fg-muted)">{subtitle}</p>
 		</div>
-		<div class="flex flex-wrap items-center gap-3">
-			<div class="relative" bind:this={columnsRef}>
-				<button
-					bind:this={columnsBtn}
-					onclick={() => {
-						if (!dataReady) return;
-						showColumns = !showColumns;
+		<div class="relative flex flex-wrap items-center gap-3" bind:this={columnsRef}>
+			<button
+				bind:this={columnsBtn}
+				onclick={() => {
+					if (!dataReady) return;
+					showColumns = !showColumns;
+				}}
+				class="flex items-center gap-2 rounded-lg border border-(--c-border) bg-(--c-surface) px-3 py-1.5 text-xs font-medium text-(--c-fg-muted) transition-colors hover:border-(--c-accent) hover:text-(--c-accent)"
+			>
+				<Columns3 class="h-3.5 w-3.5" />
+				Kolom
+			</button>
+			{#if showColumns}
+				<ColumnPanel
+					cols={orderedCols}
+					order={colPrefs.order}
+					hidden={colPrefs.hidden}
+					onReorder={(keys) => {
+						setColPrefs({ ...colPrefs, order: keys });
 					}}
-					class="flex items-center gap-2 rounded-lg border border-(--c-border) bg-(--c-surface) px-3 py-1.5 text-xs font-medium text-(--c-fg-muted) transition-colors hover:border-(--c-accent) hover:text-(--c-accent)"
-				>
-					<Columns3 class="h-3.5 w-3.5" />
-					Kolom
-				</button>
-				{#if showColumns}
-					<ColumnPanel
-						cols={orderedCols}
-						order={colPrefs.order}
-						hidden={colPrefs.hidden}
-						onReorder={(keys) => {
-							setColPrefs({ ...colPrefs, order: keys });
-						}}
-						onToggle={toggleCol}
-						onReset={resetColumns}
-					/>
-				{/if}
-			</div>
+					onToggle={toggleCol}
+					onReset={resetColumns}
+				/>
+			{/if}
 			<button
 				onclick={() => (showFilter = !showFilter)}
 				class="flex items-center gap-2 rounded-lg border border-(--c-border) bg-(--c-surface) px-3 py-1.5 text-xs font-medium text-(--c-fg-muted) transition-colors hover:border-(--c-accent) hover:text-(--c-accent)"
@@ -267,7 +265,6 @@
 		{load}
 		cols={visibleCols}
 		{skeletonRows}
-		{skeletonWidths}
 		{pageSize}
 		{busy}
 		onPageSizeChange={changePageSize}

@@ -6,22 +6,22 @@
 	let { data } = $props();
 
 	const COLS: ColSpec[] = [
-		{ key: 'kode', label: 'Kode', mono: true, strong: true, trunc: true, maxWidth: 200 },
+		{ key: 'kode', label: 'Kode', mono: true, strong: true, trunc: true },
 		{ key: 'tgl_entri', label: 'Tgl Entri', muted: true, date: true },
-		{ key: 'penerima', label: 'Penerima', strong: true, trunc: true, maxWidth: 220 },
+		{ key: 'penerima', label: 'Penerima', strong: true, width: 200 },
 		{ key: 'tipe_penerima', label: 'Tipe Penerima', badge: true },
-		{ key: 'pesan', label: 'Pesan', muted: true, trunc: true, maxWidth: 260 },
+		{ key: 'pesan', label: 'Pesan', muted: true, width: 320 },
 		{ key: 'status', label: 'Status', status: true },
 		{ key: 'tgl_status', label: 'Tgl Status', muted: true, date: true },
 		{ key: 'kode_inbox', label: 'Kode Inbox', mono: true },
-		{ key: 'kode_transaksi', label: 'Kode Transaksi', mono: true, trunc: true, maxWidth: 150 },
-		{ key: 'kode_reseller', label: 'Kode Reseller', mono: true, trunc: true, maxWidth: 150 },
+		{ key: 'kode_transaksi', label: 'Kode Transaksi', mono: true, trunc: true },
+		{ key: 'kode_reseller', label: 'Kode Reseller', mono: true, trunc: true },
 		{ key: 'bebas_biaya', label: 'Bebas Biaya' },
 		{ key: 'is_perintah', label: 'Perintah' },
 		{ key: 'kode_modul', label: 'Kode Modul', mono: true },
 		{ key: 'prioritas', label: 'Prioritas' },
-		{ key: 'modul_proses', label: 'Modul Proses', trunc: true, maxWidth: 160 },
-		{ key: 'pengirim', label: 'Pengirim', strong: true, trunc: true, maxWidth: 140 },
+		{ key: 'modul_proses', label: 'Modul Proses', trunc: true },
+		{ key: 'pengirim', label: 'Pengirim', strong: true, trunc: true },
 		{ key: 'kode_terminal', label: 'Kode Terminal', mono: true },
 		{ key: 'ctr_kirim', label: 'Ctr Kirim' }
 	];
@@ -38,8 +38,6 @@
 		{ type: 'checkbox', param: 'replyToReseller', label: 'Reply ke Reseller' },
 		{ type: 'checkbox', param: 'perintahProvider', label: 'Perintah Provider' }
 	];
-
-	const SKELETON = [48, 84, 140, 52, 180, 84, 84, 140, 84, 80, 64, 64, 80, 64, 120, 140, 80, 64];
 </script>
 
 <svelte:head><title>Outbox — {APP_NAME}</title></svelte:head>
@@ -52,6 +50,5 @@
 	subtitle="Pesan terkirim dari sistem."
 	cols={COLS}
 	filters={FILTERS}
-	skeletonWidths={SKELETON}
 	stackKey="pandora-outbox-cursor-stack"
 />

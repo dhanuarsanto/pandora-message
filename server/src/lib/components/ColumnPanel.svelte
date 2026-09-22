@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { ColSpec } from '$lib/types';
+	import { cn } from '$lib/utils';
 	import { GripVertical, RotateCcw } from '@lucide/svelte';
 
 	let {
@@ -52,10 +53,16 @@
 	function onKeydown(key: string, i: number, e: KeyboardEvent) {
 		if (e.altKey && e.key === 'ArrowUp') {
 			e.preventDefault();
-			move(i, i - 1);
+			if (i > 0) {
+				move(i, i - 1);
+				setActive(i - 1);
+			}
 		} else if (e.altKey && e.key === 'ArrowDown') {
 			e.preventDefault();
-			move(i, i + 1);
+			if (i < order.length - 1) {
+				move(i, i + 1);
+				setActive(i + 1);
+			}
 		} else if (e.key === 'ArrowUp') {
 			e.preventDefault();
 			setActive(i - 1);
@@ -70,7 +77,7 @@
 </script>
 
 <div
-	class="absolute top-full right-0 z-40 mt-2 w-80 rounded-xl border border-(--c-border) bg-(--c-surface) p-2 shadow-[0_16px_48px_-12px_rgba(20,32,26,0.28)]"
+	class="absolute inset-x-3 top-full z-40 mt-2 rounded-xl border border-(--c-border) bg-(--c-surface) p-2 shadow-[0_16px_48px_-12px_rgba(20,32,26,0.28)] sm:inset-x-auto sm:right-0 sm:w-80"
 >
 	<div class="mb-1.5 flex items-center justify-between px-1.5">
 		<span class="text-[11px] font-semibold tracking-[0.14em] text-(--c-fg-soft) uppercase"
@@ -97,11 +104,11 @@
 			{@const isLastVisible = !isHidden && visibleCount <= 1}
 			<div
 				bind:this={items[i]}
-				class="flex items-center gap-1 rounded-lg px-1.5 py-1 transition-colors hover:bg-(--c-surface-2) {overIdx ===
-				i
-					? 'outline-2 -outline-offset-2 outline-(--c-accent) outline-solid'
-					: ''}"
-				class:opacity-50={isHidden}
+				class={cn(
+					'flex items-center gap-1 rounded-lg px-1.5 py-1 transition-colors hover:bg-(--c-surface-2)',
+					overIdx === i && 'outline-2 -outline-offset-2 outline-(--c-accent) outline-solid',
+					isHidden && 'opacity-50'
+				)}
 				role="menuitemcheckbox"
 				aria-checked={!isHidden}
 				tabindex={i === activeIndex ? 0 : -1}
@@ -152,6 +159,6 @@
 	<p
 		class="mt-1.5 border-t border-(--c-border) px-1.5 pt-1.5 text-[10.5px] leading-relaxed text-(--c-fg-faint)"
 	>
-		Seret untuk urutkan • Centang untuk tampilkan • `Alt+↑/↓` untuk keyboard • minimal 1 kolom
+		Seret untuk urutkan • Centang untuk tampilkan
 	</p>
 </div>

@@ -3,7 +3,7 @@
 	import { resolve } from '$app/paths';
 	import { reorderKeys } from '$lib/colPrefs';
 	import type { ColSpec, FooterMeta, MessageItem } from '$lib/types';
-	import { cellClass, cellText, formatDate, is401, statusClasses } from '$lib/utils';
+	import { cellClass, cellText, cn, formatDate, is401, statusClasses } from '$lib/utils';
 	import { ChevronLeft, ChevronRight } from '@lucide/svelte';
 	import CellPopover from './CellPopover.svelte';
 
@@ -11,7 +11,6 @@
 		load,
 		cols,
 		skeletonRows,
-		skeletonWidths,
 		pageSize,
 		busy,
 		onPageSizeChange,
@@ -25,7 +24,6 @@
 			| Promise<{ data: { items: MessageItem[]; meta: FooterMeta } }>;
 		cols: ColSpec[];
 		skeletonRows: number[];
-		skeletonWidths: number[];
 		pageSize: string;
 		busy: boolean;
 		onPageSizeChange: (value: string) => void;
@@ -93,7 +91,16 @@
 		}
 	}
 
-	type CellDetail = { key: string; label: string; value: string; x: number; y: number };
+	function barPct(i: number): number {
+		return 60 + ((i * 37) % 35);
+	}
+
+	type CellDetail = {
+		key: string;
+		label: string;
+		value: string;
+		anchor: { left: number; top: number; bottom: number };
+	};
 
 	let cellDetail = $state<CellDetail | null>(null);
 	let returnFocus: HTMLElement | null = null;
@@ -110,16 +117,11 @@
 		if (!c.trunc) return;
 		returnFocus = e.currentTarget as HTMLElement;
 		const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
-		const popH = Math.min(window.innerHeight * 0.4, 320);
-		const x = Math.min(Math.max(12, r.left), window.innerWidth - 404);
-		const y =
-			r.bottom + 6 + popH > window.innerHeight ? Math.max(12, r.top - popH - 6) : r.bottom + 6;
 		cellDetail = {
 			key: c.key,
 			label: c.label,
 			value: raw === null || raw === undefined ? '-' : String(raw),
-			x,
-			y
+			anchor: { left: r.left, top: r.top, bottom: r.bottom }
 		};
 	}
 
@@ -163,6 +165,35 @@
 		return () => ro.disconnect();
 	});
 </script>
+
+{#snippet thead()}
+	<thead>
+		<tr>
+			{#each cols as c (c.key)}
+				<th
+					scope="col"
+					class={cn(
+						'sticky top-0 z-2 border-b border-(--c-border) bg-(--c-table-head) px-3.5 py-2.5 text-left text-[11px] font-semibold tracking-widest whitespace-nowrap text-(--c-fg-soft) uppercase select-none',
+						c.key === dropInfo?.key &&
+							dropInfo.side === 'before' &&
+							'shadow-[-3px_0_0_0_var(--c-accent)]',
+						c.key === dropInfo?.key &&
+							dropInfo.side === 'after' &&
+							'shadow-[3px_0_0_0_var(--c-accent)]'
+					)}
+					draggable={cols.length > 1}
+					tabindex={cols.length > 1 ? 0 : undefined}
+					title={cols.length > 1 ? 'Seret, atau Alt+←/→ untuk memindahkan kolom' : undefined}
+					ondragstart={(e) => onHeaderDragStart(c.key, e)}
+					ondragover={(e) => onHeaderDragOver(c.key, e)}
+					ondrop={(e) => onHeaderDrop(e)}
+					ondragend={() => onHeaderDragEnd()}
+					onkeydown={(e) => onHeaderKeydown(c.key, e)}>{c.label}</th
+				>
+			{/each}
+		</tr>
+	</thead>
+{/snippet}
 
 {#snippet footer(meta: FooterMeta | null)}
 	<div
@@ -209,40 +240,23 @@
 	>
 		<div class="min-h-0 flex-1 overflow-auto" bind:this={tableContainer}>
 			<table class="w-full border-separate border-spacing-0">
-				<thead>
-					<tr>
-						{#each cols as c (c.key)}
-							<th
-								scope="col"
-								class="sticky top-0 z-2 border-b border-(--c-border) bg-(--c-table-head) px-3.5 py-2.5 text-left text-[11px] font-semibold tracking-widest whitespace-nowrap text-(--c-fg-soft) uppercase select-none {c.key ===
-									dropInfo?.key && dropInfo.side === 'before'
-									? 'shadow-[-3px_0_0_0_var(--c-accent)] '
-									: ''}{c.key === dropInfo?.key && dropInfo.side === 'after'
-									? 'shadow-[3px_0_0_0_var(--c-accent)] '
-									: ''}"
-								draggable={cols.length > 1}
-								tabindex={cols.length > 1 ? 0 : undefined}
-								title={cols.length > 1 ? 'Seret, atau Alt+←/→ untuk memindahkan kolom' : undefined}
-								ondragstart={(e) => onHeaderDragStart(c.key, e)}
-								ondragover={(e) => onHeaderDragOver(c.key, e)}
-								ondrop={(e) => onHeaderDrop(e)}
-								ondragend={() => onHeaderDragEnd()}
-								onkeydown={(e) => onHeaderKeydown(c.key, e)}>{c.label}</th
-							>
-						{/each}
-					</tr>
-				</thead>
+				{@render thead()}
 				<tbody>
 					{#each skeletonRows as r (r)}
 						<tr
-							class="animate-pulse border-b border-(--c-border) {r % 2 ? 'bg-(--c-surface-2)' : ''}"
+							class={cn(
+								'animate-pulse border-b border-(--c-border)',
+								r % 2 && 'bg-(--c-surface-2)'
+							)}
 						>
 							{#each cols, ci (ci)}
-								<td class="border-b border-(--c-border) px-3.5 py-3">
-									<div
-										class="h-3.5 rounded bg-(--c-surface-2)"
-										style="width: {skeletonWidths[ci % skeletonWidths.length]}px"
-									></div>
+								<td
+									class="border-b border-(--c-border) px-3.5 py-3"
+									style={cols[ci].width
+										? `width: ${cols[ci].width}px; min-width: ${cols[ci].width}px; max-width: ${cols[ci].width}px`
+										: undefined}
+								>
+									<div class="h-3.5 rounded bg-(--c-surface-2)" style="width: {barPct(ci)}%"></div>
 								</td>
 							{/each}
 						</tr>
@@ -263,33 +277,14 @@
 	>
 		<div class="min-h-0 flex-1 overflow-auto" bind:this={tableContainer}>
 			<table class="w-full border-separate border-spacing-0">
-				<thead>
-					<tr>
-						{#each cols as c (c.key)}
-							<th
-								scope="col"
-								class="sticky top-0 z-2 border-b border-(--c-border) bg-(--c-table-head) px-3.5 py-2.5 text-left text-[11px] font-semibold tracking-widest whitespace-nowrap text-(--c-fg-soft) uppercase select-none {c.key ===
-									dropInfo?.key && dropInfo.side === 'before'
-									? 'shadow-[-3px_0_0_0_var(--c-accent)] '
-									: ''}{c.key === dropInfo?.key && dropInfo.side === 'after'
-									? 'shadow-[3px_0_0_0_var(--c-accent)] '
-									: ''}"
-								draggable={cols.length > 1}
-								tabindex={cols.length > 1 ? 0 : undefined}
-								title={cols.length > 1 ? 'Seret, atau Alt+←/→ untuk memindahkan kolom' : undefined}
-								ondragstart={(e) => onHeaderDragStart(c.key, e)}
-								ondragover={(e) => onHeaderDragOver(c.key, e)}
-								ondrop={(e) => onHeaderDrop(e)}
-								ondragend={() => onHeaderDragEnd()}
-								onkeydown={(e) => onHeaderKeydown(c.key, e)}>{c.label}</th
-							>
-						{/each}
-					</tr>
-				</thead>
+				{@render thead()}
 				<tbody>
 					{#each d.data.items as item, i (item.kode + '-' + i)}
 						<tr
-							class="transition-colors hover:bg-(--c-row-hover) {i % 2 ? 'bg-(--c-surface-2)' : ''}"
+							class={cn(
+								'transition-colors hover:bg-(--c-row-hover)',
+								i % 2 && 'bg-(--c-surface-2)'
+							)}
 						>
 							{#each cols as c (c.key)}
 								{@const raw = (item as Record<string, string | number>)[c.key]}
@@ -310,8 +305,7 @@
 									</td>
 								{:else if c.trunc}
 									<td
-										class={cellClass(c) + ' cursor-pointer'}
-										style={c.maxWidth ? `max-width: ${c.maxWidth}px` : undefined}
+										class={cn(cellClass(c), 'cursor-pointer')}
 										title={cellTitle(raw)}
 										tabindex="0"
 										onclick={(e) => openCellDetail(c, raw, e)}
@@ -324,10 +318,14 @@
 									>
 								{:else}
 									<td
-										class={cellClass(c)}
-										style={c.maxWidth ? `max-width: ${c.maxWidth}px` : undefined}
-										title={c.trunc ? cellTitle(raw) : undefined}
-										>{c.date ? formatDate(raw) : cellText(raw)}</td
+										class={cn(
+											cellClass(c),
+											c.date && 'whitespace-nowrap',
+											c.width && 'wrap-break-word'
+										)}
+										style={c.width
+											? `width: ${c.width}px; min-width: ${c.width}px; max-width: ${c.width}px`
+											: undefined}>{c.date ? formatDate(raw) : cellText(raw)}</td
 									>
 								{/if}
 							{/each}
@@ -384,10 +382,5 @@
 {/await}
 
 {#if cellDetail}
-	<CellPopover
-		value={cellDetail.value}
-		label={cellDetail.label}
-		x={cellDetail.x}
-		y={cellDetail.y}
-	/>
+	<CellPopover value={cellDetail.value} label={cellDetail.label} anchor={cellDetail.anchor} />
 {/if}

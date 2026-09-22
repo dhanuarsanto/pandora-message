@@ -28,19 +28,21 @@ export const INBOX_STATUS: Record<number, string> = {
 	69: '69'
 };
 
-export const TIPE_PENGIRIM: Record<string, string> = {
+export const OUTBOX_STATUS: Record<number, string> = {
+	20: '20',
+	40: '40',
+	50: '50'
+};
+
+export const TIPE = {
 	1: '1',
 	O: 'O',
 	W: 'W',
 	X: 'X'
 };
 
-export const TIPE_PENERIMA: Record<string, string> = {
-	1: '1',
-	O: 'O',
-	W: 'W',
-	X: 'X'
-};
+export const TIPE_PENGIRIM: Record<string, string> = TIPE;
+export const TIPE_PENERIMA: Record<string, string> = TIPE;
 
 export const KODE_TERMINAL: Record<string, string> = {
 	1: '1',

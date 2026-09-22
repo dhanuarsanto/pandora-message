@@ -12,6 +12,7 @@ function getInitialMode(): ThemeMode {
 }
 
 const store = writable<ThemeMode>(getInitialMode());
+let initialized = false;
 
 function apply(mode: ThemeMode): void {
 	if (typeof document === 'undefined') return;
@@ -19,7 +20,8 @@ function apply(mode: ThemeMode): void {
 }
 
 function init(): void {
-	if (typeof window === 'undefined') return;
+	if (typeof window === 'undefined' || initialized) return;
+	initialized = true;
 	apply(get(store));
 	window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
 		if (!localStorage.getItem(STORAGE_KEY)) store.set(e.matches ? 'dark' : 'light');

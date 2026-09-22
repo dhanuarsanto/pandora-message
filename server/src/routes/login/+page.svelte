@@ -2,7 +2,12 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { APP_NAME } from '$lib/config';
+	import { cn } from '$lib/utils';
 	import { ArrowRight, CircleAlert, Clock, Eye, EyeOff, Lock, Mail, User } from '@lucide/svelte';
+	import { onDestroy } from 'svelte';
+
+	const inputBase =
+		'h-12 w-full rounded-xl border border-(--c-border) bg-(--c-surface-2) pl-10.5 text-[15px] text-(--c-fg) transition-[border-color,box-shadow,background] duration-200 placeholder:text-(--c-fg-faint) focus:border-(--c-accent) focus:bg-(--c-surface) focus:shadow-[0_0_0_4px_var(--c-focus)] focus:outline-none';
 
 	let username = $state('');
 	let password = $state('');
@@ -10,6 +15,10 @@
 	let showPassword = $state(false);
 	let alertMessage = $state('');
 	let alertTimer: ReturnType<typeof setTimeout> | null = null;
+
+	onDestroy(() => {
+		if (alertTimer) clearTimeout(alertTimer);
+	});
 
 	function showAlert(msg: string) {
 		alertMessage = msg;
@@ -151,7 +160,7 @@
 								bind:value={username}
 								disabled={loading}
 								oninput={() => (alertMessage = '')}
-								class="h-12 w-full rounded-xl border border-(--c-border) bg-(--c-surface-2) pr-3 pl-10.5 text-[15px] text-(--c-fg) transition-[border-color,box-shadow,background] duration-200 placeholder:text-(--c-fg-faint) focus:border-(--c-accent) focus:bg-(--c-surface) focus:shadow-[0_0_0_4px_var(--c-focus)] focus:outline-none"
+								class={cn(inputBase, 'pr-3')}
 							/>
 						</div>
 					</div>
@@ -174,7 +183,7 @@
 								bind:value={password}
 								disabled={loading}
 								oninput={() => (alertMessage = '')}
-								class="h-12 w-full rounded-xl border border-(--c-border) bg-(--c-surface-2) pr-12 pl-10.5 text-[15px] text-(--c-fg) transition-[border-color,box-shadow,background] duration-200 placeholder:text-(--c-fg-faint) focus:border-(--c-accent) focus:bg-(--c-surface) focus:shadow-[0_0_0_4px_var(--c-focus)] focus:outline-none"
+								class={cn(inputBase, 'pr-12')}
 							/>
 							<button
 								type="button"

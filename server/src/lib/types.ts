@@ -55,14 +55,9 @@ export type InboxItem = {
 	kode_jawaban_cs: number;
 	hash: string;
 };
-export type InboxMeta = {
-	has_next_page: boolean;
-	has_prev_page: boolean;
-	next_cursor: number | null;
-};
 export type InboxResponse = {
 	status: string;
-	data: { items: InboxItem[]; meta: InboxMeta; trace_id: string };
+	data: { items: InboxItem[]; meta: FooterMeta; trace_id: string };
 };
 
 export type ResellerOption = {
@@ -76,7 +71,7 @@ export type ResellerResponse = {
 
 export type OutboxResponse = {
 	status: string;
-	data: { items: OutboxItem[]; meta: InboxMeta; trace_id: string };
+	data: { items: OutboxItem[]; meta: FooterMeta; trace_id: string };
 };
 
 export type ColSpec = {
@@ -89,7 +84,7 @@ export type ColSpec = {
 	trunc?: boolean;
 	date?: boolean;
 	status?: boolean;
-	maxWidth?: number;
+	width?: number;
 };
 
 export type FilterField =

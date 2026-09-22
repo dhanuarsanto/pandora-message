@@ -1,6 +1,8 @@
 import { goto } from '$app/navigation';
 import { resolve } from '$app/paths';
+import clsx, { type ClassValue } from 'clsx';
 import { SvelteURLSearchParams } from 'svelte/reactivity';
+import { twMerge } from 'tailwind-merge';
 import type { ColSpec, FilterField } from './types';
 
 export function navigate(route: '/inbox' | '/outbox', queryString: string): void {
@@ -94,4 +96,8 @@ export function buildQuery(
 		u.set(k, v);
 	}
 	return u;
+}
+
+export function cn(...inputs: ClassValue[]) {
+	return twMerge(clsx(inputs));
 }

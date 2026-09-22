@@ -19,6 +19,9 @@
 		onReset: () => void;
 		onApply: () => void;
 	} = $props();
+
+	const controlCls =
+		'h-9 w-full rounded-lg border border-(--c-border) bg-(--c-surface) px-2.5 text-[13px] text-(--c-fg) outline-none focus:border-(--c-accent) disabled:cursor-not-allowed disabled:opacity-60';
 </script>
 
 <form
@@ -52,7 +55,7 @@
 						type="date"
 						bind:value={query[f.param]}
 						disabled={controlsDisabled}
-						class="h-9 w-full rounded-lg border border-(--c-border) bg-(--c-surface) px-2.5 text-[13px] text-(--c-fg) outline-none focus:border-(--c-accent) disabled:cursor-not-allowed disabled:opacity-60"
+						class={controlCls}
 					/>
 				{:else if f.type === 'number'}
 					<input
@@ -62,7 +65,7 @@
 						placeholder={f.placeholder}
 						bind:value={query[f.param]}
 						disabled={controlsDisabled}
-						class="h-9 w-full rounded-lg border border-(--c-border) bg-(--c-surface) px-2.5 text-[13px] text-(--c-fg) outline-none focus:border-(--c-accent) disabled:cursor-not-allowed disabled:opacity-60"
+						class={controlCls}
 					/>
 				{:else if f.type === 'text'}
 					<input
@@ -71,14 +74,14 @@
 						placeholder={f.placeholder}
 						bind:value={query[f.param]}
 						disabled={controlsDisabled}
-						class="h-9 w-full rounded-lg border border-(--c-border) bg-(--c-surface) px-2.5 text-[13px] text-(--c-fg) outline-none focus:border-(--c-accent) disabled:cursor-not-allowed disabled:opacity-60"
+						class={controlCls}
 					/>
 				{:else if f.type === 'terminal'}
 					<select
 						id={'f-' + f.param}
 						bind:value={query[f.param]}
 						disabled={controlsDisabled}
-						class="h-9 w-full rounded-lg border border-(--c-border) bg-(--c-surface) px-2.5 text-[13px] text-(--c-fg) outline-none focus:border-(--c-accent) disabled:cursor-not-allowed disabled:opacity-60"
+						class={controlCls}
 					>
 						<option value="">Semua</option>
 						{#each Object.entries(KODE_TERMINAL) as [key, label] (key)}
@@ -90,7 +93,7 @@
 						id={'f-' + f.param}
 						bind:value={query[f.param]}
 						disabled={controlsDisabled}
-						class="h-9 w-full rounded-lg border border-(--c-border) bg-(--c-surface) px-2.5 text-[13px] text-(--c-fg) outline-none focus:border-(--c-accent) disabled:cursor-not-allowed disabled:opacity-60"
+						class={controlCls}
 					>
 						<option value="">Semua</option>
 						{#each statusOptions as [val, label] (val)}
@@ -102,7 +105,7 @@
 						id={'f-' + f.param}
 						bind:value={query[f.param]}
 						disabled={controlsDisabled}
-						class="h-9 w-full rounded-lg border border-(--c-border) bg-(--c-surface) px-2.5 text-[13px] text-(--c-fg) outline-none focus:border-(--c-accent) disabled:cursor-not-allowed disabled:opacity-60"
+						class={controlCls}
 					>
 						<option value="">Semua</option>
 						{#each Object.entries(f.source) as [key, label] (key)}
@@ -114,7 +117,7 @@
 						id={'f-' + f.param}
 						bind:value={query[f.param]}
 						disabled={controlsDisabled}
-						class="h-9 w-full rounded-lg border border-(--c-border) bg-(--c-surface) px-2.5 text-[13px] text-(--c-fg) outline-none focus:border-(--c-accent) disabled:cursor-not-allowed disabled:opacity-60"
+						class={controlCls}
 					>
 						<option value="">Semua</option>
 						{#await resellers}
