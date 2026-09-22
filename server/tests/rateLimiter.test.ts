@@ -1,6 +1,11 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { getClientIp, isRateLimited, recordAttempt, resetAttempts } from './rateLimiter.ts';
+import {
+	getClientIp,
+	isRateLimited,
+	recordAttempt,
+	resetAttempts
+} from '../src/lib/server/rateLimiter.ts';
 
 test('getClientIp dari event', () => {
 	assert.equal(getClientIp({ getClientAddress: () => '10.0.0.1' }), '10.0.0.1');

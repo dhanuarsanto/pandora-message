@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import type { LoginRequest } from '$lib/types';
-import { validateLogin } from './validateLogin.ts';
+import type { LoginRequest } from '../src/lib/types.ts';
+import { validateLogin } from '../src/lib/server/validateLogin.ts';
 
 const valid: LoginRequest = { username: 'admin.user@1', password: 'secret1' };
 

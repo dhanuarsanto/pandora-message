@@ -3,7 +3,8 @@
 	import { resolve } from '$app/paths';
 	import { reorderKeys } from '$lib/colPrefs';
 	import type { ColSpec, FooterMeta, MessageItem } from '$lib/types';
-	import { cellClass, cellText, cn, formatDate, statusClasses } from '$lib/utils';
+	import { cellClass, cellText, formatDate, statusClasses } from '$lib/format';
+	import { cn } from '$lib/utils';
 	import { ChevronLeft, ChevronRight } from '@lucide/svelte';
 	import CellPopover from './CellPopover.svelte';
 
