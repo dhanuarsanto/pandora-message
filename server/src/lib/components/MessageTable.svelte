@@ -3,7 +3,7 @@
 	import { resolve } from '$app/paths';
 	import { reorderKeys } from '$lib/colPrefs';
 	import type { ColSpec, FooterMeta, MessageItem } from '$lib/types';
-	import { cellClass, cellText, cn, formatDate, is401, statusClasses } from '$lib/utils';
+	import { cellClass, cellText, cn, formatDate, statusClasses } from '$lib/utils';
 	import { ChevronLeft, ChevronRight } from '@lucide/svelte';
 	import CellPopover from './CellPopover.svelte';
 
@@ -347,36 +347,19 @@
 		{/if}
 		{@render footer(d.data.meta)}
 	</div>
-{:catch err}
+{:catch}
 	<div
 		class="flex flex-1 items-center justify-center rounded-xl border border-(--c-border) bg-(--c-surface)"
 	>
 		<div class="text-center">
-			<p class="text-[14px] font-semibold text-(--c-fg)">
-				{is401(err) ? 'Sesi berakhir' : 'Gagal memuat data'}
-			</p>
-			{#if is401(err)}
-				<button
-					onclick={async () => {
-						try {
-							await fetch('/api/auth/logout', { method: 'POST' });
-						} finally {
-							goto(resolve('/login'));
-						}
-					}}
-					class="mt-3 rounded-lg border border-(--c-border) px-4 py-1.5 text-xs font-medium text-(--c-fg) transition-colors hover:border-(--c-accent)"
-				>
-					Masuk ulang
-				</button>
-			{:else}
-				<p class="mt-1 text-[12px] text-(--c-fg-muted)">Silakan coba lagi.</p>
-				<button
-					onclick={() => goto(resolve(reloadPath))}
-					class="mt-3 rounded-lg border border-(--c-border) px-4 py-1.5 text-xs font-medium text-(--c-fg) transition-colors hover:border-(--c-accent)"
-				>
-					Muat ulang
-				</button>
-			{/if}
+			<p class="text-[14px] font-semibold text-(--c-fg)">Gagal memuat data</p>
+			<p class="mt-1 text-[12px] text-(--c-fg-muted)">Silakan coba lagi.</p>
+			<button
+				onclick={() => goto(resolve(reloadPath), { invalidateAll: true })}
+				class="mt-3 rounded-lg border border-(--c-border) px-4 py-1.5 text-xs font-medium text-(--c-fg) transition-colors hover:border-(--c-accent)"
+			>
+				Muat ulang
+			</button>
 		</div>
 	</div>
 {/await}

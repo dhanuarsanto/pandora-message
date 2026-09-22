@@ -42,6 +42,5 @@ function toggle(): void {
 export const theme = {
 	subscribe: store.subscribe,
 	init,
-	toggle,
-	setMode
+	toggle
 };

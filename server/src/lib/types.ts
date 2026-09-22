@@ -104,3 +104,5 @@ export type FooterMeta = {
 };
 
 export type MessageItem = InboxItem | OutboxItem;
+
+export type UnauthorizedFlag = { __unauthorized: true };

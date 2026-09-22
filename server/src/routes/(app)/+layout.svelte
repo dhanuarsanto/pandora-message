@@ -80,7 +80,7 @@
 			<a
 				href={resolve('/inbox')}
 				aria-disabled={navBusy}
-				class={cn('mr-auto flex items-center gap-2.5', navBusy && 'pointer-events-none opacity-60')}
+				class={cn('mr-auto flex items-center gap-2.5', navBusy && 'pointer-events-none')}
 			>
 				<div
 					class="flex h-8 w-8 items-center justify-center rounded-[10px] bg-linear-to-br from-(--c-accent) to-(--c-accent-strong) shadow-[0_6px_14px_-6px_rgba(14,122,74,0.5)]"
@@ -99,7 +99,7 @@
 						pathname.startsWith('/inbox')
 							? 'bg-(--c-accent-soft) text-(--c-accent-strong)'
 							: 'text-(--c-fg-muted) hover:bg-(--c-surface-3) hover:text-(--c-fg)',
-						navBusy && 'pointer-events-none opacity-60'
+						navBusy && 'pointer-events-none'
 					)}
 				>
 					<Inbox class="h-4 w-4 stroke-2" />
@@ -113,7 +113,7 @@
 						pathname.startsWith('/outbox')
 							? 'bg-(--c-accent-soft) text-(--c-accent-strong)'
 							: 'text-(--c-fg-muted) hover:bg-(--c-surface-3) hover:text-(--c-fg)',
-						navBusy && 'pointer-events-none opacity-60'
+						navBusy && 'pointer-events-none'
 					)}
 				>
 					<Send class="h-4 w-4 stroke-2" />
@@ -166,7 +166,7 @@
 							pathname.startsWith('/inbox')
 								? 'bg-(--c-accent-soft) text-(--c-accent-strong)'
 								: 'text-(--c-fg-muted) hover:bg-(--c-surface-3) hover:text-(--c-fg)',
-							navBusy && 'pointer-events-none opacity-60'
+							navBusy && 'pointer-events-none'
 						)}
 					>
 						<Inbox class="h-4 w-4" />
@@ -181,7 +181,7 @@
 							pathname.startsWith('/outbox')
 								? 'bg-(--c-accent-soft) text-(--c-accent-strong)'
 								: 'text-(--c-fg-muted) hover:bg-(--c-surface-3) hover:text-(--c-fg)',
-							navBusy && 'pointer-events-none opacity-60'
+							navBusy && 'pointer-events-none'
 						)}
 					>
 						<Send class="h-4 w-4" />

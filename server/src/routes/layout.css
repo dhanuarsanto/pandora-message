@@ -3,6 +3,10 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+@view-transition {
+	navigation: auto;
+}
+
 :root {
 	--c-bg: #f4f6f3;
 	--c-surface: #ffffff;

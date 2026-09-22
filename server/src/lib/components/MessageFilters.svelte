@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { KODE_TERMINAL } from '$lib/config';
-	import type { FilterField, ResellerResponse } from '$lib/types';
+	import type { FilterField, ResellerResponse, UnauthorizedFlag } from '$lib/types';
 
 	let {
 		query = $bindable(),
@@ -14,7 +14,7 @@
 		query: Record<string, string>;
 		filters: FilterField[];
 		statusOptions: [string, string][];
-		resellers: Promise<ResellerResponse>;
+		resellers: Promise<ResellerResponse | null | UnauthorizedFlag>;
 		controlsDisabled: boolean;
 		onReset: () => void;
 		onApply: () => void;
@@ -123,9 +123,15 @@
 						{#await resellers}
 							<option value="">Memuat…</option>
 						{:then res}
-							{#each res.data.items as r (r.kode)}
-								<option value={r.kode}>{r.nama}</option>
-							{/each}
+							{#if res && typeof res === 'object' && '__unauthorized' in res}
+								<option value="">-</option>
+							{:else if res}
+								{#each res.data.items as r (r.kode)}
+									<option value={r.kode}>{r.nama}</option>
+								{/each}
+							{:else}
+								<option value="">-</option>
+							{/if}
 						{:catch}
 							<option value="">-</option>
 						{/await}

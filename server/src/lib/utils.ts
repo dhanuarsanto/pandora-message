@@ -27,15 +27,6 @@ export function initStack(stackKey: string): (number | null)[] {
 	return [null];
 }
 
-export function is401(err: unknown): boolean {
-	return (
-		typeof err === 'object' &&
-		err !== null &&
-		'status' in err &&
-		(err as { status: number }).status === 401
-	);
-}
-
 const BULAN = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
 
 export function formatDate(raw: string | number | undefined): string {

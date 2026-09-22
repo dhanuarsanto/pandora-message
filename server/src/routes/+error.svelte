@@ -1,7 +1,7 @@
 ﻿<script lang="ts">
 	import { page } from '$app/state';
 	import { APP_NAME } from '$lib/config';
-	import { ERROR_CODES, ERROR_GENERIC, type CodeConfig } from '$lib/errorPages';
+	import { ERROR_CODES, ERROR_GENERIC } from '$lib/errorPages';
 	import { theme } from '$lib/theme';
 	import { Mail } from '@lucide/svelte';
 	import './layout.css';
