@@ -3,8 +3,6 @@
 	import { APP_NAME, TIPE_PENERIMA } from '$lib/config';
 	import type { ColSpec, FilterField } from '$lib/types';
 
-	let { data } = $props();
-
 	const COLS: ColSpec[] = [
 		{ key: 'kode', label: 'Kode', mono: true, strong: true, trunc: true },
 		{ key: 'tgl_entri', label: 'Tgl Entri', muted: true, date: true },
@@ -31,20 +29,18 @@
 		{ type: 'date', param: 'endDate', label: 'Tgl Akhir' },
 		{ type: 'number', param: 'limit', label: 'Limit', placeholder: 'Batas maksimal data' },
 		{ type: 'reseller', param: 'reseller', label: 'Reseller' },
-		{ type: 'text', param: 'penerima', label: 'Penerima', placeholder: 'Cari penerima…' },
+		{ type: 'text', param: 'penerima', label: 'Penerima', placeholder: 'Cari penerima...' },
 		{ type: 'tipe', param: 'tipe', label: 'Tipe Penerima', source: TIPE_PENERIMA },
 		{ type: 'status', param: 'status', label: 'Status' },
-		{ type: 'text', param: 'pesan', label: 'Pesan', placeholder: 'Isi pesan…' },
+		{ type: 'text', param: 'pesan', label: 'Pesan', placeholder: 'Isi pesan...' },
 		{ type: 'checkbox', param: 'replyToReseller', label: 'Reply ke Reseller' },
 		{ type: 'checkbox', param: 'perintahProvider', label: 'Perintah Provider' }
 	];
 </script>
 
-<svelte:head><title>Outbox — {APP_NAME}</title></svelte:head>
+<svelte:head><title>Outbox - {APP_NAME}</title></svelte:head>
 
 <MessageList
-	load={data.outbox}
-	resellers={data.resellers}
 	path="/outbox"
 	title="Kotak Keluar"
 	subtitle="Pesan terkirim dari sistem."

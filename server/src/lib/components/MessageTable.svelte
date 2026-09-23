@@ -9,7 +9,10 @@
 	import CellPopover from './CellPopover.svelte';
 
 	let {
-		load,
+		data,
+		loading,
+		error,
+		errorDetail,
 		cols,
 		skeletonRows,
 		pageSize,
@@ -18,11 +21,13 @@
 		onGoNext,
 		onGoPrev,
 		onReorderColumns,
+		onRetry,
 		reloadPath
 	}: {
-		load:
-			| { data: { items: MessageItem[]; meta: FooterMeta } }
-			| Promise<{ data: { items: MessageItem[]; meta: FooterMeta } }>;
+		data: { items: MessageItem[]; meta: FooterMeta } | null;
+		loading: boolean;
+		error: string | null;
+		errorDetail: string | null;
 		cols: ColSpec[];
 		skeletonRows: number[];
 		pageSize: string;
@@ -31,6 +36,7 @@
 		onGoNext: (meta: FooterMeta) => void;
 		onGoPrev: (meta: FooterMeta) => void;
 		onReorderColumns: (keys: string[]) => void;
+		onRetry: () => void;
 		reloadPath: '/inbox' | '/outbox';
 	} = $props();
 
@@ -70,6 +76,12 @@
 		dropInfo = null;
 	}
 
+	function focusHeader(key: string) {
+		requestAnimationFrame(() => {
+			document.querySelector<HTMLElement>(`th[data-key='${key}']`)?.focus();
+		});
+	}
+
 	function moveColumn(key: string, dir: -1 | 1) {
 		const keys = cols.map((c) => c.key);
 		const i = keys.indexOf(key);
@@ -79,7 +91,20 @@
 		arr.splice(i, 1);
 		arr.splice(j, 0, key);
 		onReorderColumns(arr);
+		focusHeader(key);
 	}
+
+	$effect(() => {
+		if (typeof window === 'undefined') return;
+		const onCapture = (e: KeyboardEvent) => {
+			if (!e.altKey) return;
+			if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+			const t = e.target as Element | null;
+			if (t && t.closest('table')) e.preventDefault();
+		};
+		window.addEventListener('keydown', onCapture, true);
+		return () => window.removeEventListener('keydown', onCapture, true);
+	});
 
 	function onHeaderKeydown(key: string, e: KeyboardEvent) {
 		if (!e.altKey) return;
@@ -173,6 +198,7 @@
 			{#each cols as c (c.key)}
 				<th
 					scope="col"
+					data-key={c.key}
 					class={cn(
 						'sticky top-0 z-2 border-b border-(--c-border) bg-(--c-table-head) px-3.5 py-2.5 text-left text-[11px] font-semibold tracking-widest whitespace-nowrap text-(--c-fg-soft) uppercase select-none',
 						c.key === dropInfo?.key &&
@@ -206,7 +232,7 @@
 				<select
 					value={pageSize}
 					onchange={(e) => onPageSizeChange(e.currentTarget.value)}
-					disabled={meta === null || busy}
+					disabled={meta === null || busy || loading}
 					class="h-8 rounded-md border border-(--c-border) bg-(--c-surface) px-2 text-xs text-(--c-fg) outline-none focus:border-(--c-accent) disabled:cursor-not-allowed disabled:opacity-40"
 				>
 					<option value="">10</option>
@@ -219,14 +245,14 @@
 		<div class="flex items-center gap-1.5">
 			<button
 				onclick={() => meta && onGoPrev(meta)}
-				disabled={meta === null || busy || !meta.has_prev_page}
+				disabled={meta === null || busy || loading || !meta.has_prev_page}
 				class="flex h-8 min-w-8 items-center justify-center rounded-md border border-(--c-border) bg-(--c-surface) px-2 text-xs font-medium text-(--c-fg-muted) transition-colors hover:border-(--c-accent) hover:text-(--c-accent) disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-(--c-border) disabled:hover:text-(--c-fg-muted)"
 			>
 				<ChevronLeft class="h-4 w-4" />
 			</button>
 			<button
 				onclick={() => meta && onGoNext(meta)}
-				disabled={meta === null || busy || !meta.has_next_page}
+				disabled={meta === null || busy || loading || !meta.has_next_page}
 				class="flex h-8 min-w-8 items-center justify-center rounded-md border border-(--c-border) bg-(--c-surface) px-2 text-xs font-medium text-(--c-fg-muted) transition-colors hover:border-(--c-accent) hover:text-(--c-accent) disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-(--c-border) disabled:hover:text-(--c-fg-muted)"
 			>
 				<ChevronRight class="h-4 w-4" />
@@ -235,135 +261,146 @@
 	</div>
 {/snippet}
 
-{#await load}
-	<div
-		class="relative flex min-h-0 flex-1 flex-col overflow-clip rounded-xl border border-(--c-border) bg-(--c-surface)"
-	>
-		<div class="min-h-0 flex-1 overflow-auto" bind:this={tableContainer}>
-			<table class="w-full border-separate border-spacing-0">
-				{@render thead()}
-				<tbody>
-					{#each skeletonRows as r (r)}
-						<tr
-							class={cn(
-								'animate-pulse border-b border-(--c-border)',
-								r % 2 && 'bg-(--c-surface-2)'
-							)}
-						>
-							{#each cols, ci (ci)}
-								<td
-									class="border-b border-(--c-border) px-3.5 py-3"
-									style={cols[ci].width
-										? `width: ${cols[ci].width}px; min-width: ${cols[ci].width}px; max-width: ${cols[ci].width}px`
-										: undefined}
-								>
-									<div class="h-3.5 rounded bg-(--c-surface-2)" style="width: {barPct(ci)}%"></div>
-								</td>
-							{/each}
-						</tr>
-					{/each}
-				</tbody>
-			</table>
-		</div>
-		{#if scrollable}
-			<div
-				class="pointer-events-none absolute right-0 bottom-12 z-20 w-6 bg-linear-to-l from-(--c-surface) to-transparent"
-			></div>
-		{/if}
-		{@render footer(null)}
-	</div>
-{:then d}
-	<div
-		class="relative flex min-h-0 flex-1 flex-col overflow-clip rounded-xl border border-(--c-border) bg-(--c-surface)"
-	>
-		<div class="min-h-0 flex-1 overflow-auto" bind:this={tableContainer}>
-			<table class="w-full border-separate border-spacing-0">
-				{@render thead()}
-				<tbody>
-					{#each d.data.items as item, i (item.kode + '-' + i)}
-						<tr
-							class={cn(
-								'transition-colors hover:bg-(--c-row-hover)',
-								i % 2 && 'bg-(--c-surface-2)'
-							)}
-						>
-							{#each cols as c (c.key)}
-								{@const raw = (item as Record<string, string | number>)[c.key]}
-								{#if c.badge}
-									<td class="border-b border-(--c-border) px-3.5 py-3">
-										<span
-											class="inline-block rounded bg-(--c-surface-2) px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap text-(--c-fg-muted)"
-											>{cellText(raw)}</span
-										>
-									</td>
-								{:else if c.status}
-									<td class="border-b border-(--c-border) px-3.5 py-3">
-										<span
-											class="inline-block rounded-full px-2.5 py-0.5 text-[11px] font-semibold whitespace-nowrap {statusClasses(
-												raw
-											)}">{cellText(raw)}</span
-										>
-									</td>
-								{:else if c.trunc}
-									<td
-										class={cn(cellClass(c), 'cursor-pointer')}
-										title={cellTitle(raw)}
-										tabindex="0"
-										onclick={(e) => openCellDetail(c, raw, e)}
-										onkeydown={(e) => {
-											if (e.key === 'Enter' || e.key === ' ') {
-												e.preventDefault();
-												openCellDetail(c, raw, e);
-											}
-										}}>{c.date ? formatDate(raw) : cellText(raw)}</td
-									>
-								{:else}
-									<td
-										class={cn(
-											cellClass(c),
-											c.date && 'whitespace-nowrap',
-											c.width && 'wrap-break-word'
-										)}
-										style={c.width
-											? `width: ${c.width}px; min-width: ${c.width}px; max-width: ${c.width}px`
-											: undefined}>{c.date ? formatDate(raw) : cellText(raw)}</td
-									>
-								{/if}
-							{/each}
-						</tr>
-					{:else}
-						<tr
-							><td colspan={cols.length} class="py-16 text-center text-sm text-(--c-fg-soft)"
-								>Tidak ada pesan.</td
-							></tr
-						>
-					{/each}
-				</tbody>
-			</table>
-		</div>
-		{#if scrollable}
-			<div
-				class="pointer-events-none absolute right-0 bottom-12 z-20 w-6 bg-linear-to-l from-(--c-surface) to-transparent"
-			></div>
-		{/if}
-		{@render footer(d.data.meta)}
-	</div>
-{:catch}
+{#if error}
 	<div
 		class="flex flex-1 items-center justify-center rounded-xl border border-(--c-border) bg-(--c-surface)"
 	>
-		<div class="text-center">
+		<div class="max-w-md px-6 text-center" role="alert">
 			<p class="text-[14px] font-semibold text-(--c-fg)">Gagal memuat data</p>
-			<p class="mt-1 text-[12px] text-(--c-fg-muted)">Silakan coba lagi.</p>
-			<button
-				onclick={() => goto(resolve(reloadPath), { invalidateAll: true })}
-				class="mt-3 rounded-lg border border-(--c-border) px-4 py-1.5 text-xs font-medium text-(--c-fg) transition-colors hover:border-(--c-accent)"
-			>
-				Muat ulang
-			</button>
+			<p class="mt-1.5 text-[12px] leading-relaxed text-(--c-fg-muted)">{error}</p>
+			{#if errorDetail}
+				<p class="mt-1 font-mono text-[11px] text-(--c-fg-faint)">{errorDetail}</p>
+			{/if}
+			<div class="mt-4 flex flex-wrap items-center justify-center gap-2">
+				<button
+					onclick={onRetry}
+					class="rounded-lg bg-(--c-accent) px-4 py-1.5 text-xs font-semibold text-white transition-colors hover:opacity-90"
+				>
+					Coba lagi
+				</button>
+				<button
+					onclick={() => goto(resolve(reloadPath), { invalidateAll: true })}
+					class="rounded-lg border border-(--c-border) px-4 py-1.5 text-xs font-medium text-(--c-fg-muted) transition-colors hover:border-(--c-accent) hover:text-(--c-accent)"
+				>
+					Muat ulang halaman
+				</button>
+			</div>
 		</div>
 	</div>
-{/await}
+{:else}
+	<div
+		class="relative flex min-h-0 flex-1 flex-col overflow-clip rounded-xl border border-(--c-border) bg-(--c-surface)"
+	>
+		{#if loading || !data}
+			<div class="min-h-0 flex-1 overflow-auto" bind:this={tableContainer}>
+				<table class="w-full border-separate border-spacing-0">
+					{@render thead()}
+					<tbody>
+						{#each skeletonRows as r (r)}
+							<tr
+								class={cn(
+									'animate-pulse border-b border-(--c-border)',
+									r % 2 && 'bg-(--c-surface-2)'
+								)}
+							>
+								{#each cols, ci (ci)}
+									<td
+										class="border-b border-(--c-border) px-3.5 py-3"
+										style={cols[ci].width
+											? `width: ${cols[ci].width}px; min-width: ${cols[ci].width}px; max-width: ${cols[ci].width}px`
+											: undefined}
+									>
+										<div
+											class="h-3.5 rounded bg-(--c-surface-2)"
+											style="width: {barPct(ci)}%"
+										></div>
+									</td>
+								{/each}
+							</tr>
+						{/each}
+					</tbody>
+				</table>
+			</div>
+		{:else}
+			<div class="min-h-0 flex-1 overflow-auto" bind:this={tableContainer}>
+				{#if data.items.length === 0}
+					<div class="flex h-full min-h-40 items-center justify-center px-6 py-10" role="status">
+						<div class="text-center">
+							<p class="text-sm font-semibold text-(--c-fg-soft)">Tidak ada pesan.</p>
+							<p class="mt-1 text-[12px] text-(--c-fg-faint)">
+								Coba ubah filter atau rentang tanggal.
+							</p>
+						</div>
+					</div>
+				{:else}
+					<table class="w-full border-separate border-spacing-0">
+						{@render thead()}
+						<tbody>
+							{#each data.items as item, i (item.kode + '-' + i)}
+								<tr
+									class={cn(
+										'transition-colors hover:bg-(--c-row-hover)',
+										i % 2 && 'bg-(--c-surface-2)'
+									)}
+								>
+									{#each cols as c (c.key)}
+										{@const raw = (item as Record<string, string | number>)[c.key]}
+										{#if c.badge}
+											<td class="border-b border-(--c-border) px-3.5 py-3">
+												<span
+													class="inline-block rounded bg-(--c-surface-2) px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap text-(--c-fg-muted)"
+													>{cellText(raw)}</span
+												>
+											</td>
+										{:else if c.status}
+											<td class="border-b border-(--c-border) px-3.5 py-3">
+												<span
+													class="inline-block rounded-full px-2.5 py-0.5 text-[11px] font-semibold whitespace-nowrap {statusClasses(
+														raw
+													)}">{cellText(raw)}</span
+												>
+											</td>
+										{:else if c.trunc}
+											<td
+												class={cn(cellClass(c), 'cursor-pointer')}
+												title={cellTitle(raw)}
+												tabindex="0"
+												onclick={(e) => openCellDetail(c, raw, e)}
+												onkeydown={(e) => {
+													if (e.key === 'Enter' || e.key === ' ') {
+														e.preventDefault();
+														openCellDetail(c, raw, e);
+													}
+												}}>{c.date ? formatDate(raw) : cellText(raw)}</td
+											>
+										{:else}
+											<td
+												class={cn(
+													cellClass(c),
+													c.date && 'whitespace-nowrap',
+													c.width && 'wrap-break-word'
+												)}
+												style={c.width
+													? `width: ${c.width}px; min-width: ${c.width}px; max-width: ${c.width}px`
+													: undefined}>{c.date ? formatDate(raw) : cellText(raw)}</td
+											>
+										{/if}
+									{/each}
+								</tr>
+							{/each}
+						</tbody>
+					</table>
+				{/if}
+			</div>
+		{/if}
+		{#if scrollable}
+			<div
+				class="pointer-events-none absolute right-0 bottom-12 z-20 w-6 bg-linear-to-l from-(--c-surface) to-transparent"
+			></div>
+		{/if}
+		{@render footer(data?.meta ?? null)}
+	</div>
+{/if}
 
 {#if cellDetail}
 	<CellPopover value={cellDetail.value} label={cellDetail.label} anchor={cellDetail.anchor} />

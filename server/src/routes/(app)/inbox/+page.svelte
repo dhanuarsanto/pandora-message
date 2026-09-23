@@ -3,8 +3,6 @@
 	import { APP_NAME, TIPE_PENGIRIM } from '$lib/config';
 	import type { ColSpec, FilterField } from '$lib/types';
 
-	let { data } = $props();
-
 	const COLS: ColSpec[] = [
 		{ key: 'kode', label: 'Kode', mono: true, strong: true, trunc: true },
 		{ key: 'tgl_entri', label: 'Tgl Entri', muted: true, date: true },
@@ -30,20 +28,18 @@
 		{ type: 'number', param: 'limit', label: 'Limit', placeholder: 'Batas maksimal data' },
 		{ type: 'terminal', param: 'terminal', label: 'Terminal' },
 		{ type: 'reseller', param: 'reseller', label: 'Reseller' },
-		{ type: 'text', param: 'pengirim', label: 'Pengirim', placeholder: 'Cari pengirim…' },
+		{ type: 'text', param: 'pengirim', label: 'Pengirim', placeholder: 'Cari pengirim...' },
 		{ type: 'tipe', param: 'tipe', label: 'Tipe Pengirim', source: TIPE_PENGIRIM },
 		{ type: 'status', param: 'status', label: 'Status' },
-		{ type: 'text', param: 'pesan', label: 'Pesan', placeholder: 'Isi pesan…' },
+		{ type: 'text', param: 'pesan', label: 'Pesan', placeholder: 'Isi pesan...' },
 		{ type: 'checkbox', param: 'requestFromReseller', label: 'Request dari Reseller' },
 		{ type: 'checkbox', param: 'jawabanFromProvider', label: 'Jawaban dari Provider' }
 	];
 </script>
 
-<svelte:head><title>Inbox — {APP_NAME}</title></svelte:head>
+<svelte:head><title>Inbox - {APP_NAME}</title></svelte:head>
 
 <MessageList
-	load={data.inbox}
-	resellers={data.resellers}
 	path="/inbox"
 	title="Kotak Masuk"
 	subtitle="Pesan masuk dari sistem."

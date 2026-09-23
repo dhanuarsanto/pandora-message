@@ -1,19 +1,11 @@
 import { PRIVATE_API_BASE_URL, PRIVATE_API_KEY } from '$env/static/private';
 import { APP_UNIT } from '$lib/config';
+import { ApiError } from './apiError.ts';
+export { ApiError };
 
 const TIMEOUT_MS = 180000;
 
 const PUBLIC_ENDPOINTS = [`/api/v1/${APP_UNIT}/auth/login`];
-
-export class ApiError extends Error {
-	status: number;
-
-	constructor(status: number, message: string) {
-		super(message);
-		this.name = 'ApiError';
-		this.status = status;
-	}
-}
 
 export async function apiRequest<T>(path: string, options: RequestInit = {}): Promise<T> {
 	const controller = new AbortController();

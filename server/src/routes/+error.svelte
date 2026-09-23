@@ -1,4 +1,4 @@
-﻿<script lang="ts">
+<script lang="ts">
 	import { page } from '$app/state';
 	import { APP_NAME } from '$lib/config';
 	import { ERROR_CODES, ERROR_GENERIC } from '$lib/errorPages';

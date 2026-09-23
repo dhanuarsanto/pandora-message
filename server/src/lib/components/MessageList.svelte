@@ -1,27 +1,22 @@
 <script lang="ts">
-	import { afterNavigate } from '$app/navigation';
+	import { afterNavigate, goto } from '$app/navigation';
 	import { navigating, page } from '$app/state';
+	import { resolve } from '$app/paths';
 	import { appBusy } from '$lib/appBusy.svelte.js';
 	import { clearColPrefs, loadColPrefs, saveColPrefs, visibleOf } from '$lib/colPrefs';
 	import { INBOX_STATUS, OUTBOX_STATUS } from '$lib/config';
 	import type { ColSpec, FilterField, FooterMeta, MessageItem, ResellerResponse } from '$lib/types';
-	import { buildQuery, initFilterFromUrl, initStack, navigate } from '$lib/utils';
+	import { buildQuery, initFilterFromUrl, initStack, navigate, todayISO } from '$lib/utils';
 	import { Columns3, SlidersHorizontal } from '@lucide/svelte';
 	import { untrack } from 'svelte';
+	import { SvelteURLSearchParams } from 'svelte/reactivity';
 	import ColumnPanel from './ColumnPanel.svelte';
 	import MessageFilters from './MessageFilters.svelte';
 	import MessageTable from './MessageTable.svelte';
 
-	type MessagePage = {
-		data: {
-			items: MessageItem[];
-			meta: FooterMeta;
-		};
-	};
+	type MessageData = { items: MessageItem[]; meta: FooterMeta };
 
 	let {
-		load,
-		resellers,
 		path,
 		title,
 		subtitle,
@@ -29,8 +24,6 @@
 		filters,
 		stackKey
 	}: {
-		load: MessagePage | Promise<MessagePage>;
-		resellers: ResellerResponse | null | Promise<ResellerResponse | null>;
 		path: '/inbox' | '/outbox';
 		title: string;
 		subtitle: string;
@@ -38,6 +31,8 @@
 		filters: FilterField[];
 		stackKey: string;
 	} = $props();
+
+	let resellers = $state<ResellerResponse | null>(null);
 
 	let cursorStack = $state<(number | null)[]>(untrack(() => initStack(stackKey)));
 
@@ -49,7 +44,17 @@
 		}
 	}
 
-	let query = $state<Record<string, string>>({});
+	function initialQuery(): Record<string, string> {
+		const q = initFilterFromUrl(filters, page.url.searchParams);
+		if (!page.url.searchParams.has('startDate') && dateScope === 'today') {
+			q['startDate'] = todayISO();
+			q['endDate'] = todayISO();
+		}
+		return q;
+	}
+
+	let dateScope = $state<'today' | 'all'>('today');
+	let query = $state<Record<string, string>>(initialQuery());
 	let pageSize = $state(page.url.searchParams.get('pageSize') ?? '');
 	let showFilter = $state(false);
 	let showColumns = $state(false);
@@ -107,23 +112,97 @@
 		colPrefs = loadColPrefs(colKey, cols);
 	}
 
-	let dataReady = $state(false);
+	let messageData = $state<MessageData | null>(null);
+	let loadError = $state<string | null>(null);
+	let loadErrorCause = $state<string | null>(null);
+	let retryTick = $state(0);
+	let loading = $state(true);
+	let lastFetchKey = '';
+	let lastRetryTick = 0;
+
+	const endpoint = $derived('/api/messages' + path);
 
 	$effect(() => {
-		dataReady = false;
-		const p = load;
-		Promise.resolve(p).then(
-			() => (dataReady = true),
-			() => (dataReady = true)
-		);
+		if (typeof window === 'undefined') return;
+		const params = new SvelteURLSearchParams(page.url.searchParams);
+		if (dateScope === 'today') {
+			if (!params.has('startDate')) params.set('startDate', todayISO());
+			if (!params.has('endDate')) params.set('endDate', todayISO());
+		}
+		const qs = params.toString();
+		void retryTick;
+
+		const key = endpoint + (qs ? '?' + qs : '');
+		if (lastFetchKey === key && lastRetryTick === retryTick) {
+			loading = false;
+			loadError = null;
+			return;
+		}
+		lastFetchKey = key;
+		lastRetryTick = retryTick;
+
+		const ctrl = new AbortController();
+		loading = true;
+		loadError = null;
+		loadErrorCause = null;
+
+		fetch(endpoint + (qs ? '?' + qs : ''), { signal: ctrl.signal })
+			.then((res) => {
+				if (res.redirected && res.url.includes('/login')) {
+					goto(resolve('/login'));
+					throw new Error('Sesi berakhir.');
+				}
+				return res.json() as Promise<{
+					status: string;
+					data?: MessageData;
+					message?: string;
+					detail?: string;
+				}>;
+			})
+			.then((body) => {
+				if (ctrl.signal.aborted) return;
+				if (body.status === 'sukses' && body.data) {
+					messageData = { items: body.data.items ?? [], meta: body.data.meta };
+				} else {
+					messageData = null;
+					loadError = body.message ?? 'Gagal memuat data.';
+					loadErrorCause = body.detail ?? null;
+				}
+			})
+			.catch(() => {
+				if (ctrl.signal.aborted) return;
+				messageData = null;
+				loadError = 'Gagal memuat data.';
+			})
+			.finally(() => {
+				if (!ctrl.signal.aborted) loading = false;
+			});
+
+		return () => ctrl.abort();
 	});
 
 	$effect(() => {
-		appBusy.value = !dataReady;
+		if (typeof window === 'undefined') return;
+		const ctrl = new AbortController();
+		fetch('/api/references/resellers', { signal: ctrl.signal })
+			.then((res) => res.json() as Promise<{ status: string; data?: ResellerResponse }>)
+			.then((body) => {
+				if (ctrl.signal.aborted) return;
+				resellers = body.status === 'sukses' && body.data ? body.data : null;
+			})
+			.catch(() => {
+				if (!ctrl.signal.aborted) resellers = null;
+			});
+
+		return () => ctrl.abort();
 	});
 
-	const controlsDisabled = $derived(!dataReady || navigating.type !== null);
+	const controlsDisabled = $derived(loading || navigating.type !== null);
 	const busy = $derived(navigating.type !== null);
+
+	$effect(() => {
+		appBusy.value = loading;
+	});
 
 	$effect(() => {
 		if (typeof window === 'undefined') return;
@@ -155,6 +234,10 @@
 		restoreScroll();
 		pageSize = page.url.searchParams.get('pageSize') ?? '';
 		query = initFilterFromUrl(filters, page.url.searchParams);
+		if (!page.url.searchParams.has('startDate') && dateScope === 'today') {
+			query['startDate'] = todayISO();
+			query['endDate'] = todayISO();
+		}
 		if (nav && nav.type === 'popstate') {
 			const raw = page.url.searchParams.get('cursor');
 			const cur = raw === null ? null : Number(raw);
@@ -190,14 +273,23 @@
 	}
 
 	function applyFilter() {
-		if (busy) return;
+		if (busy || loading) return;
+		const hasAnyDate = !!(query['startDate'] || query['endDate']);
+		if (!hasAnyDate && dateScope !== 'all') {
+			dateScope = 'all';
+		} else if (hasAnyDate && dateScope !== 'today') {
+			dateScope = 'today';
+		}
+		const next = buildQuery(query, pageSize, null).toString();
+		if (next === page.url.searchParams.toString()) return;
 		cursorStack = [null];
 		saveStack();
-		navigate(path, buildQuery(query, pageSize, null).toString());
+		navigate(path, next);
 	}
 
 	function resetFilters() {
-		query = {};
+		query = { startDate: todayISO(), endDate: todayISO() };
+		dateScope = 'today';
 		cursorStack = [null];
 		saveStack();
 		navigate(path, buildQuery(query, pageSize, null).toString());
@@ -206,6 +298,10 @@
 	function changePageSize(value: string) {
 		pageSize = value;
 		applyFilter();
+	}
+
+	function retryLoad() {
+		retryTick += 1;
 	}
 </script>
 
@@ -219,7 +315,7 @@
 			<button
 				bind:this={columnsBtn}
 				onclick={() => {
-					if (!dataReady) return;
+					if (loading) return;
 					showColumns = !showColumns;
 				}}
 				class="flex items-center gap-2 rounded-lg border border-(--c-border) bg-(--c-surface) px-3 py-1.5 text-xs font-medium text-(--c-fg-muted) transition-colors hover:border-(--c-accent) hover:text-(--c-accent)"
@@ -262,7 +358,10 @@
 	{/if}
 
 	<MessageTable
-		{load}
+		data={messageData}
+		{loading}
+		error={loadError}
+		errorDetail={loadErrorCause}
 		cols={visibleCols}
 		{skeletonRows}
 		{pageSize}
@@ -271,6 +370,7 @@
 		onGoNext={goNext}
 		onGoPrev={goPrev}
 		onReorderColumns={reorderFromVisible}
+		onRetry={retryLoad}
 		reloadPath={path}
 	/>
 </main>
