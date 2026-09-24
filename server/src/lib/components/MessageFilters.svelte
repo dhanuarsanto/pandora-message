@@ -88,14 +88,6 @@
 		}
 		applying = onApply();
 	}
-
-	function applyAllDates() {
-		for (const pair of datePairs) {
-			query[pair.start.param] = '';
-			query[pair.end.param] = '';
-		}
-		applying = onApply();
-	}
 </script>
 
 <form
@@ -140,19 +132,6 @@
 								>{p.label}</button
 							>
 						{/each}
-						<button
-							type="button"
-							disabled={controlsDisabled || applying}
-							onclick={() => {
-								applyAllDates();
-							}}
-							class="rounded-full border px-3 py-1 text-[11px] font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50 {!query[
-								pair.start.param
-							] && !query[pair.end.param]
-								? 'border-(--c-accent) bg-(--c-accent-soft) text-(--c-accent-strong)'
-								: 'border-(--c-border) text-(--c-fg-muted) hover:border-(--c-accent) hover:text-(--c-accent)'}"
-							>Semua data</button
-						>
 					</div>
 				</div>
 				<div class="flex flex-col gap-3 sm:flex-row sm:items-end">
