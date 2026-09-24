@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { ColSpec } from '$lib/types';
 	import { cn } from '$lib/utils';
-	import { GripVertical, RotateCcw } from '@lucide/svelte';
+	import { ChevronDown, ChevronUp, GripVertical, RotateCcw } from '@lucide/svelte';
 
 	let {
 		cols,
@@ -48,6 +48,20 @@
 		move(dragIdx, to);
 		dragIdx = null;
 		overIdx = null;
+	}
+
+	function moveUp(i: number) {
+		if (i > 0) {
+			move(i, i - 1);
+			setActive(i - 1);
+		}
+	}
+
+	function moveDown(i: number) {
+		if (i < order.length - 1) {
+			move(i, i + 1);
+			setActive(i + 1);
+		}
 	}
 
 	function onKeydown(key: string, i: number, e: KeyboardEvent) {
@@ -152,6 +166,26 @@
 					/>
 					<span class="truncate text-[12px] text-(--c-fg)">{col?.label ?? key}</span>
 				</label>
+				<div class="flex shrink-0 items-center gap-0.5 pl-1">
+					<button
+						type="button"
+						disabled={i === 0}
+						aria-label={`Pindahkan kolom ${col?.label ?? key} ke atas`}
+						onclick={() => moveUp(i)}
+						class="flex h-6 min-w-6 items-center justify-center rounded-md text-(--c-fg-faint) transition-colors hover:bg-(--c-surface-3) hover:text-(--c-accent) disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-(--c-fg-faint)"
+					>
+						<ChevronUp class="h-3.5 w-3.5" />
+					</button>
+					<button
+						type="button"
+						disabled={i === order.length - 1}
+						aria-label={`Pindahkan kolom ${col?.label ?? key} ke bawah`}
+						onclick={() => moveDown(i)}
+						class="flex h-6 min-w-6 items-center justify-center rounded-md text-(--c-fg-faint) transition-colors hover:bg-(--c-surface-3) hover:text-(--c-accent) disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-(--c-fg-faint)"
+					>
+						<ChevronDown class="h-3.5 w-3.5" />
+					</button>
+				</div>
 			</div>
 		{/each}
 	</div>

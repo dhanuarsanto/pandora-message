@@ -6,6 +6,7 @@
 	import { clearColPrefs, loadColPrefs, saveColPrefs, visibleOf } from '$lib/colPrefs';
 	import { INBOX_STATUS, OUTBOX_STATUS } from '$lib/config';
 	import type { ColSpec, FilterField, FooterMeta, MessageItem, ResellerResponse } from '$lib/types';
+	import { paramsEqual } from '$lib/params';
 	import { buildQuery, initFilterFromUrl, initStack, navigate, todayISO } from '$lib/utils';
 	import { Columns3, SlidersHorizontal } from '@lucide/svelte';
 	import { untrack } from 'svelte';
@@ -272,19 +273,20 @@
 		navigate(path, buildQuery(query, pageSize, prev).toString());
 	}
 
-	function applyFilter() {
-		if (busy || loading) return;
+	function applyFilter(): boolean {
+		if (busy || loading) return false;
 		const hasAnyDate = !!(query['startDate'] || query['endDate']);
 		if (!hasAnyDate && dateScope !== 'all') {
 			dateScope = 'all';
 		} else if (hasAnyDate && dateScope !== 'today') {
 			dateScope = 'today';
 		}
-		const next = buildQuery(query, pageSize, null).toString();
-		if (next === page.url.searchParams.toString()) return;
+		const next = buildQuery(query, pageSize, null);
+		if (paramsEqual(next, page.url.searchParams)) return false;
 		cursorStack = [null];
 		saveStack();
-		navigate(path, next);
+		navigate(path, next.toString());
+		return true;
 	}
 
 	function resetFilters() {

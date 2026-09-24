@@ -20,7 +20,7 @@
 		resellers: ResellerResponse | null;
 		controlsDisabled: boolean;
 		onReset: () => void;
-		onApply: () => void;
+		onApply: () => boolean;
 	} = $props();
 
 	let applying = $state(false);
@@ -86,7 +86,7 @@
 			query[pair.start.param] = p.start;
 			query[pair.end.param] = p.end;
 		}
-		onApply();
+		applying = onApply();
 	}
 
 	function applyAllDates() {
@@ -94,7 +94,7 @@
 			query[pair.start.param] = '';
 			query[pair.end.param] = '';
 		}
-		onApply();
+		applying = onApply();
 	}
 </script>
 
@@ -102,8 +102,7 @@
 	class="mb-5 rounded-xl border border-(--c-border) bg-(--c-surface) p-5"
 	onsubmit={(e) => {
 		e.preventDefault();
-		applying = true;
-		onApply();
+		applying = onApply();
 	}}
 >
 	<div class="mb-3 flex items-center justify-between">
@@ -131,7 +130,6 @@
 								type="button"
 								disabled={controlsDisabled || applying}
 								onclick={() => {
-									applying = true;
 									applyPreset(p);
 								}}
 								class="rounded-full border px-3 py-1 text-[11px] font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50 {presetActive(
@@ -146,7 +144,6 @@
 							type="button"
 							disabled={controlsDisabled || applying}
 							onclick={() => {
-								applying = true;
 								applyAllDates();
 							}}
 							class="rounded-full border px-3 py-1 text-[11px] font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50 {!query[
