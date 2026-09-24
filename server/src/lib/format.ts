@@ -30,6 +30,5 @@ export function cellClass(c: ColSpec): string {
 	cls += c.mono ? ' font-mono text-[11px] whitespace-nowrap' : ' text-[12px]';
 	if (c.strong) cls += ' font-semibold';
 	if (c.muted) cls += ' text-(--c-fg-soft)';
-	if (c.trunc) cls += ' truncate';
 	return cls;
 }

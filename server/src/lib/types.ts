@@ -81,7 +81,6 @@ export type ColSpec = {
 	badge?: boolean;
 	strong?: boolean;
 	muted?: boolean;
-	trunc?: boolean;
 	date?: boolean;
 	status?: boolean;
 	width?: number;

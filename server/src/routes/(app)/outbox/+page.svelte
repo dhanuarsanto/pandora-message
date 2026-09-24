@@ -4,7 +4,7 @@
 	import type { ColSpec, FilterField } from '$lib/types';
 
 	const COLS: ColSpec[] = [
-		{ key: 'kode', label: 'Kode', mono: true, strong: true, trunc: true },
+		{ key: 'kode', label: 'Kode', mono: true, strong: true },
 		{ key: 'tgl_entri', label: 'Tgl Entri', muted: true, date: true },
 		{ key: 'penerima', label: 'Penerima', strong: true, width: 200 },
 		{ key: 'tipe_penerima', label: 'Tipe Penerima', badge: true },
@@ -12,14 +12,14 @@
 		{ key: 'status', label: 'Status', status: true },
 		{ key: 'tgl_status', label: 'Tgl Status', muted: true, date: true },
 		{ key: 'kode_inbox', label: 'Kode Inbox', mono: true },
-		{ key: 'kode_transaksi', label: 'Kode Transaksi', mono: true, trunc: true },
-		{ key: 'kode_reseller', label: 'Kode Reseller', mono: true, trunc: true },
+		{ key: 'kode_transaksi', label: 'Kode Transaksi', mono: true },
+		{ key: 'kode_reseller', label: 'Kode Reseller', mono: true },
 		{ key: 'bebas_biaya', label: 'Bebas Biaya' },
 		{ key: 'is_perintah', label: 'Perintah' },
 		{ key: 'kode_modul', label: 'Kode Modul', mono: true },
 		{ key: 'prioritas', label: 'Prioritas' },
-		{ key: 'modul_proses', label: 'Modul Proses', trunc: true },
-		{ key: 'pengirim', label: 'Pengirim', strong: true, trunc: true },
+		{ key: 'modul_proses', label: 'Modul Proses' },
+		{ key: 'pengirim', label: 'Pengirim', strong: true },
 		{ key: 'kode_terminal', label: 'Kode Terminal', mono: true },
 		{ key: 'ctr_kirim', label: 'Ctr Kirim' }
 	];

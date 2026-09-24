@@ -1,4 +1,4 @@
-<script lang="ts">
+﻿<script lang="ts">
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { reorderKeys } from '$lib/colPrefs';
@@ -6,7 +6,6 @@
 	import { cellClass, cellText, formatDate, statusClasses } from '$lib/format';
 	import { cn } from '$lib/utils';
 	import { ChevronLeft, ChevronRight } from '@lucide/svelte';
-	import CellPopover from './CellPopover.svelte';
 
 	let {
 		data,
@@ -121,63 +120,6 @@
 		return 60 + ((i * 37) % 35);
 	}
 
-	type CellDetail = {
-		key: string;
-		label: string;
-		value: string;
-		anchor: { left: number; top: number; bottom: number };
-	};
-
-	let cellDetail = $state<CellDetail | null>(null);
-	let returnFocus: HTMLElement | null = null;
-
-	function cellTitle(raw: string | number | undefined): string | undefined {
-		return raw === null || raw === undefined ? undefined : String(raw);
-	}
-
-	function openCellDetail(
-		c: ColSpec,
-		raw: string | number | undefined,
-		e: MouseEvent | KeyboardEvent
-	) {
-		if (!c.trunc) return;
-		returnFocus = e.currentTarget as HTMLElement;
-		const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
-		cellDetail = {
-			key: c.key,
-			label: c.label,
-			value: raw === null || raw === undefined ? '-' : String(raw),
-			anchor: { left: r.left, top: r.top, bottom: r.bottom }
-		};
-	}
-
-	function closeCellDetail() {
-		const el = returnFocus;
-		cellDetail = null;
-		returnFocus = null;
-		if (el) requestAnimationFrame(() => el.focus());
-	}
-
-	$effect(() => {
-		if (!cellDetail) return;
-		const onPointer = (e: PointerEvent) => {
-			const t = e.target;
-			if (!(t instanceof HTMLElement) || !t.closest('[data-cell-popover]')) closeCellDetail();
-		};
-		const onKey = (e: KeyboardEvent) => {
-			if (e.key === 'Escape') closeCellDetail();
-		};
-		const cont = tableContainer;
-		window.addEventListener('pointerdown', onPointer);
-		window.addEventListener('keydown', onKey);
-		cont?.addEventListener('scroll', closeCellDetail, { capture: true });
-		return () => {
-			window.removeEventListener('pointerdown', onPointer);
-			window.removeEventListener('keydown', onKey);
-			cont?.removeEventListener('scroll', closeCellDetail, { capture: true });
-		};
-	});
-
 	$effect(() => {
 		if (typeof window === 'undefined' || !tableContainer) return;
 		const check = () => {
@@ -210,7 +152,7 @@
 					)}
 					draggable={cols.length > 1}
 					tabindex={cols.length > 1 ? 0 : undefined}
-					title={cols.length > 1 ? 'Seret, atau Alt+←/→ untuk memindahkan kolom' : undefined}
+					title={cols.length > 1 ? 'Seret, atau Alt+â†/â†’ untuk memindahkan kolom' : undefined}
 					ondragstart={(e) => onHeaderDragStart(c.key, e)}
 					ondragover={(e) => onHeaderDragOver(c.key, e)}
 					ondrop={(e) => onHeaderDrop(e)}
@@ -360,19 +302,6 @@
 													)}">{cellText(raw)}</span
 												>
 											</td>
-										{:else if c.trunc}
-											<td
-												class={cn(cellClass(c), 'cursor-pointer')}
-												title={cellTitle(raw)}
-												tabindex="0"
-												onclick={(e) => openCellDetail(c, raw, e)}
-												onkeydown={(e) => {
-													if (e.key === 'Enter' || e.key === ' ') {
-														e.preventDefault();
-														openCellDetail(c, raw, e);
-													}
-												}}>{c.date ? formatDate(raw) : cellText(raw)}</td
-											>
 										{:else}
 											<td
 												class={cn(
@@ -400,8 +329,4 @@
 		{/if}
 		{@render footer(data?.meta ?? null)}
 	</div>
-{/if}
-
-{#if cellDetail}
-	<CellPopover value={cellDetail.value} label={cellDetail.label} anchor={cellDetail.anchor} />
 {/if}

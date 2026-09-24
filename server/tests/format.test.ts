@@ -39,7 +39,7 @@ test('cellClass kombinasi flag', () => {
 		'border-b border-(--c-border) px-3.5 py-3 text-[12px]'
 	);
 	assert.equal(
-		cellClass({ key: 'a', label: 'a', mono: true, strong: true, muted: true, trunc: true }),
-		'border-b border-(--c-border) px-3.5 py-3 font-mono text-[11px] whitespace-nowrap font-semibold text-(--c-fg-soft) truncate'
+		cellClass({ key: 'a', label: 'a', mono: true, strong: true, muted: true }),
+		'border-b border-(--c-border) px-3.5 py-3 font-mono text-[11px] whitespace-nowrap font-semibold text-(--c-fg-soft)'
 	);
 });
