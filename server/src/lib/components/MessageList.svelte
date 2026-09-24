@@ -47,7 +47,7 @@
 
 	function initialQuery(): Record<string, string> {
 		const q = initFilterFromUrl(filters, page.url.searchParams);
-		if (!page.url.searchParams.has('startDate') && dateScope === 'today') {
+		if (!page.url.searchParams.has('startDate') && !page.url.searchParams.has('endDate')) {
 			q['startDate'] = todayISO();
 			q['endDate'] = todayISO();
 		}
@@ -126,9 +126,9 @@
 	$effect(() => {
 		if (typeof window === 'undefined') return;
 		const params = new SvelteURLSearchParams(page.url.searchParams);
-		if (dateScope === 'today') {
-			if (!params.has('startDate')) params.set('startDate', todayISO());
-			if (!params.has('endDate')) params.set('endDate', todayISO());
+		if (dateScope === 'today' && !params.has('startDate') && !params.has('endDate')) {
+			params.set('startDate', todayISO());
+			params.set('endDate', todayISO());
 		}
 		const qs = params.toString();
 		void retryTick;
@@ -142,12 +142,11 @@
 		lastFetchKey = key;
 		lastRetryTick = retryTick;
 
-		const ctrl = new AbortController();
 		loading = true;
 		loadError = null;
 		loadErrorCause = null;
 
-		fetch(endpoint + (qs ? '?' + qs : ''), { signal: ctrl.signal })
+		fetch(endpoint + (qs ? '?' + qs : ''))
 			.then((res) => {
 				if (res.redirected && res.url.includes('/login')) {
 					goto(resolve('/login'));
@@ -161,7 +160,7 @@
 				}>;
 			})
 			.then((body) => {
-				if (ctrl.signal.aborted) return;
+				if (lastFetchKey !== key) return;
 				if (body.status === 'sukses' && body.data) {
 					messageData = { items: body.data.items ?? [], meta: body.data.meta };
 				} else {
@@ -171,15 +170,13 @@
 				}
 			})
 			.catch(() => {
-				if (ctrl.signal.aborted) return;
+				if (lastFetchKey !== key) return;
 				messageData = null;
 				loadError = 'Gagal memuat data.';
 			})
 			.finally(() => {
-				if (!ctrl.signal.aborted) loading = false;
+				if (lastFetchKey === key) loading = false;
 			});
-
-		return () => ctrl.abort();
 	});
 
 	$effect(() => {
@@ -235,7 +232,11 @@
 		restoreScroll();
 		pageSize = page.url.searchParams.get('pageSize') ?? '';
 		query = initFilterFromUrl(filters, page.url.searchParams);
-		if (!page.url.searchParams.has('startDate') && dateScope === 'today') {
+		if (
+			!page.url.searchParams.has('startDate') &&
+			!page.url.searchParams.has('endDate') &&
+			dateScope === 'today'
+		) {
 			query['startDate'] = todayISO();
 			query['endDate'] = todayISO();
 		}
@@ -280,6 +281,9 @@
 			dateScope = 'all';
 		} else if (hasAnyDate && dateScope !== 'today') {
 			dateScope = 'today';
+		}
+		if (query['startDate'] && !query['endDate']) {
+			query['endDate'] = todayISO();
 		}
 		const next = buildQuery(query, pageSize, null);
 		if (paramsEqual(next, page.url.searchParams)) return false;

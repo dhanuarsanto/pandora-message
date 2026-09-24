@@ -58,7 +58,8 @@
 		{ label: 'Hari Ini', start: iso(today), end: iso(today) },
 		{ label: '7 Hari', start: addDays(-6), end: iso(today) },
 		{ label: 'Bulan Ini', start: firstOfMonth(0), end: iso(today) },
-		{ label: '3 Bulan', start: firstOfMonth(-2), end: iso(today) }
+		{ label: '3 Bulan', start: firstOfMonth(-2), end: iso(today) },
+		{ label: 'Semua Data', start: '', end: '' }
 	];
 
 	const dateFields = $derived(filters.filter((f) => f.type === 'date'));
@@ -134,8 +135,8 @@
 						{/each}
 					</div>
 				</div>
-				<div class="flex flex-col gap-3 sm:flex-row sm:items-end">
-					<div class="flex-1">
+				<div class="grid grid-cols-1 items-end gap-3 sm:max-w-lg sm:grid-cols-[1fr_auto_1fr]">
+					<div>
 						<label
 							for={'f-' + pair.start.param}
 							class="mb-1.5 block text-[11px] font-semibold tracking-widest text-(--c-fg-muted) uppercase"
@@ -150,7 +151,7 @@
 					<div class="hidden pb-2.5 text-(--c-fg-faint) sm:block">
 						<ArrowRight class="h-4 w-4" />
 					</div>
-					<div class="flex-1">
+					<div>
 						<label
 							for={'f-' + pair.end.param}
 							class="mb-1.5 block text-[11px] font-semibold tracking-widest text-(--c-fg-muted) uppercase"
