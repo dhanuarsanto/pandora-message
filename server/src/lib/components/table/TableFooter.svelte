@@ -31,7 +31,7 @@
 				value={pageSize}
 				onchange={(e) => onPageSizeChange(e.currentTarget.value)}
 				disabled={meta === null || busy || loading}
-				class="h-8 rounded-md border border-(--c-border) bg-(--c-surface) px-2 text-xs text-(--c-fg) outline-none focus:border-(--c-accent) disabled:cursor-not-allowed disabled:opacity-40"
+				class="h-8 cursor-pointer rounded-md border border-(--c-border) bg-(--c-surface) px-2 text-xs text-(--c-fg) outline-none focus:border-(--c-accent) disabled:cursor-not-allowed disabled:opacity-40"
 			>
 				<option value="">10</option>
 				<option value="25">25</option>
@@ -44,14 +44,14 @@
 		<button
 			onclick={() => meta && onGoPrev(meta)}
 			disabled={meta === null || busy || loading || !meta.has_prev_page}
-			class="flex h-8 min-w-8 items-center justify-center rounded-md border border-(--c-border) bg-(--c-surface) px-2 text-xs font-medium text-(--c-fg-muted) transition-colors hover:border-(--c-accent) hover:text-(--c-accent) disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-(--c-border) disabled:hover:text-(--c-fg-muted)"
+			class="flex h-8 min-w-8 cursor-pointer items-center justify-center rounded-md border border-(--c-border) bg-(--c-surface) px-2 text-xs font-medium text-(--c-fg-muted) transition-colors hover:border-(--c-accent) hover:text-(--c-accent) disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-(--c-border) disabled:hover:text-(--c-fg-muted)"
 		>
 			<ChevronLeft class="h-4 w-4" />
 		</button>
 		<button
 			onclick={() => meta && onGoNext(meta)}
 			disabled={meta === null || busy || loading || !meta.has_next_page}
-			class="flex h-8 min-w-8 items-center justify-center rounded-md border border-(--c-border) bg-(--c-surface) px-2 text-xs font-medium text-(--c-fg-muted) transition-colors hover:border-(--c-accent) hover:text-(--c-accent) disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-(--c-border) disabled:hover:text-(--c-fg-muted)"
+			class="flex h-8 min-w-8 cursor-pointer items-center justify-center rounded-md border border-(--c-border) bg-(--c-surface) px-2 text-xs font-medium text-(--c-fg-muted) transition-colors hover:border-(--c-accent) hover:text-(--c-accent) disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-(--c-border) disabled:hover:text-(--c-fg-muted)"
 		>
 			<ChevronRight class="h-4 w-4" />
 		</button>

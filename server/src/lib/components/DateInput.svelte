@@ -120,7 +120,7 @@
 		aria-haspopup="dialog"
 		aria-expanded={open}
 		onclick={toggle}
-		class="flex h-9 w-full items-center justify-between gap-2 rounded-lg border border-(--c-border) bg-(--c-surface) px-3 text-left text-[13px] text-(--c-fg) outline-none focus:border-(--c-accent) disabled:cursor-not-allowed disabled:opacity-60"
+		class="flex h-9 w-full cursor-pointer items-center justify-between gap-2 rounded-lg border border-(--c-border) bg-(--c-surface) px-3 text-left text-[13px] text-(--c-fg) outline-none focus:border-(--c-accent) disabled:cursor-not-allowed disabled:opacity-60"
 	>
 		<span class={cn(!fmtDisp(value) && 'text-(--c-fg-faint)')}>
 			{fmtDisp(value) || 'Pilih tanggal'}
@@ -166,7 +166,7 @@
 						: mode === 'months'
 							? 'Tahun berikutnya'
 							: 'Rentang tahun berikutnya'}
-					class="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-(--c-fg-muted) transition-colors hover:bg-(--c-surface-2) hover:text-(--c-accent) disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-(--c-fg-muted)"
+					class="flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md text-(--c-fg-muted) transition-colors hover:bg-(--c-surface-2) hover:text-(--c-accent) disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-(--c-fg-muted)"
 				>
 					<ChevronRight class="h-4 w-4" /></button
 				>
@@ -191,7 +191,7 @@
 								onclick={() => pick(cell.iso)}
 								onkeydown={(e) => onDayKeydown(cell.iso, e)}
 								class={cn(
-									'flex h-8 items-center justify-center rounded-lg text-[12.5px] transition-colors',
+									'flex h-8 cursor-pointer items-center justify-center rounded-lg text-[12.5px] transition-colors',
 									cell.iso > isoToday
 										? 'cursor-not-allowed text-(--c-fg-faint)'
 										: cell.iso === value
@@ -216,7 +216,7 @@
 								mode = 'days';
 							}}
 							class={cn(
-								'flex h-9 items-center justify-center rounded-lg text-[12.5px] transition-colors',
+								'flex h-9 cursor-pointer items-center justify-center rounded-lg text-[12.5px] transition-colors',
 								view.getFullYear() === today.getFullYear() && i > today.getMonth()
 									? 'cursor-not-allowed text-(--c-fg-faint)'
 									: i === view.getMonth()
@@ -238,7 +238,7 @@
 								mode = 'months';
 							}}
 							class={cn(
-								'flex h-9 items-center justify-center rounded-lg text-[12.5px] transition-colors',
+								'flex h-9 cursor-pointer items-center justify-center rounded-lg text-[12.5px] transition-colors',
 								yy > today.getFullYear()
 									? 'cursor-not-allowed text-(--c-fg-faint)'
 									: yy === view.getFullYear()
@@ -256,7 +256,7 @@
 						value = toISODate(today);
 						close();
 					}}
-					class="flex items-center gap-1 text-[11.5px] font-medium text-(--c-accent-strong) hover:underline"
+					class="flex cursor-pointer items-center gap-1 text-[11.5px] font-medium text-(--c-accent-strong) hover:underline"
 				>
 					<Check class="h-3 w-3" />
 					Hari ini
@@ -267,7 +267,7 @@
 						value = '';
 						close();
 					}}
-					class="text-[11.5px] font-medium text-(--c-fg-muted) hover:text-(--c-danger) hover:underline"
+					class="cursor-pointer text-[11.5px] font-medium text-(--c-fg-muted) hover:text-(--c-danger) hover:underline"
 					>Kosongkan</button
 				>
 			</div>

@@ -25,7 +25,7 @@
 		<button
 			onclick={onOpen}
 			disabled={busy}
-			class="flex items-center gap-1.5 rounded-[10px] border border-(--c-border) px-3 py-2 text-xs font-medium text-(--c-fg-muted) transition-colors hover:border-(--c-fg) hover:text-(--c-fg) disabled:cursor-not-allowed disabled:opacity-60"
+			class="flex cursor-pointer items-center gap-1.5 rounded-[10px] border border-(--c-border) px-3 py-2 text-xs font-medium text-(--c-fg-muted) transition-colors hover:border-(--c-fg) hover:text-(--c-fg) disabled:cursor-not-allowed disabled:opacity-60"
 		>
 			<LogOut class="h-3.5 w-3.5" />
 			Keluar
@@ -34,7 +34,7 @@
 		<button
 			onclick={onOpen}
 			disabled={busy}
-			class="flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-medium text-(--c-fg-muted) transition-colors hover:bg-(--c-surface-3) hover:text-(--c-fg) disabled:cursor-not-allowed disabled:opacity-60"
+			class="flex cursor-pointer items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-medium text-(--c-fg-muted) transition-colors hover:bg-(--c-surface-3) hover:text-(--c-fg) disabled:cursor-not-allowed disabled:opacity-60"
 		>
 			<LogOut class="h-4 w-4" />
 			Keluar
@@ -46,7 +46,7 @@
 			<button
 				onclick={onConfirm}
 				disabled={busy || loading}
-				class="flex items-center gap-1.5 rounded-[10px] border border-(--c-danger) bg-(--c-danger-bg) px-3 py-2 text-xs font-semibold text-(--c-danger) transition-colors hover:bg-(--c-danger-bg-2) disabled:opacity-60"
+				class="flex cursor-pointer items-center gap-1.5 rounded-[10px] border border-(--c-danger) bg-(--c-danger-bg) px-3 py-2 text-xs font-semibold text-(--c-danger) transition-colors hover:bg-(--c-danger-bg-2) disabled:cursor-not-allowed disabled:opacity-60"
 			>
 				{#if loading}
 					<span
@@ -60,7 +60,7 @@
 			<button
 				onclick={onCancel}
 				disabled={busy || loading}
-				class="flex h-8 w-8 items-center justify-center rounded-[10px] border border-(--c-border) text-xs font-medium text-(--c-fg-muted) transition-colors hover:border-(--c-fg) hover:text-(--c-fg) disabled:opacity-60"
+				class="flex h-8 w-8 cursor-pointer items-center justify-center rounded-[10px] border border-(--c-border) text-xs font-medium text-(--c-fg-muted) transition-colors hover:border-(--c-fg) hover:text-(--c-fg) disabled:cursor-not-allowed disabled:opacity-60"
 				aria-label="Batal"
 			>
 				×
@@ -71,7 +71,7 @@
 			<button
 				onclick={onConfirm}
 				disabled={busy || loading}
-				class="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-(--c-danger) bg-(--c-danger-bg) px-3 py-2.5 text-sm font-semibold text-(--c-danger) transition-colors hover:bg-(--c-danger-bg-2) disabled:opacity-60"
+				class="flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-(--c-danger) bg-(--c-danger-bg) px-3 py-2.5 text-sm font-semibold text-(--c-danger) transition-colors hover:bg-(--c-danger-bg-2) disabled:cursor-not-allowed disabled:opacity-60"
 			>
 				{#if loading}
 					<span
@@ -85,7 +85,7 @@
 			<button
 				onclick={onCancel}
 				disabled={busy || loading}
-				class="flex h-9 w-9 items-center justify-center rounded-lg border border-(--c-border) text-(--c-fg-muted) transition-colors hover:border-(--c-fg) hover:text-(--c-fg) disabled:opacity-60"
+				class="flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg border border-(--c-border) text-(--c-fg-muted) transition-colors hover:border-(--c-fg) hover:text-(--c-fg) disabled:cursor-not-allowed disabled:opacity-60"
 				aria-label="Batal"
 			>
 				×

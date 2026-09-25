@@ -131,7 +131,7 @@
 			type="button"
 			onclick={onReset}
 			disabled={controlsDisabled}
-			class="inline-flex items-center gap-1.5 rounded-lg border border-(--c-border) bg-(--c-surface) px-3 py-1.5 text-xs font-medium text-(--c-fg-muted) transition-colors hover:border-(--c-danger) hover:bg-(--c-danger-bg) hover:text-(--c-danger) disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:border-(--c-border) disabled:hover:bg-(--c-surface) disabled:hover:text-(--c-fg-muted)"
+			class="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-(--c-border) bg-(--c-surface) px-3 py-1.5 text-xs font-medium text-(--c-fg-muted) transition-colors hover:border-(--c-danger) hover:bg-(--c-danger-bg) hover:text-(--c-danger) disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:border-(--c-border) disabled:hover:bg-(--c-surface) disabled:hover:text-(--c-fg-muted)"
 		>
 			<RotateCcw class="h-3.5 w-3.5" />
 			Reset semua
@@ -155,7 +155,7 @@
 							applyPreset(p);
 						}}
 						class={cn(
-							'rounded-md px-2.5 py-1.5 text-[12px] font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50 sm:px-3',
+							'cursor-pointer rounded-md px-2.5 py-1.5 text-[12px] font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50 sm:px-3',
 							presetActive(p)
 								? 'bg-(--c-accent-soft) font-semibold text-(--c-accent-strong)'
 								: 'text-(--c-fg-muted) hover:bg-(--c-surface-3) hover:text-(--c-accent)'
@@ -272,7 +272,7 @@
 		<button
 			type="submit"
 			disabled={controlsDisabled || applying}
-			class="rounded-lg bg-(--c-accent) px-5 py-2 text-[13px] font-semibold text-white transition-colors hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+			class="cursor-pointer rounded-lg bg-(--c-accent) px-5 py-2 text-[13px] font-semibold text-white transition-colors hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
 		>
 			Terapkan Filter
 		</button>

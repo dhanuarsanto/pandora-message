@@ -95,7 +95,7 @@
 		aria-haspopup="listbox"
 		aria-expanded={open}
 		onclick={toggle}
-		class="flex h-9 w-full items-center justify-between gap-2 rounded-lg border border-(--c-border) bg-(--c-surface) px-3 text-left text-[13px] text-(--c-fg) outline-none focus:border-(--c-accent) disabled:cursor-not-allowed disabled:opacity-60"
+		class="flex h-9 w-full cursor-pointer items-center justify-between gap-2 rounded-lg border border-(--c-border) bg-(--c-surface) px-3 text-left text-[13px] text-(--c-fg) outline-none focus:border-(--c-accent) disabled:cursor-not-allowed disabled:opacity-60"
 	>
 		<span
 			title={selectedLabel || placeholder}
@@ -139,7 +139,7 @@
 					tabindex="-1"
 					onclick={() => pick('')}
 					class={cn(
-						'flex w-full items-start justify-between gap-2 rounded-lg px-3 py-2 text-left text-[13px] transition-colors',
+						'flex w-full cursor-pointer items-start justify-between gap-2 rounded-lg px-3 py-2 text-left text-[13px] transition-colors',
 						value === ''
 							? 'bg-(--c-accent-soft) font-medium text-(--c-accent-strong)'
 							: 'text-(--c-fg) hover:bg-(--c-surface-2)'
@@ -163,7 +163,7 @@
 							tabindex="-1"
 							onclick={() => pick(o.value)}
 							class={cn(
-								'flex w-full items-start justify-between gap-2 rounded-lg px-3 py-2 text-left text-[13px] transition-colors',
+								'flex w-full cursor-pointer items-start justify-between gap-2 rounded-lg px-3 py-2 text-left text-[13px] transition-colors',
 								o.value === value
 									? 'bg-(--c-accent-soft) font-medium text-(--c-accent-strong)'
 									: 'text-(--c-fg) hover:bg-(--c-surface-2)'

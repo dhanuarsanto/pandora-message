@@ -172,7 +172,7 @@
 						disabled={i === 0}
 						aria-label={`Pindahkan kolom ${col?.label ?? key} ke atas`}
 						onclick={() => moveUp(i)}
-						class="flex h-6 min-w-6 items-center justify-center rounded-md text-(--c-fg-faint) transition-colors hover:bg-(--c-surface-3) hover:text-(--c-accent) disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-(--c-fg-faint)"
+						class="flex h-6 min-w-6 cursor-pointer items-center justify-center rounded-md text-(--c-fg-faint) transition-colors hover:bg-(--c-surface-3) hover:text-(--c-accent) disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-(--c-fg-faint)"
 					>
 						<ChevronUp class="h-3.5 w-3.5" />
 					</button>
@@ -181,7 +181,7 @@
 						disabled={i === order.length - 1}
 						aria-label={`Pindahkan kolom ${col?.label ?? key} ke bawah`}
 						onclick={() => moveDown(i)}
-						class="flex h-6 min-w-6 items-center justify-center rounded-md text-(--c-fg-faint) transition-colors hover:bg-(--c-surface-3) hover:text-(--c-accent) disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-(--c-fg-faint)"
+						class="flex h-6 min-w-6 cursor-pointer items-center justify-center rounded-md text-(--c-fg-faint) transition-colors hover:bg-(--c-surface-3) hover:text-(--c-accent) disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-(--c-fg-faint)"
 					>
 						<ChevronDown class="h-3.5 w-3.5" />
 					</button>

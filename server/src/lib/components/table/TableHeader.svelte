@@ -95,6 +95,7 @@
 				data-key={c.key}
 				class={cn(
 					'sticky top-0 z-2 border-b border-(--c-border) bg-(--c-table-head) px-3.5 py-2.5 text-left text-[11px] font-semibold tracking-widest whitespace-nowrap text-(--c-fg-soft) uppercase select-none',
+					cols.length > 1 && 'cursor-grab active:cursor-grabbing',
 					c.key === dropInfo?.key &&
 						dropInfo.side === 'before' &&
 						'shadow-[-3px_0_0_0_var(--c-accent)]',

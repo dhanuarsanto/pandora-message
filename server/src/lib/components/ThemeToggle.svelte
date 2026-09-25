@@ -11,7 +11,7 @@
 <button
 	onclick={() => theme.toggle()}
 	class={cn(
-		'flex items-center justify-center rounded-[10px] text-(--c-fg-muted) transition-colors hover:bg-(--c-surface-3) hover:text-(--c-fg) disabled:cursor-not-allowed disabled:opacity-60',
+		'flex cursor-pointer items-center justify-center rounded-[10px] text-(--c-fg-muted) transition-colors hover:bg-(--c-surface-3) hover:text-(--c-fg) disabled:cursor-not-allowed disabled:opacity-60',
 		box
 	)}
 	aria-label={isDark ? 'Mode terang' : 'Mode gelap'}

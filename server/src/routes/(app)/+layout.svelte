@@ -136,7 +136,7 @@
 				<button
 					bind:this={menuBtn}
 					onclick={() => (menuOpen = !menuOpen)}
-					class="flex h-9 w-9 items-center justify-center rounded-[10px] text-(--c-fg-muted) transition-colors hover:bg-(--c-surface-3) hover:text-(--c-fg) disabled:cursor-not-allowed disabled:opacity-60"
+					class="flex h-9 w-9 cursor-pointer items-center justify-center rounded-[10px] text-(--c-fg-muted) transition-colors hover:bg-(--c-surface-3) hover:text-(--c-fg) disabled:cursor-not-allowed disabled:opacity-60"
 					aria-label="Menu"
 					aria-expanded={menuOpen}
 				>
