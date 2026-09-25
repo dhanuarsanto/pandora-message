@@ -2,7 +2,7 @@
 	import { afterNavigate, goto } from '$app/navigation';
 	import { navigating, page } from '$app/state';
 	import { resolve } from '$app/paths';
-	import { appBusy } from '$lib/appBusy.svelte.js';
+	import { appBusy } from '$lib/appBusy.svelte';
 	import { clearColPrefs, loadColPrefs, saveColPrefs, visibleOf } from '$lib/colPrefs';
 	import type { ColSpec, FilterField, FooterMeta, ResellerResponse } from '$lib/types';
 	import { paramsEqual } from '$lib/params';

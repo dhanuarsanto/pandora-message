@@ -2,7 +2,7 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
-	import { appBusy } from '$lib/appBusy.svelte.js';
+	import { appBusy } from '$lib/appBusy.svelte';
 	import LogoutControl from '$lib/components/LogoutControl.svelte';
 	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
 	import UserChip from '$lib/components/UserChip.svelte';

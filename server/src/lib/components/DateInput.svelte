@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Calendar, Check, ChevronLeft, ChevronRight } from '@lucide/svelte';
-	import { closePicker, isPickerOpen, openPicker } from '$lib/datePickerState.svelte.js';
+	import { closePicker, isPickerOpen, openPicker } from '$lib/datePickerState.svelte';
 	import { BULAN, HARI, monthCells, parseISODate, toISODate, todayISO } from '$lib/date';
 	import { cn } from '$lib/utils';
 
