@@ -1,6 +1,12 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { buildQuery, cn, initFilterFromUrl, initStack } from '../src/lib/utils.ts';
+import {
+	buildQuery,
+	cn,
+	initFilterFromUrl,
+	initStack,
+	sortedParamsString
+} from '../src/lib/utils.ts';
 import type { FilterField } from '../src/lib/message/types.ts';
 
 function stubSession(store: Record<string, string>) {
@@ -77,7 +83,18 @@ test('buildQuery: pageSize hanya bila angka positif', () => {
 
 test('buildQuery: cursor disimpan', () => {
 	assert.equal(buildQuery({}, '', 7).toString(), 'cursor=7');
-	assert.equal(buildQuery({ a: '1' }, '', 3).toString(), 'cursor=3&a=1');
+	assert.equal(buildQuery({ a: '1' }, '', 3).toString(), 'a=1&cursor=3');
+});
+
+test('sortedParamsString: urutkan deterministik & pertahankan nilai', () => {
+	const input = new URLSearchParams(
+		'limit=20&startDate=2026-09-25&requestFromReseller=true&endDate=2026-09-25'
+	);
+	assert.equal(
+		sortedParamsString(input),
+		'endDate=2026-09-25&limit=20&requestFromReseller=true&startDate=2026-09-25'
+	);
+	assert.equal(sortedParamsString(new URLSearchParams('b=2&a=1')), 'a=1&b=2');
 });
 
 test('cn: gabung & merge konflik tailwind', () => {

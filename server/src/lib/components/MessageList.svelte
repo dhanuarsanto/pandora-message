@@ -7,7 +7,7 @@
 	import type { ColSpec, FilterField, FooterMeta } from '$lib/message/types';
 	import type { ResellerResponse } from '$lib/references/types';
 	import { paramsEqual } from '$lib/params';
-	import { buildQuery, initFilterFromUrl, initStack } from '$lib/utils';
+	import { buildQuery, initFilterFromUrl, initStack, sortedParamsString } from '$lib/utils';
 	import { todayISO } from '$lib/date';
 	import {
 		applyCheckboxDefaults,
@@ -54,7 +54,10 @@
 
 	function initialQuery(): Record<string, string> {
 		const u = applyLimitDefault(
-			applyDateDefaults(new SvelteURLSearchParams(page.url.searchParams), 'today')
+			applyCheckboxDefaults(
+				applyDateDefaults(new SvelteURLSearchParams(page.url.searchParams), 'today'),
+				filters
+			)
 		);
 		return initFilterFromUrl(filters, u);
 	}
@@ -136,7 +139,7 @@
 				filters
 			)
 		);
-		const qs = params.toString();
+		const qs = sortedParamsString(params);
 		void retryTick;
 
 		const key = endpoint + (qs ? '?' + qs : '');
@@ -230,9 +233,10 @@
 	afterNavigate((nav) => {
 		restoreScroll();
 		pageSize = page.url.searchParams.get('pageSize') ?? '';
-		const u = applyLimitDefault(
-			applyDateDefaults(new SvelteURLSearchParams(page.url.searchParams), dateScope)
-		);
+		const raw = new SvelteURLSearchParams(page.url.searchParams);
+		const hasAnyDate = !!(raw.get('startDate') || raw.get('endDate'));
+		dateScope = raw.size === 0 || hasAnyDate ? 'today' : 'all';
+		const u = applyLimitDefault(applyDateDefaults(raw, dateScope));
 		query = initFilterFromUrl(filters, u);
 		if (nav && nav.type === 'popstate') {
 			const raw = page.url.searchParams.get('cursor');

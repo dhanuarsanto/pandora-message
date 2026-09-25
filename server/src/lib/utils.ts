@@ -47,7 +47,17 @@ export function buildQuery(
 		if (v === '') continue;
 		u.set(k, v);
 	}
-	return u;
+	return sortedParams(u);
+}
+
+export function sortedParams(params: URLSearchParams): URLSearchParams {
+	return new SvelteURLSearchParams(
+		[...params.entries()].sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0))
+	);
+}
+
+export function sortedParamsString(params: URLSearchParams): string {
+	return sortedParams(params).toString();
 }
 
 export function cn(...inputs: ClassValue[]) {
