@@ -13,6 +13,7 @@
 		filters,
 		statusOptions,
 		resellers,
+		resellersLoaded,
 		controlsDisabled,
 		onReset,
 		onApply
@@ -21,6 +22,7 @@
 		filters: FilterField[];
 		statusOptions: [string, string][];
 		resellers: ResellerResponse | null;
+		resellersLoaded: boolean;
 		controlsDisabled: boolean;
 		onReset: () => void;
 		onApply: () => boolean;
@@ -222,7 +224,11 @@
 						ariaLabel={f.label}
 						bind:value={query[f.param]}
 						options={optionsFor(f)}
-						emptyText={f.type === 'reseller' && !resellers ? 'Memuat…' : 'Belum ada data'}
+						emptyText={f.type === 'reseller' && !resellers
+							? resellersLoaded
+								? 'Gagal memuat reseller'
+								: 'Memuat…'
+							: 'Belum ada data'}
 						searchable={f.type === 'reseller'}
 						disabled={controlsDisabled}
 					/>

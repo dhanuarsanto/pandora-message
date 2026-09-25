@@ -17,6 +17,7 @@ export const OUTBOX_COLS: ColSpec[] = [
 	{ key: 'kode_inbox', label: 'Kode Inbox', mono: true },
 	{ key: 'kode_transaksi', label: 'Kode Transaksi', mono: true },
 	{ key: 'kode_reseller', label: 'Kode Reseller', mono: true },
+	{ key: 'nama_reseller', label: 'Nama Reseller' },
 	{ key: 'bebas_biaya', label: 'Bebas Biaya' },
 	{ key: 'is_perintah', label: 'Perintah' },
 	{ key: 'kode_modul', label: 'Kode Modul', mono: true },

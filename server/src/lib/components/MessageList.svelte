@@ -49,6 +49,7 @@
 	} = $props();
 
 	let resellers = $state<ResellerResponse | null>(null);
+	let resellersLoaded = $state(false);
 
 	let cursorStack = $state<(number | null)[]>(untrack(() => initStack(stackKey)));
 
@@ -183,13 +184,20 @@
 	$effect(() => {
 		if (typeof window === 'undefined') return;
 		let active = true;
+		resellersLoaded = false;
 		fetch('/api/references/resellers')
 			.then((res) => res.json() as Promise<{ status: string; data?: ResellerResponse }>)
 			.then((body) => {
-				if (active) resellers = body.status === 'sukses' && body.data ? body.data : null;
+				if (active) {
+					resellers = body.status === 'sukses' && body.data ? body.data : null;
+					resellersLoaded = true;
+				}
 			})
 			.catch(() => {
-				if (active) resellers = null;
+				if (active) {
+					resellers = null;
+					resellersLoaded = true;
+				}
 			});
 
 		return () => {
@@ -251,6 +259,22 @@
 	const pageSizeN = $derived(Number(pageSize));
 	const skeletonCount = $derived(calcSkeletonCount(limitN, pageSizeN));
 	const skeletonRows = $derived(Array.from({ length: skeletonCount }, (_, i) => i));
+
+	const resellerNames = $derived(
+		new Map((resellers?.data.items ?? []).map((r) => [r.kode, r.nama]))
+	);
+
+	const enrichedData = $derived(
+		messageData
+			? {
+					items: messageData.items.map((item) => ({
+						...item,
+						nama_reseller: resellerNames.get(item.kode_reseller) ?? item.kode_reseller
+					})),
+					meta: messageData.meta
+				}
+			: null
+	);
 
 	function goNext(meta: FooterMeta) {
 		if (!meta.has_next_page || busy) return;
@@ -352,6 +376,7 @@
 			{filters}
 			{statusOptions}
 			{resellers}
+			{resellersLoaded}
 			{controlsDisabled}
 			onReset={resetFilters}
 			onApply={applyFilter}
@@ -359,7 +384,7 @@
 	{/if}
 
 	<MessageTable
-		data={messageData}
+		data={enrichedData}
 		{loading}
 		error={loadError}
 		errorDetail={loadErrorCause}

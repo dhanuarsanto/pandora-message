@@ -113,10 +113,10 @@
 			role="listbox"
 			aria-label={ariaLabel}
 			tabindex="-1"
-			class="absolute z-30 mt-1.5 max-h-64 w-full rounded-xl border border-(--c-border) bg-(--c-surface) p-1 shadow-[0_16px_48px_-12px_rgba(20,32,26,0.3)]"
+			class="absolute z-30 mt-1.5 flex max-h-64 w-full flex-col rounded-xl border border-(--c-border) bg-(--c-surface) p-1 shadow-[0_16px_48px_-12px_rgba(20,32,26,0.3)]"
 		>
 			{#if searchable}
-				<div class="relative mb-1">
+				<div class="relative mb-1 shrink-0">
 					<Search
 						class="pointer-events-none absolute top-1/2 left-2.5 h-3.5 w-3.5 -translate-y-1/2 text-(--c-fg-faint)"
 					/>
@@ -131,7 +131,9 @@
 					/>
 				</div>
 			{/if}
-			<div class="max-h-56 overflow-y-auto">
+			<div
+				class="max-h-56 min-h-0 flex-1 [scrollbar-width:thin] [scrollbar-color:var(--c-border)_transparent] overflow-y-auto overscroll-contain pb-1 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-(--c-border) [&::-webkit-scrollbar-track]:bg-transparent"
+			>
 				<button
 					type="button"
 					role="option"

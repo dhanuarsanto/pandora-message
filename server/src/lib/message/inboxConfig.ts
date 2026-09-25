@@ -17,6 +17,7 @@ export const INBOX_COLS: ColSpec[] = [
 	{ key: 'kode_terminal', label: 'Kode Terminal', mono: true },
 	{ key: 'tgl_status', label: 'Tgl Status', muted: true, date: true },
 	{ key: 'kode_reseller', label: 'Kode Reseller', mono: true },
+	{ key: 'nama_reseller', label: 'Nama Reseller' },
 	{ key: 'kode_transaksi', label: 'Kode Transaksi', mono: true },
 	{ key: 'is_jawaban', label: 'Jawaban' },
 	{ key: 'service_center', label: 'Service Center' },

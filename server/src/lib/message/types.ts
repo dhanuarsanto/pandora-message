@@ -44,6 +44,7 @@ export type OutboxItem = {
 	pengirim: string;
 	kode_terminal: number;
 	ctr_kirim: number;
+	nama_reseller?: string;
 };
 
 export type InboxItem = {
@@ -63,6 +64,7 @@ export type InboxItem = {
 	is_cs: number;
 	kode_jawaban_cs: number;
 	hash: string;
+	nama_reseller?: string;
 };
 
 export type InboxResponse = {
