@@ -14,7 +14,7 @@ export const INBOX_STATUS = identityMap([
 
 export const OUTBOX_STATUS = identityMap([20, 40, 50]);
 
-export const TIPE = identityMap([1, 'O', 'W', 'X']);
+const TIPE = identityMap([1, 'O', 'W', 'X']);
 export const TIPE_PENGIRIM: Record<string, string> = TIPE;
 export const TIPE_PENERIMA: Record<string, string> = TIPE;
 
