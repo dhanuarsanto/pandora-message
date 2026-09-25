@@ -194,7 +194,7 @@
 
 	$effect(() => {
 		if (typeof window === 'undefined') return;
-		const mq = window.matchMedia('(min-width: 768px)');
+		const mq = window.matchMedia('(min-width: 640px)');
 		showFilter = mq.matches;
 		const onChange = () => (showFilter = mq.matches);
 		mq.addEventListener('change', onChange);

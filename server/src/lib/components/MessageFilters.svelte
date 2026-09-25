@@ -1,10 +1,12 @@
 <script lang="ts">
 	import { KODE_TERMINAL } from '$lib/config';
+	import { BULAN_PENDEK, addDaysISO, firstOfMonthISO, todayISO } from '$lib/date';
 	import type { FilterField } from '$lib/message/types';
 	import type { ResellerResponse } from '$lib/references/types';
-	import { addDaysISO, firstOfMonthISO, todayISO } from '$lib/date';
 	import { cn } from '$lib/utils';
+	import { CalendarRange, Hash, Search } from '@lucide/svelte';
 	import DateInput from './DateInput.svelte';
+	import FilterSelect from './FilterSelect.svelte';
 
 	let {
 		query = $bindable(),
@@ -30,43 +32,81 @@
 		if (!controlsDisabled) applying = false;
 	});
 
-	const controlCls =
-		'h-9 w-full rounded-lg border border-(--c-border) bg-(--c-surface) px-2.5 text-[13px] text-(--c-fg) outline-none focus:border-(--c-accent) disabled:cursor-not-allowed disabled:opacity-60';
+	const inputCls =
+		'h-9 w-full rounded-lg border border-(--c-border) bg-(--c-surface) pl-8.5 pr-2.5 text-[13px] text-(--c-fg) outline-none focus:border-(--c-accent) disabled:cursor-not-allowed disabled:opacity-60';
 
 	type DatePreset = { label: string; start: string; end: string };
 
-	const PRESETS: DatePreset[] = [
-		{ label: 'Hari Ini', start: todayISO(), end: todayISO() },
-		{ label: '7 Hari', start: addDaysISO(-6), end: todayISO() },
-		{ label: 'Bulan Ini', start: firstOfMonthISO(0), end: todayISO() },
-		{ label: '3 Bulan', start: firstOfMonthISO(-2), end: todayISO() },
-		{ label: 'Semua Data', start: '', end: '' }
-	];
+	function getPresets(): DatePreset[] {
+		const today = todayISO();
+		return [
+			{ label: 'Hari Ini', start: today, end: today },
+			{ label: '7 Hari', start: addDaysISO(-6), end: today },
+			{ label: 'Bulan Ini', start: firstOfMonthISO(0), end: today },
+			{ label: '3 Bulan', start: firstOfMonthISO(-2), end: today },
+			{ label: 'Semua Data', start: '', end: '' }
+		];
+	}
 
-	const dateFields = $derived(filters.filter((f) => f.type === 'date'));
-	const datePairs = $derived(
-		dateFields.flatMap((f) => {
-			if (f.type !== 'date') return [];
+	function fmtShort(iso: string): string {
+		const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
+		if (!m) return iso;
+		return `${+m[3]} ${BULAN_PENDEK[+m[2] - 1]} ${m[1]}`;
+	}
+
+	const nonCheckboxFields = $derived(filters.filter((f) => f.type !== 'checkbox'));
+
+	const activeRange = $derived.by(() => {
+		for (const f of nonCheckboxFields) {
+			if (f.type !== 'date') continue;
 			const m = /^start(.+)$/.exec(f.param);
-			if (!m) return [];
-			const end = dateFields.find((e) => e.type === 'date' && e.param === 'end' + m[1]);
-			return end ? [{ start: f, end }] : [];
-		})
-	);
-	const pairedParams = $derived(new Set(datePairs.flatMap((p) => [p.start.param, p.end.param])));
-	const standaloneDates = $derived(dateFields.filter((f) => !pairedParams.has(f.param)));
-	const nonDateFields = $derived(filters.filter((f) => f.type !== 'checkbox' && f.type !== 'date'));
+			if (!m) continue;
+			const end = nonCheckboxFields.find((e) => e.type === 'date' && e.param === 'end' + m[1]);
+			const startVal = query[f.param];
+			const endVal = end ? query[end.param] : '';
+			if (!startVal || !endVal) continue;
+			return startVal === endVal
+				? fmtShort(startVal)
+				: `${fmtShort(startVal)} – ${fmtShort(endVal)}`;
+		}
+		return '';
+	});
+
+	function optionsFor(f: FilterField): { value: string; label: string }[] {
+		switch (f.type) {
+			case 'terminal':
+				return Object.entries(KODE_TERMINAL).map(([value, label]) => ({ value, label }));
+			case 'status':
+				return statusOptions.map(([value, label]) => ({ value, label }));
+			case 'tipe':
+				return Object.entries(f.source).map(([value, label]) => ({ value, label }));
+			case 'reseller':
+				return (resellers?.data.items ?? []).map((r) => ({ value: r.kode, label: r.nama }));
+			default:
+				return [];
+		}
+	}
 
 	function presetActive(p: DatePreset): boolean {
-		return datePairs.every(
-			(pair) => query[pair.start.param] === p.start && query[pair.end.param] === p.end
+		const pairs = nonCheckboxFields.filter((f) => f.type === 'date' && /^start.+$/.test(f.param));
+		return (
+			pairs.length > 0 &&
+			pairs.every((f) => {
+				const m = /^start(.+)$/.exec(f.param)!;
+				const end = nonCheckboxFields.find((e) => e.type === 'date' && e.param === 'end' + m[1]);
+				return !end || (query[f.param] === p.start && query[end.param] === p.end);
+			})
 		);
 	}
 
 	function applyPreset(p: DatePreset) {
-		for (const pair of datePairs) {
-			query[pair.start.param] = p.start;
-			query[pair.end.param] = p.end;
+		for (const f of nonCheckboxFields) {
+			if (f.type !== 'date') continue;
+			const m = /^start(.+)$/.exec(f.param);
+			if (!m) continue;
+			const end = nonCheckboxFields.find((e) => e.type === 'date' && e.param === 'end' + m[1]);
+			query[f.param] = p.start;
+			if (end) query[end.param] = p.end;
 		}
 		applying = onApply();
 	}
@@ -79,7 +119,7 @@
 		applying = onApply();
 	}}
 >
-	<div class="mb-3 flex items-center justify-between">
+	<div class="mb-4 flex flex-wrap items-center justify-between gap-3">
 		<h3 class="text-[13px] font-semibold text-(--c-fg)">Filter</h3>
 		<button
 			type="button"
@@ -89,176 +129,125 @@
 			>Reset semua</button
 		>
 	</div>
-	<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5">
-		{#each datePairs as pair (pair.start.param)}
-			<div
-				class="rounded-lg border border-(--c-border) bg-(--c-surface-2) p-4 sm:col-span-2 md:col-span-2 lg:col-span-2"
+
+	{#if nonCheckboxFields.some((f) => f.type === 'date')}
+		<div class="mb-4 flex flex-wrap items-center gap-x-4 gap-y-2">
+			<span
+				class="flex shrink-0 items-center gap-1.5 text-[11px] font-semibold tracking-widest text-(--c-fg-muted) uppercase"
 			>
-				<span class="text-[11px] font-semibold tracking-widest text-(--c-fg-muted) uppercase"
-					>Rentang Tanggal</span
-				>
-				<div class="mt-3 flex flex-wrap gap-1.5">
-					{#each PRESETS as p (p.label)}
-						<button
-							type="button"
-							disabled={controlsDisabled || applying}
-							onclick={() => {
-								applyPreset(p);
-							}}
-							class={cn(
-								'rounded-full border px-3 py-1 text-[11px] font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50',
-								presetActive(p)
-									? 'border-(--c-accent) bg-(--c-accent-soft) text-(--c-accent-strong)'
-									: 'border-(--c-border) text-(--c-fg-muted) hover:border-(--c-accent) hover:text-(--c-accent)'
-							)}>{p.label}</button
-						>
-					{/each}
-				</div>
-				<div class="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
-					<div>
-						<span
-							class="mb-1.5 block text-[11px] font-semibold tracking-widest text-(--c-fg-muted) uppercase"
-							>{pair.start.label}</span
-						>
-						<DateInput
-							id={'f-' + pair.start.param}
-							ariaLabel={pair.start.label}
-							bind:value={query[pair.start.param]}
-							disabled={controlsDisabled}
-						/>
-					</div>
-					<div>
-						<span
-							class="mb-1.5 block text-[11px] font-semibold tracking-widest text-(--c-fg-muted) uppercase"
-							>{pair.end.label}</span
-						>
-						<DateInput
-							id={'f-' + pair.end.param}
-							ariaLabel={pair.end.label}
-							bind:value={query[pair.end.param]}
-							disabled={controlsDisabled}
-						/>
-					</div>
-				</div>
+				<CalendarRange class="h-3.5 w-3.5" />
+				Preset
+			</span>
+			<div class="flex flex-wrap items-center gap-1 rounded-lg bg-(--c-surface-2) p-1">
+				{#each getPresets() as p (p.label)}
+					<button
+						type="button"
+						disabled={controlsDisabled || applying}
+						onclick={() => {
+							applyPreset(p);
+						}}
+						class={cn(
+							'rounded-md px-2.5 py-1.5 text-[12px] font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50 sm:px-3',
+							presetActive(p)
+								? 'bg-(--c-accent-soft) font-semibold text-(--c-accent-strong)'
+								: 'text-(--c-fg-muted) hover:bg-(--c-surface-3) hover:text-(--c-accent)'
+						)}>{p.label}</button
+					>
+				{/each}
 			</div>
-		{/each}
-		{#each standaloneDates as f (f.param)}
-			<div>
-				<span
-					class="mb-1.5 block text-[11px] font-semibold tracking-widest text-(--c-fg-muted) uppercase"
-					>{f.label}</span
-				>
-				<DateInput
-					id={'f-' + f.param}
-					ariaLabel={f.label}
-					bind:value={query[f.param]}
-					disabled={controlsDisabled}
-				/>
-			</div>
-		{/each}
-		{#each nonDateFields as f (f.param)}
+			{#if activeRange}
+				<span class="text-[12px] text-(--c-fg-muted)">{activeRange}</span>
+			{/if}
+		</div>
+	{/if}
+
+	<div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+		{#each nonCheckboxFields as f (f.param)}
 			<div>
 				<label
 					for={'f-' + f.param}
 					class="mb-1.5 block text-[11px] font-semibold tracking-widest text-(--c-fg-muted) uppercase"
 					>{f.label}</label
 				>
-				{#if f.type === 'number'}
-					<input
+				{#if f.type === 'date'}
+					<DateInput
 						id={'f-' + f.param}
-						type="number"
-						min="1"
-						placeholder={f.placeholder}
+						ariaLabel={f.label}
 						bind:value={query[f.param]}
 						disabled={controlsDisabled}
-						class={controlCls}
 					/>
+				{:else if f.type === 'number'}
+					<div class="relative">
+						<Hash
+							class="pointer-events-none absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2 text-(--c-fg-faint)"
+						/>
+						<input
+							id={'f-' + f.param}
+							type="number"
+							min="1"
+							placeholder={f.placeholder}
+							bind:value={query[f.param]}
+							disabled={controlsDisabled}
+							class={inputCls}
+						/>
+					</div>
 				{:else if f.type === 'text'}
-					<input
+					<div class="relative">
+						<Search
+							class="pointer-events-none absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2 text-(--c-fg-faint)"
+						/>
+						<input
+							id={'f-' + f.param}
+							type="text"
+							placeholder={f.placeholder}
+							bind:value={query[f.param]}
+							disabled={controlsDisabled}
+							class={inputCls}
+						/>
+					</div>
+				{:else if f.type === 'terminal' || f.type === 'status' || f.type === 'tipe' || f.type === 'reseller'}
+					<FilterSelect
 						id={'f-' + f.param}
-						type="text"
-						placeholder={f.placeholder}
+						ariaLabel={f.label}
 						bind:value={query[f.param]}
+						options={optionsFor(f)}
+						emptyText={f.type === 'reseller' && !resellers ? 'Memuat…' : 'Belum ada data'}
 						disabled={controlsDisabled}
-						class={controlCls}
 					/>
-				{:else if f.type === 'terminal'}
-					<select
-						id={'f-' + f.param}
-						bind:value={query[f.param]}
-						disabled={controlsDisabled}
-						class={controlCls}
-					>
-						<option value="">Semua</option>
-						{#each Object.entries(KODE_TERMINAL) as [key, label] (key)}
-							<option value={key}>{label}</option>
-						{/each}
-					</select>
-				{:else if f.type === 'status'}
-					<select
-						id={'f-' + f.param}
-						bind:value={query[f.param]}
-						disabled={controlsDisabled}
-						class={controlCls}
-					>
-						<option value="">Semua</option>
-						{#each statusOptions as [val, label] (val)}
-							<option value={val}>{label}</option>
-						{/each}
-					</select>
-				{:else if f.type === 'tipe'}
-					<select
-						id={'f-' + f.param}
-						bind:value={query[f.param]}
-						disabled={controlsDisabled}
-						class={controlCls}
-					>
-						<option value="">Semua</option>
-						{#each Object.entries(f.source) as [key, label] (key)}
-							<option value={key}>{label}</option>
-						{/each}
-					</select>
-				{:else if f.type === 'reseller'}
-					<select
-						id={'f-' + f.param}
-						bind:value={query[f.param]}
-						disabled={controlsDisabled}
-						class={controlCls}
-					>
-						<option value="">Semua</option>
-						{#await resellers}
-							<option value="">Memuat…</option>
-						{:then res}
-							{#if res}
-								{#each res.data.items as r (r.kode)}
-									<option value={r.kode}>{r.nama}</option>
-								{/each}
-							{:else}
-								<option value="">-</option>
-							{/if}
-						{:catch}
-							<option value="">-</option>
-						{/await}
-					</select>
 				{/if}
 			</div>
 		{/each}
 	</div>
+
 	<div
 		class="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-(--c-border) pt-4"
 	>
 		{#if filters.some((f) => f.type === 'checkbox')}
 			<div class="flex flex-wrap items-center gap-6">
 				{#each filters.filter((f) => f.type === 'checkbox') as f (f.param)}
-					<label class="flex cursor-pointer items-center gap-2 text-[13px] text-(--c-fg-muted)">
+					<label class="flex cursor-pointer items-center gap-2.5">
 						<input
 							type="checkbox"
-							class="h-4 w-4 rounded border-(--c-border) accent-(--c-accent) disabled:cursor-not-allowed disabled:opacity-60"
+							class="sr-only"
 							checked={query[f.param] === 'true'}
 							disabled={controlsDisabled}
 							onchange={(e) => (query[f.param] = e.currentTarget.checked ? 'true' : '')}
 						/>
-						{f.label}
+						<span
+							class={cn(
+								'relative h-5 w-9 shrink-0 rounded-full transition-colors',
+								query[f.param] === 'true' ? 'bg-(--c-accent)' : 'bg-(--c-border)',
+								controlsDisabled && 'opacity-60'
+							)}
+						>
+							<span
+								class={cn(
+									'absolute top-0.5 left-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform',
+									query[f.param] === 'true' && 'translate-x-4'
+								)}
+							></span>
+						</span>
+						<span class="text-[13px] text-(--c-fg-muted) select-none">{f.label}</span>
 					</label>
 				{/each}
 			</div>

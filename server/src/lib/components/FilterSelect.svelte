@@ -1,0 +1,121 @@
+<script lang="ts">
+	import { Check, ChevronDown } from '@lucide/svelte';
+	import { closeSelect, isSelectOpen, openSelect } from '$lib/client/selectState.svelte';
+	import { cn } from '$lib/utils';
+
+	type Option = { value: string; label: string };
+
+	let {
+		value = $bindable(),
+		id,
+		ariaLabel,
+		placeholder = 'Semua',
+		emptyText = 'Belum ada data',
+		options = [],
+		disabled
+	}: {
+		value?: string;
+		id: string;
+		ariaLabel?: string;
+		placeholder?: string;
+		emptyText?: string;
+		options?: Option[];
+		disabled: boolean;
+	} = $props();
+
+	const key = Symbol();
+	const open = $derived(isSelectOpen(key));
+	let panel: HTMLDivElement | null = $state(null);
+	let btn: HTMLButtonElement | null = $state(null);
+
+	const selectedLabel = $derived(
+		options.find((o) => o.value === value)?.label ?? (value ? String(value) : '')
+	);
+
+	function toggle() {
+		if (disabled) return;
+		if (open) {
+			closeSelect();
+			return;
+		}
+		openSelect(key);
+	}
+
+	function pick(v: string) {
+		value = v;
+		closeSelect();
+		btn?.focus();
+	}
+
+	$effect(() => {
+		if (!open || !panel) return;
+		const onPointer = (e: PointerEvent) => {
+			const t = e.target as Element | null;
+			if (!t || !t.closest('[data-filter-select]')) closeSelect();
+		};
+		const onKey = (e: KeyboardEvent) => {
+			if (e.key === 'Escape') closeSelect();
+		};
+		window.addEventListener('pointerdown', onPointer);
+		window.addEventListener('keydown', onKey);
+		panel.focus();
+		return () => {
+			window.removeEventListener('pointerdown', onPointer);
+			window.removeEventListener('keydown', onKey);
+		};
+	});
+</script>
+
+<div class="relative" data-filter-select>
+	<button
+		bind:this={btn}
+		{id}
+		type="button"
+		{disabled}
+		aria-label={ariaLabel}
+		aria-haspopup="listbox"
+		aria-expanded={open}
+		onclick={toggle}
+		class="flex h-9 w-full items-center justify-between gap-2 rounded-lg border border-(--c-border) bg-(--c-surface) px-3 text-left text-[13px] text-(--c-fg) outline-none focus:border-(--c-accent) disabled:cursor-not-allowed disabled:opacity-60"
+	>
+		<span class={cn(!selectedLabel && 'text-(--c-fg-faint)')}>{selectedLabel || placeholder}</span>
+		<ChevronDown
+			class={cn('h-4 w-4 shrink-0 text-(--c-fg-faint) transition-transform', open && 'rotate-180')}
+		/>
+	</button>
+
+	{#if open}
+		<div
+			bind:this={panel}
+			role="listbox"
+			aria-label={ariaLabel}
+			tabindex="-1"
+			class="absolute z-30 mt-1.5 max-h-64 w-full overflow-y-auto rounded-xl border border-(--c-border) bg-(--c-surface) p-1 shadow-[0_16px_48px_-12px_rgba(20,32,26,0.3)]"
+		>
+			{#if options.length === 0}
+				<div class="px-3 py-2 text-[12.5px] text-(--c-fg-faint)">{emptyText}</div>
+			{:else}
+				{#each options as o (o.value)}
+					<button
+						type="button"
+						role="option"
+						aria-selected={o.value === value}
+						tabindex="-1"
+						onclick={() => pick(o.value)}
+						class={cn(
+							'flex w-full items-center justify-between gap-2 rounded-lg px-3 py-2 text-left text-[13px] transition-colors',
+							o.value === value
+								? 'bg-(--c-accent-soft) font-medium text-(--c-accent-strong)'
+								: 'text-(--c-fg) hover:bg-(--c-surface-2)'
+						)}
+					>
+						{o.label}
+						{#if o.value === value}
+							<Check class="h-4 w-4 shrink-0" />
+						{/if}
+					</button>
+				{/each}
+			{/if}
+		</div>
+	{/if}
+</div>
