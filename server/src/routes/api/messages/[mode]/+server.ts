@@ -3,7 +3,7 @@ import { APP_UNIT } from '$lib/config';
 import { apiGet } from '$lib/server/api';
 import { getToken } from '$lib/server/auth';
 import { describeError } from '$lib/server/messageError';
-import type { InboxResponse, OutboxResponse } from '$lib/types';
+import type { InboxResponse, OutboxResponse } from '$lib/message/types';
 
 const MODES = new Set(['inbox', 'outbox']);
 

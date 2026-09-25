@@ -6,7 +6,7 @@ import {
 	reorderKeys,
 	saveColPrefs,
 	visibleOf
-} from '../src/lib/colPrefs.ts';
+} from '../src/lib/client/colPrefs.ts';
 
 type C = { key: string };
 const COLS: C[] = [{ key: 'a' }, { key: 'b' }, { key: 'c' }];

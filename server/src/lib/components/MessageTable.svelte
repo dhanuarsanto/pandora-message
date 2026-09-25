@@ -1,6 +1,6 @@
 ﻿<script lang="ts">
 	import { cellClass, cellText, formatDate, statusClasses } from '$lib/format';
-	import type { ColSpec, FooterMeta, MessageItem } from '$lib/types';
+	import type { ColSpec, FooterMeta, MessageItem } from '$lib/message/types';
 	import { cn } from '$lib/utils';
 	import TableError from './table/TableError.svelte';
 	import TableFooter from './table/TableFooter.svelte';

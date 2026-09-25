@@ -3,7 +3,7 @@ import { ApiError, apiPost } from '$lib/server/api';
 import { setSessionCookies } from '$lib/server/auth';
 import { getClientIp, isRateLimited, recordAttempt, resetAttempts } from '$lib/server/rateLimiter';
 import { validateLogin } from '$lib/server/validateLogin';
-import type { LoginRequest, LoginResponse } from '$lib/types';
+import type { LoginRequest, LoginResponse } from '$lib/server/auth';
 import { json, type RequestHandler } from '@sveltejs/kit';
 
 export const POST: RequestHandler = async (event) => {

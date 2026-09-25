@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { reorderKeys } from '$lib/colPrefs';
-	import type { ColSpec } from '$lib/types';
+	import { reorderKeys } from '$lib/client/colPrefs';
+	import type { ColSpec } from '$lib/message/types';
 	import { cn } from '$lib/utils';
 
 	let {

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { KODE_TERMINAL } from '$lib/config';
-	import type { FilterField, ResellerResponse } from '$lib/types';
+	import type { FilterField } from '$lib/message/types';
+	import type { ResellerResponse } from '$lib/references/types';
 	import { addDaysISO, firstOfMonthISO, todayISO } from '$lib/date';
 	import { cn } from '$lib/utils';
 	import DateInput from './DateInput.svelte';

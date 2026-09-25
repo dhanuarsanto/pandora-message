@@ -1,0 +1,79 @@
+export type ColSpec = {
+	key: string;
+	label: string;
+	mono?: boolean;
+	badge?: boolean;
+	strong?: boolean;
+	muted?: boolean;
+	date?: boolean;
+	status?: boolean;
+	width?: number;
+};
+
+export type FilterField =
+	| { type: 'date'; param: string; label: string }
+	| { type: 'text'; param: string; label: string; placeholder?: string }
+	| { type: 'number'; param: string; label: string; placeholder?: string }
+	| { type: 'terminal'; param: string; label: string }
+	| { type: 'status'; param: string; label: string }
+	| { type: 'tipe'; param: string; label: string; source: Record<string, string> }
+	| { type: 'reseller'; param: string; label: string }
+	| { type: 'checkbox'; param: string; label: string };
+
+export type FooterMeta = {
+	has_next_page: boolean;
+	has_prev_page: boolean;
+	next_cursor: number | null;
+};
+
+export type OutboxItem = {
+	kode: number;
+	tgl_entri: string;
+	penerima: string;
+	tipe_penerima: string;
+	pesan: string;
+	status: number;
+	tgl_status: string;
+	kode_inbox: number;
+	kode_transaksi: number;
+	kode_reseller: string;
+	bebas_biaya: number;
+	is_perintah: number;
+	kode_modul: number;
+	prioritas: number;
+	modul_proses: string;
+	pengirim: string;
+	kode_terminal: number;
+	ctr_kirim: number;
+};
+
+export type InboxItem = {
+	kode: number;
+	tgl_entri: string;
+	penerima: string;
+	pengirim: string;
+	tipe_pengirim: string;
+	pesan: string;
+	status: number;
+	kode_terminal: number;
+	tgl_status: string;
+	kode_reseller: string;
+	kode_transaksi: number;
+	is_jawaban: number;
+	service_center: string;
+	is_cs: number;
+	kode_jawaban_cs: number;
+	hash: string;
+};
+
+export type InboxResponse = {
+	status: string;
+	data: { items: InboxItem[]; meta: FooterMeta; trace_id: string };
+};
+
+export type OutboxResponse = {
+	status: string;
+	data: { items: OutboxItem[]; meta: FooterMeta; trace_id: string };
+};
+
+export type MessageItem = InboxItem | OutboxItem;

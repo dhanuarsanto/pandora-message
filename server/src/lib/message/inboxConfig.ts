@@ -1,5 +1,5 @@
 import { TIPE_PENGIRIM } from '$lib/config';
-import type { ColSpec, FilterField } from '$lib/types';
+import type { ColSpec, FilterField } from '$lib/message/types';
 
 export const INBOX_PATH = '/inbox' as const;
 export const INBOX_LABEL = 'Kotak Masuk';

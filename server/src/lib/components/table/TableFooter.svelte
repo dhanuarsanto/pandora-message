@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { ChevronLeft, ChevronRight } from '@lucide/svelte';
-	import type { FooterMeta } from '$lib/types';
+	import type { FooterMeta } from '$lib/message/types';
 
 	let {
 		meta,

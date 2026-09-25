@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { theme } from '$lib/theme';
+	import { theme } from '$lib/client/theme';
 	import { cn } from '$lib/utils';
 	import { Moon, Sun } from '@lucide/svelte';
 

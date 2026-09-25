@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { theme } from '$lib/theme';
+	import { theme } from '$lib/client/theme';
 	import './layout.css';
 
 	let { children } = $props();

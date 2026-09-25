@@ -2,7 +2,7 @@
 	import { page } from '$app/state';
 	import { APP_NAME } from '$lib/config';
 	import { ERROR_CODES, ERROR_GENERIC } from '$lib/errorPages';
-	import { theme } from '$lib/theme';
+	import { theme } from '$lib/client/theme';
 	import { Mail } from '@lucide/svelte';
 	import './layout.css';
 

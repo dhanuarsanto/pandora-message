@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { buildQuery, cn, initFilterFromUrl, initStack } from '../src/lib/utils.ts';
-import type { FilterField } from '../src/lib/types.ts';
+import type { FilterField } from '../src/lib/message/types.ts';
 
 function stubSession(store: Record<string, string>) {
 	(globalThis as Record<string, unknown>).sessionStorage = {
@@ -70,8 +70,9 @@ test('buildQuery: cursor disimpan', () => {
 });
 
 test('cn: gabung & merge konflik tailwind', () => {
+	const falsy: string | false = false;
 	assert.equal(cn('a', 'b'), 'a b');
-	assert.equal(cn('px-2', false && 'x', null, undefined, 'px-4'), 'px-4');
+	assert.equal(cn('px-2', falsy && 'x', null, undefined, 'px-4'), 'px-4');
 	assert.equal(cn('bg-red-500', 'bg-blue-500'), 'bg-blue-500');
 	assert.equal(cn('', 'x'), 'x');
 });

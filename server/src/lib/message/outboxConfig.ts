@@ -1,5 +1,5 @@
 import { TIPE_PENERIMA } from '$lib/config';
-import type { ColSpec, FilterField } from '$lib/types';
+import type { ColSpec, FilterField } from '$lib/message/types';
 
 export const OUTBOX_PATH = '/outbox' as const;
 export const OUTBOX_LABEL = 'Kotak Keluar';

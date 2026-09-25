@@ -1,4 +1,4 @@
-import type { FooterMeta, MessageItem } from './types';
+import type { FooterMeta, MessageItem } from './message/types.ts';
 import { INBOX_STATUS, OUTBOX_STATUS } from './config.ts';
 import { todayISO } from './date.ts';
 

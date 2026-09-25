@@ -2,13 +2,13 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
-	import { appBusy } from '$lib/appBusy.svelte';
+	import { appBusy } from '$lib/client/appBusy.svelte';
 	import LogoutControl from '$lib/components/LogoutControl.svelte';
 	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
 	import UserChip from '$lib/components/UserChip.svelte';
 	import { APP_NAME } from '$lib/config';
 	import { formatRules } from '$lib/format';
-	import { theme } from '$lib/theme';
+	import { theme } from '$lib/client/theme';
 	import { cn } from '$lib/utils';
 	import { Inbox, Mail, Menu, Send, X } from '@lucide/svelte';
 

@@ -1,7 +1,7 @@
 import clsx, { type ClassValue } from 'clsx';
 import { SvelteURLSearchParams } from 'svelte/reactivity';
 import { twMerge } from 'tailwind-merge';
-import type { FilterField } from './types';
+import type { FilterField } from './message/types.ts';
 
 export function initStack(stackKey: string): (number | null)[] {
 	try {

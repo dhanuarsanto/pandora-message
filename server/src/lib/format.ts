@@ -1,5 +1,5 @@
 import { RULES } from './config.ts';
-import type { ColSpec } from './types';
+import type { ColSpec } from './message/types.ts';
 import { BULAN_PENDEK } from './date.ts';
 
 export function formatDate(raw: string | number | undefined): string {

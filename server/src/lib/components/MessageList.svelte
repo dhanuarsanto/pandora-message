@@ -2,9 +2,10 @@
 	import { afterNavigate, goto } from '$app/navigation';
 	import { navigating, page } from '$app/state';
 	import { resolve } from '$app/paths';
-	import { appBusy } from '$lib/appBusy.svelte';
-	import { clearColPrefs, loadColPrefs, saveColPrefs, visibleOf } from '$lib/colPrefs';
-	import type { ColSpec, FilterField, FooterMeta, ResellerResponse } from '$lib/types';
+	import { appBusy } from '$lib/client/appBusy.svelte';
+	import { clearColPrefs, loadColPrefs, saveColPrefs, visibleOf } from '$lib/client/colPrefs';
+	import type { ColSpec, FilterField, FooterMeta } from '$lib/message/types';
+	import type { ResellerResponse } from '$lib/references/types';
 	import { paramsEqual } from '$lib/params';
 	import { buildQuery, initFilterFromUrl, initStack } from '$lib/utils';
 	import { todayISO } from '$lib/date';
@@ -21,7 +22,7 @@
 		type MessageBody,
 		type MessageData
 	} from '$lib/messageQuery';
-	import { navigate } from '$lib/navigation';
+	import { navigate } from '$lib/client/navigation';
 	import { Columns3, SlidersHorizontal } from '@lucide/svelte';
 	import { untrack } from 'svelte';
 	import { SvelteURLSearchParams } from 'svelte/reactivity';

@@ -1,4 +1,4 @@
-import type { ResellerResponse } from '$lib/types';
+import type { ResellerResponse } from '$lib/references/types';
 
 const TTL_MS = 5 * 60 * 1000;
 const MAX_ENTRIES = 100;

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { ColSpec } from '$lib/types';
+	import type { ColSpec } from '$lib/message/types';
 	import { cn } from '$lib/utils';
 	import { ChevronDown, ChevronUp, GripVertical, RotateCcw } from '@lucide/svelte';
 

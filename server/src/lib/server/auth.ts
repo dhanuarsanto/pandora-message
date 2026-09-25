@@ -5,6 +5,22 @@ export const COOKIE_USERNAME = 'username';
 export const COOKIE_RULES = 'rules';
 export const SESSION_TTL_SEC = 86400;
 
+export type LoginRequest = {
+	username: string;
+	password: string;
+};
+
+export type LoginData = {
+	rules: string;
+	token: string;
+	username: string;
+};
+
+export type LoginResponse = {
+	status: string;
+	data: LoginData;
+};
+
 export function secureCookie(): boolean {
 	return Boolean(import.meta.env?.PROD) && process.env.COOKIE_SECURE !== 'false';
 }

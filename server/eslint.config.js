@@ -34,6 +34,22 @@ export default defineConfig(
 		}
 	},
 	{
+		files: ['**/*.svelte'],
+		rules: {
+			'no-restricted-imports': [
+				'error',
+				{
+					patterns: [
+						{
+							group: ['$lib/server', '$lib/server/**'],
+							message: 'File server tidak boleh diimport dari komponen Svelte.'
+						}
+					]
+				}
+			]
+		}
+	},
+	{
 		// Override or add rule settings here, such as:
 		// 'svelte/button-has-type': 'error'
 		rules: {}

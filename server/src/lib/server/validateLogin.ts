@@ -1,4 +1,4 @@
-import type { LoginRequest } from '$lib/types';
+import type { LoginRequest } from '$lib/server/auth';
 
 export function validateLogin(body: LoginRequest): string | null {
 	if (!body.username || typeof body.username !== 'string') return 'username wajib diisi';

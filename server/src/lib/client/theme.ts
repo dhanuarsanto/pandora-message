@@ -1,6 +1,7 @@
 import { get, writable } from 'svelte/store';
-import { APP_UNIT } from './config';
-import type { ThemeMode } from './types';
+import { APP_UNIT } from '../config';
+
+type ThemeMode = 'light' | 'dark';
 
 const STORAGE_KEY = `${APP_UNIT}-theme`;
 
