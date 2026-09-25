@@ -7,7 +7,6 @@ export type ColSpec = {
 	muted?: boolean;
 	date?: boolean;
 	status?: boolean;
-	width?: number;
 };
 
 export type FilterField =

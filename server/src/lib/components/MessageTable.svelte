@@ -110,15 +110,8 @@
 												>
 											</td>
 										{:else}
-											<td
-												class={cn(
-													cellClass(c),
-													c.date && 'whitespace-nowrap',
-													c.width && 'wrap-break-word'
-												)}
-												style={c.width
-													? `width: ${c.width}px; min-width: ${c.width}px; max-width: ${c.width}px`
-													: undefined}>{c.date ? formatDate(raw) : cellText(raw)}</td
+											<td class={cn(cellClass(c), c.date && 'whitespace-nowrap')}>
+												{c.date ? formatDate(raw) : cellText(raw)}</td
 											>
 										{/if}
 									{/each}

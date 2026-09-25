@@ -9,9 +9,9 @@ export const OUTBOX_STACK_KEY = 'pandora-outbox-cursor-stack';
 export const OUTBOX_COLS: ColSpec[] = [
 	{ key: 'kode', label: 'Kode', mono: true, strong: true },
 	{ key: 'tgl_entri', label: 'Tgl Entri', muted: true, date: true },
-	{ key: 'penerima', label: 'Penerima', strong: true, width: 200 },
+	{ key: 'penerima', label: 'Penerima', strong: true },
 	{ key: 'tipe_penerima', label: 'Tipe Penerima', badge: true },
-	{ key: 'pesan', label: 'Pesan', muted: true, width: 320 },
+	{ key: 'pesan', label: 'Pesan', muted: true },
 	{ key: 'status', label: 'Status', status: true },
 	{ key: 'tgl_status', label: 'Tgl Status', muted: true, date: true },
 	{ key: 'kode_inbox', label: 'Kode Inbox', mono: true },
