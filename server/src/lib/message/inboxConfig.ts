@@ -28,7 +28,7 @@ export const INBOX_COLS: ColSpec[] = [
 export const INBOX_FILTERS: FilterField[] = [
 	{ type: 'date', param: 'startDate', label: 'Tgl Mulai' },
 	{ type: 'date', param: 'endDate', label: 'Tgl Akhir' },
-	{ type: 'number', param: 'limit', label: 'Limit', placeholder: 'Batas maksimal data' },
+	{ type: 'number', param: 'limit', label: 'Limit', placeholder: 'Mis. 100' },
 	{ type: 'terminal', param: 'terminal', label: 'Terminal' },
 	{ type: 'reseller', param: 'reseller', label: 'Reseller' },
 	{ type: 'text', param: 'pengirim', label: 'Pengirim', placeholder: 'Cari pengirim...' },

@@ -30,7 +30,7 @@ export const OUTBOX_COLS: ColSpec[] = [
 export const OUTBOX_FILTERS: FilterField[] = [
 	{ type: 'date', param: 'startDate', label: 'Tgl Mulai' },
 	{ type: 'date', param: 'endDate', label: 'Tgl Akhir' },
-	{ type: 'number', param: 'limit', label: 'Limit', placeholder: 'Batas maksimal data' },
+	{ type: 'number', param: 'limit', label: 'Limit', placeholder: 'Mis. 100' },
 	{ type: 'reseller', param: 'reseller', label: 'Reseller' },
 	{ type: 'text', param: 'penerima', label: 'Penerima', placeholder: 'Cari penerima...' },
 	{ type: 'tipe', param: 'tipe', label: 'Tipe Penerima', source: TIPE_PENERIMA },

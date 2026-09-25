@@ -4,7 +4,7 @@
 	import type { FilterField } from '$lib/message/types';
 	import type { ResellerResponse } from '$lib/references/types';
 	import { cn } from '$lib/utils';
-	import { CalendarRange, Hash, Search } from '@lucide/svelte';
+	import { CalendarRange, Hash, RotateCcw, Search } from '@lucide/svelte';
 	import DateInput from './DateInput.svelte';
 	import FilterSelect from './FilterSelect.svelte';
 
@@ -72,6 +72,12 @@
 		return '';
 	});
 
+	function fieldCls(f: FilterField): string {
+		if (f.type === 'number') return 'w-full sm:w-40 sm:shrink-0';
+		if (f.type === 'text') return 'w-full sm:min-w-[220px] sm:flex-[1.6]';
+		return 'w-full sm:min-w-[200px] sm:flex-1';
+	}
+
 	function optionsFor(f: FilterField): { value: string; label: string }[] {
 		switch (f.type) {
 			case 'terminal':
@@ -125,9 +131,11 @@
 			type="button"
 			onclick={onReset}
 			disabled={controlsDisabled}
-			class="text-[12px] font-medium text-(--c-danger) hover:underline disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:no-underline"
-			>Reset semua</button
+			class="inline-flex items-center gap-1.5 rounded-lg border border-(--c-border) bg-(--c-surface) px-3 py-1.5 text-xs font-medium text-(--c-fg-muted) transition-colors hover:border-(--c-danger) hover:bg-(--c-danger-bg) hover:text-(--c-danger) disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:border-(--c-border) disabled:hover:bg-(--c-surface) disabled:hover:text-(--c-fg-muted)"
 		>
+			<RotateCcw class="h-3.5 w-3.5" />
+			Reset semua
+		</button>
 	</div>
 
 	{#if nonCheckboxFields.some((f) => f.type === 'date')}
@@ -161,9 +169,9 @@
 		</div>
 	{/if}
 
-	<div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+	<div class="flex flex-wrap gap-4">
 		{#each nonCheckboxFields as f (f.param)}
-			<div>
+			<div class={fieldCls(f)}>
 				<label
 					for={'f-' + f.param}
 					class="mb-1.5 block text-[11px] font-semibold tracking-widest text-(--c-fg-muted) uppercase"
@@ -188,7 +196,10 @@
 							placeholder={f.placeholder}
 							bind:value={query[f.param]}
 							disabled={controlsDisabled}
-							class={inputCls}
+							class={cn(
+								inputCls,
+								'appearance-none [-moz-appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none'
+							)}
 						/>
 					</div>
 				{:else if f.type === 'text'}
@@ -212,6 +223,7 @@
 						bind:value={query[f.param]}
 						options={optionsFor(f)}
 						emptyText={f.type === 'reseller' && !resellers ? 'Memuat…' : 'Belum ada data'}
+						searchable={f.type === 'reseller'}
 						disabled={controlsDisabled}
 					/>
 				{/if}
