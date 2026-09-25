@@ -6,7 +6,8 @@
 	import LogoutControl from '$lib/components/LogoutControl.svelte';
 	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
 	import UserChip from '$lib/components/UserChip.svelte';
-	import { APP_NAME, RULES } from '$lib/config';
+	import { APP_NAME } from '$lib/config';
+	import { formatRules } from '$lib/format';
 	import { theme } from '$lib/theme';
 	import { cn } from '$lib/utils';
 	import { Inbox, Mail, Menu, Send, X } from '@lucide/svelte';
@@ -66,11 +67,6 @@
 			appBusy.value = true;
 			await goto(resolve('/login'));
 		}
-	}
-
-	function formatRules(code: string | null): string | null {
-		if (!code) return null;
-		return RULES[code.trim().toLowerCase()] ?? code;
 	}
 </script>
 

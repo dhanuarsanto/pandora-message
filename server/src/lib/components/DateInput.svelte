@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Calendar, Check, ChevronLeft, ChevronRight } from '@lucide/svelte';
 	import { closePicker, isPickerOpen, openPicker } from '$lib/datePickerState.svelte.js';
+	import { BULAN, HARI, monthCells, parseISODate, toISODate, todayISO } from '$lib/date';
 	import { cn } from '$lib/utils';
 
 	let {
@@ -15,47 +16,16 @@
 		disabled: boolean;
 	} = $props();
 
-	const BULAN = [
-		'Januari',
-		'Februari',
-		'Maret',
-		'April',
-		'Mei',
-		'Juni',
-		'Juli',
-		'Agustus',
-		'September',
-		'Oktober',
-		'November',
-		'Desember'
-	];
-	const HARI = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
-
-	function parseISO(v: string | undefined): Date | null {
-		if (!v) return null;
-		const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(v);
-		if (!m) return null;
-		const d = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
-		return Number.isNaN(d.getTime()) ? null : d;
-	}
-
 	function fmtDisp(v: string | undefined): string {
-		const d = parseISO(v);
+		const d = parseISODate(v);
 		if (!d) return '';
 		return `${d.getDate()} ${BULAN[d.getMonth()]} ${d.getFullYear()}`;
 	}
 
-	function toISO(d: Date): string {
-		const y = d.getFullYear();
-		const m = String(d.getMonth() + 1).padStart(2, '0');
-		const day = String(d.getDate()).padStart(2, '0');
-		return `${y}-${m}-${day}`;
-	}
-
-	const today = parseISO(toISO(new Date())) ?? new Date();
+	const today = parseISODate(todayISO()) ?? new Date();
 	const key = Symbol();
 	const open = $derived(isPickerOpen(key));
-	let view = $state<Date>(parseISO(value) ? (parseISO(value) as Date) : new Date(today));
+	let view = $state<Date>(parseISODate(value) ? (parseISODate(value) as Date) : new Date(today));
 	let panel: HTMLDivElement | null = $state(null);
 	let btn: HTMLButtonElement | null = $state(null);
 
@@ -69,20 +39,7 @@
 				? String(view.getFullYear())
 				: `${yearsBase} - ${yearsBase + 11}`
 	);
-	const firstOffset = $derived(
-		new Date(view.getFullYear(), view.getMonth(), 1).getDay() === 0
-			? 6
-			: new Date(view.getFullYear(), view.getMonth(), 1).getDay() - 1
-	);
-	const daysInMonth = $derived(new Date(view.getFullYear(), view.getMonth() + 1, 0).getDate());
-	const cells = $derived.by(() => {
-		const out: { d: number | null; iso: string }[] = [];
-		for (let i = 0; i < firstOffset; i++) out.push({ d: null, iso: '' });
-		for (let d = 1; d <= daysInMonth; d++) {
-			out.push({ d, iso: toISO(new Date(view.getFullYear(), view.getMonth(), d)) });
-		}
-		return out;
-	});
+	const cells = $derived(monthCells(view.getFullYear(), view.getMonth()));
 
 	function moveView(delta: number) {
 		const y = view.getFullYear();
@@ -110,7 +67,7 @@
 		}
 		openPicker(key);
 		mode = 'days';
-		view = parseISO(value) ? (parseISO(value) as Date) : new Date(today);
+		view = parseISODate(value) ? (parseISODate(value) as Date) : new Date(today);
 	}
 
 	function close() {
@@ -226,7 +183,7 @@
 									'flex h-8 items-center justify-center rounded-lg text-[12.5px] transition-colors',
 									cell.iso === value
 										? 'bg-(--c-accent) font-semibold text-white'
-										: cell.iso === toISO(today)
+										: cell.iso === toISODate(today)
 											? 'font-semibold text-(--c-accent)'
 											: 'text-(--c-fg) hover:bg-(--c-surface-2)'
 								)}>{cell.d}</button
@@ -277,7 +234,7 @@
 				<button
 					type="button"
 					onclick={() => {
-						value = toISO(today);
+						value = toISODate(today);
 						close();
 					}}
 					class="flex items-center gap-1 text-[11.5px] font-medium text-(--c-accent-strong) hover:underline"

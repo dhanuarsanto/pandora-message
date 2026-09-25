@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { cellClass, cellText, formatDate, statusClasses } from '../src/lib/format.ts';
+import { cellClass, cellText, formatDate, formatRules, statusClasses } from '../src/lib/format.ts';
 
 test('formatDate parsing lengkap', () => {
 	assert.equal(formatDate('2026-09-22T10:05:30'), '22 Sep 2026 10:05:30');
@@ -24,6 +24,15 @@ test('statusClasses mapping', () => {
 	assert.equal(statusClasses(69), 'bg-(--c-warning-bg) text-(--c-warning)');
 	assert.equal(statusClasses(0), 'bg-(--c-surface-2) text-(--c-fg-muted)');
 	assert.equal(statusClasses('foo'), 'bg-(--c-surface-2) text-(--c-fg-muted)');
+});
+
+test('formatRules: mapping label, trim, lower, fallback', () => {
+	assert.equal(formatRules('sa'), 'Super Admin');
+	assert.equal(formatRules(' SA '), 'Super Admin');
+	assert.equal(formatRules('OP'), 'Operator');
+	assert.equal(formatRules('apa'), 'apa');
+	assert.equal(formatRules(null), null);
+	assert.equal(formatRules(''), null);
 });
 
 test('cellText', () => {

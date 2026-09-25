@@ -8,44 +8,18 @@ export const RULES: Record<string, string> = {
 	opout: 'Operator Out'
 };
 
-export const INBOX_STATUS: Record<number, string> = {
-	20: '20',
-	21: '21',
-	22: '22',
-	40: '40',
-	41: '41',
-	42: '42',
-	43: '43',
-	44: '44',
-	45: '45',
-	46: '46',
-	47: '47',
-	49: '49',
-	52: '52',
-	56: '56',
-	64: '64',
-	65: '65',
-	69: '69'
-};
+export const INBOX_STATUS = identityMap([
+	20, 21, 22, 40, 41, 42, 43, 44, 45, 46, 47, 49, 52, 56, 64, 65, 69
+]);
 
-export const OUTBOX_STATUS: Record<number, string> = {
-	20: '20',
-	40: '40',
-	50: '50'
-};
+export const OUTBOX_STATUS = identityMap([20, 40, 50]);
 
-export const TIPE = {
-	1: '1',
-	O: 'O',
-	W: 'W',
-	X: 'X'
-};
-
+export const TIPE = identityMap([1, 'O', 'W', 'X']);
 export const TIPE_PENGIRIM: Record<string, string> = TIPE;
 export const TIPE_PENERIMA: Record<string, string> = TIPE;
 
-export const KODE_TERMINAL: Record<string, string> = {
-	1: '1',
-	2: '2',
-	3: '3'
-};
+export const KODE_TERMINAL = identityMap([1, 2, 3]);
+
+function identityMap<T extends number | string>(keys: readonly T[]): Record<T, string> {
+	return Object.fromEntries(keys.map((k) => [k, String(k)])) as Record<T, string>;
+}

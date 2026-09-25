@@ -1,11 +1,11 @@
 ﻿<script lang="ts">
-	import { goto } from '$app/navigation';
-	import { resolve } from '$app/paths';
-	import { reorderKeys } from '$lib/colPrefs';
-	import type { ColSpec, FooterMeta, MessageItem } from '$lib/types';
 	import { cellClass, cellText, formatDate, statusClasses } from '$lib/format';
+	import type { ColSpec, FooterMeta, MessageItem } from '$lib/types';
 	import { cn } from '$lib/utils';
-	import { ChevronLeft, ChevronRight } from '@lucide/svelte';
+	import TableError from './table/TableError.svelte';
+	import TableFooter from './table/TableFooter.svelte';
+	import TableHeader from './table/TableHeader.svelte';
+	import TableSkeleton from './table/TableSkeleton.svelte';
 
 	let {
 		data,
@@ -41,84 +41,6 @@
 
 	let scrollable = $state(false);
 	let tableContainer: HTMLDivElement | null = $state(null);
-	let dragKey = $state<string | null>(null);
-	let dropInfo = $state<{ key: string; side: 'before' | 'after' } | null>(null);
-
-	function onHeaderDragStart(key: string, e: DragEvent) {
-		if (cols.length < 2) return;
-		dragKey = key;
-		dropInfo = null;
-		e.dataTransfer!.effectAllowed = 'move';
-	}
-
-	function onHeaderDragOver(key: string, e: DragEvent) {
-		if (!dragKey || dragKey === key) return;
-		e.preventDefault();
-		const el = e.currentTarget as HTMLTableCellElement;
-		const rect = el.getBoundingClientRect();
-		dropInfo = { key, side: e.clientX < rect.left + rect.width / 2 ? 'before' : 'after' };
-	}
-
-	function onHeaderDrop(e: DragEvent) {
-		e.preventDefault();
-		if (!dragKey || !dropInfo) {
-			onHeaderDragEnd();
-			return;
-		}
-		const visibleKeys = cols.map((c) => c.key);
-		onReorderColumns(reorderKeys(visibleKeys, dragKey, dropInfo.key, dropInfo.side));
-		onHeaderDragEnd();
-	}
-
-	function onHeaderDragEnd() {
-		dragKey = null;
-		dropInfo = null;
-	}
-
-	function focusHeader(key: string) {
-		requestAnimationFrame(() => {
-			document.querySelector<HTMLElement>(`th[data-key='${key}']`)?.focus();
-		});
-	}
-
-	function moveColumn(key: string, dir: -1 | 1) {
-		const keys = cols.map((c) => c.key);
-		const i = keys.indexOf(key);
-		const j = i + dir;
-		if (i < 0 || j < 0 || j >= keys.length) return;
-		const arr = keys.slice();
-		arr.splice(i, 1);
-		arr.splice(j, 0, key);
-		onReorderColumns(arr);
-		focusHeader(key);
-	}
-
-	$effect(() => {
-		if (typeof window === 'undefined') return;
-		const onCapture = (e: KeyboardEvent) => {
-			if (!e.altKey) return;
-			if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
-			const t = e.target as Element | null;
-			if (t && t.closest('table')) e.preventDefault();
-		};
-		window.addEventListener('keydown', onCapture, true);
-		return () => window.removeEventListener('keydown', onCapture, true);
-	});
-
-	function onHeaderKeydown(key: string, e: KeyboardEvent) {
-		if (!e.altKey) return;
-		if (e.key === 'ArrowLeft') {
-			e.preventDefault();
-			moveColumn(key, -1);
-		} else if (e.key === 'ArrowRight') {
-			e.preventDefault();
-			moveColumn(key, 1);
-		}
-	}
-
-	function barPct(i: number): number {
-		return 60 + ((i * 37) % 35);
-	}
 
 	$effect(() => {
 		if (typeof window === 'undefined' || !tableContainer) return;
@@ -134,101 +56,8 @@
 	});
 </script>
 
-{#snippet thead()}
-	<thead>
-		<tr>
-			{#each cols as c (c.key)}
-				<th
-					scope="col"
-					data-key={c.key}
-					class={cn(
-						'sticky top-0 z-2 border-b border-(--c-border) bg-(--c-table-head) px-3.5 py-2.5 text-left text-[11px] font-semibold tracking-widest whitespace-nowrap text-(--c-fg-soft) uppercase select-none',
-						c.key === dropInfo?.key &&
-							dropInfo.side === 'before' &&
-							'shadow-[-3px_0_0_0_var(--c-accent)]',
-						c.key === dropInfo?.key &&
-							dropInfo.side === 'after' &&
-							'shadow-[3px_0_0_0_var(--c-accent)]'
-					)}
-					draggable={cols.length > 1}
-					tabindex={cols.length > 1 ? 0 : undefined}
-					title={cols.length > 1 ? 'Seret, atau Alt+â†/â†’ untuk memindahkan kolom' : undefined}
-					ondragstart={(e) => onHeaderDragStart(c.key, e)}
-					ondragover={(e) => onHeaderDragOver(c.key, e)}
-					ondrop={(e) => onHeaderDrop(e)}
-					ondragend={() => onHeaderDragEnd()}
-					onkeydown={(e) => onHeaderKeydown(c.key, e)}>{c.label}</th
-				>
-			{/each}
-		</tr>
-	</thead>
-{/snippet}
-
-{#snippet footer(meta: FooterMeta | null)}
-	<div
-		class="sticky bottom-0 z-10 flex shrink-0 flex-wrap items-center justify-between gap-2 border-t border-(--c-border) bg-(--c-surface) px-5 py-3.5"
-	>
-		<div class="flex items-center gap-3">
-			<label class="flex items-center gap-2 text-[12px] text-(--c-fg-muted)">
-				Baris/halaman
-				<select
-					value={pageSize}
-					onchange={(e) => onPageSizeChange(e.currentTarget.value)}
-					disabled={meta === null || busy || loading}
-					class="h-8 rounded-md border border-(--c-border) bg-(--c-surface) px-2 text-xs text-(--c-fg) outline-none focus:border-(--c-accent) disabled:cursor-not-allowed disabled:opacity-40"
-				>
-					<option value="">10</option>
-					<option value="25">25</option>
-					<option value="50">50</option>
-					<option value="100">100</option>
-				</select>
-			</label>
-		</div>
-		<div class="flex items-center gap-1.5">
-			<button
-				onclick={() => meta && onGoPrev(meta)}
-				disabled={meta === null || busy || loading || !meta.has_prev_page}
-				class="flex h-8 min-w-8 items-center justify-center rounded-md border border-(--c-border) bg-(--c-surface) px-2 text-xs font-medium text-(--c-fg-muted) transition-colors hover:border-(--c-accent) hover:text-(--c-accent) disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-(--c-border) disabled:hover:text-(--c-fg-muted)"
-			>
-				<ChevronLeft class="h-4 w-4" />
-			</button>
-			<button
-				onclick={() => meta && onGoNext(meta)}
-				disabled={meta === null || busy || loading || !meta.has_next_page}
-				class="flex h-8 min-w-8 items-center justify-center rounded-md border border-(--c-border) bg-(--c-surface) px-2 text-xs font-medium text-(--c-fg-muted) transition-colors hover:border-(--c-accent) hover:text-(--c-accent) disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-(--c-border) disabled:hover:text-(--c-fg-muted)"
-			>
-				<ChevronRight class="h-4 w-4" />
-			</button>
-		</div>
-	</div>
-{/snippet}
-
 {#if error}
-	<div
-		class="flex flex-1 items-center justify-center rounded-xl border border-(--c-border) bg-(--c-surface)"
-	>
-		<div class="max-w-md px-6 text-center" role="alert">
-			<p class="text-[14px] font-semibold text-(--c-fg)">Gagal memuat data</p>
-			<p class="mt-1.5 text-[12px] leading-relaxed text-(--c-fg-muted)">{error}</p>
-			{#if errorDetail}
-				<p class="mt-1 font-mono text-[11px] text-(--c-fg-faint)">{errorDetail}</p>
-			{/if}
-			<div class="mt-4 flex flex-wrap items-center justify-center gap-2">
-				<button
-					onclick={onRetry}
-					class="rounded-lg bg-(--c-accent) px-4 py-1.5 text-xs font-semibold text-white transition-colors hover:opacity-90"
-				>
-					Coba lagi
-				</button>
-				<button
-					onclick={() => goto(resolve(reloadPath), { invalidateAll: true })}
-					class="rounded-lg border border-(--c-border) px-4 py-1.5 text-xs font-medium text-(--c-fg-muted) transition-colors hover:border-(--c-accent) hover:text-(--c-accent)"
-				>
-					Muat ulang halaman
-				</button>
-			</div>
-		</div>
-	</div>
+	<TableError {error} {errorDetail} {onRetry} {reloadPath} />
 {:else}
 	<div
 		class="relative flex min-h-0 flex-1 flex-col overflow-clip rounded-xl border border-(--c-border) bg-(--c-surface)"
@@ -236,31 +65,8 @@
 		{#if loading || !data}
 			<div class="min-h-0 flex-1 overflow-auto" bind:this={tableContainer}>
 				<table class="w-full border-separate border-spacing-0">
-					{@render thead()}
-					<tbody>
-						{#each skeletonRows as r (r)}
-							<tr
-								class={cn(
-									'animate-pulse border-b border-(--c-border)',
-									r % 2 && 'bg-(--c-surface-2)'
-								)}
-							>
-								{#each cols, ci (ci)}
-									<td
-										class="border-b border-(--c-border) px-3.5 py-3"
-										style={cols[ci].width
-											? `width: ${cols[ci].width}px; min-width: ${cols[ci].width}px; max-width: ${cols[ci].width}px`
-											: undefined}
-									>
-										<div
-											class="h-3.5 rounded bg-(--c-surface-2)"
-											style="width: {barPct(ci)}%"
-										></div>
-									</td>
-								{/each}
-							</tr>
-						{/each}
-					</tbody>
+					<TableHeader {cols} {onReorderColumns} />
+					<TableSkeleton {cols} {skeletonRows} />
 				</table>
 			</div>
 		{:else}
@@ -276,7 +82,7 @@
 					</div>
 				{:else}
 					<table class="w-full border-separate border-spacing-0">
-						{@render thead()}
+						<TableHeader {cols} {onReorderColumns} />
 						<tbody>
 							{#each data.items as item, i (item.kode + '-' + i)}
 								<tr
@@ -328,6 +134,14 @@
 				class="pointer-events-none absolute right-0 bottom-12 z-20 w-6 bg-linear-to-l from-(--c-surface) to-transparent"
 			></div>
 		{/if}
-		{@render footer(data?.meta ?? null)}
+		<TableFooter
+			meta={data?.meta ?? null}
+			{pageSize}
+			{busy}
+			{loading}
+			{onPageSizeChange}
+			{onGoNext}
+			{onGoPrev}
+		/>
 	</div>
 {/if}

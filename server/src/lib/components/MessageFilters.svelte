@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { KODE_TERMINAL } from '$lib/config';
 	import type { FilterField, ResellerResponse } from '$lib/types';
+	import { addDaysISO, firstOfMonthISO, todayISO } from '$lib/date';
 	import { cn } from '$lib/utils';
-	import { SvelteDate } from 'svelte/reactivity';
 	import DateInput from './DateInput.svelte';
 
 	let {
@@ -32,33 +32,13 @@
 	const controlCls =
 		'h-9 w-full rounded-lg border border-(--c-border) bg-(--c-surface) px-2.5 text-[13px] text-(--c-fg) outline-none focus:border-(--c-accent) disabled:cursor-not-allowed disabled:opacity-60';
 
-	const today = new SvelteDate();
-	today.setHours(0, 0, 0, 0);
-
-	function iso(d: Date): string {
-		const y = d.getFullYear();
-		const m = String(d.getMonth() + 1).padStart(2, '0');
-		const day = String(d.getDate()).padStart(2, '0');
-		return `${y}-${m}-${day}`;
-	}
-
-	function addDays(days: number): string {
-		const d = new SvelteDate(today);
-		d.setDate(d.getDate() + days);
-		return iso(d);
-	}
-
-	function firstOfMonth(offset: number): string {
-		return iso(new SvelteDate(today.getFullYear(), today.getMonth() + offset, 1));
-	}
-
 	type DatePreset = { label: string; start: string; end: string };
 
 	const PRESETS: DatePreset[] = [
-		{ label: 'Hari Ini', start: iso(today), end: iso(today) },
-		{ label: '7 Hari', start: addDays(-6), end: iso(today) },
-		{ label: 'Bulan Ini', start: firstOfMonth(0), end: iso(today) },
-		{ label: '3 Bulan', start: firstOfMonth(-2), end: iso(today) },
+		{ label: 'Hari Ini', start: todayISO(), end: todayISO() },
+		{ label: '7 Hari', start: addDaysISO(-6), end: todayISO() },
+		{ label: 'Bulan Ini', start: firstOfMonthISO(0), end: todayISO() },
+		{ label: '3 Bulan', start: firstOfMonthISO(-2), end: todayISO() },
 		{ label: 'Semua Data', start: '', end: '' }
 	];
 

@@ -1,16 +1,7 @@
-import { goto } from '$app/navigation';
-import { resolve } from '$app/paths';
 import clsx, { type ClassValue } from 'clsx';
 import { SvelteURLSearchParams } from 'svelte/reactivity';
 import { twMerge } from 'tailwind-merge';
 import type { FilterField } from './types';
-
-export function navigate(route: '/inbox' | '/outbox', queryString: string): void {
-	const target = queryString
-		? (`${route}?${queryString}` as unknown as '/inbox' | '/outbox')
-		: route;
-	goto(resolve(target));
-}
 
 export function initStack(stackKey: string): (number | null)[] {
 	try {
@@ -53,15 +44,6 @@ export function buildQuery(
 		u.set(k, v);
 	}
 	return u;
-}
-
-export function todayISO(): string {
-	const d = new Date();
-	d.setHours(0, 0, 0, 0);
-	const y = d.getFullYear();
-	const m = String(d.getMonth() + 1).padStart(2, '0');
-	const day = String(d.getDate()).padStart(2, '0');
-	return `${y}-${m}-${day}`;
 }
 
 export function cn(...inputs: ClassValue[]) {

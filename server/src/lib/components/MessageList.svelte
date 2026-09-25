@@ -4,18 +4,30 @@
 	import { resolve } from '$app/paths';
 	import { appBusy } from '$lib/appBusy.svelte.js';
 	import { clearColPrefs, loadColPrefs, saveColPrefs, visibleOf } from '$lib/colPrefs';
-	import { INBOX_STATUS, OUTBOX_STATUS } from '$lib/config';
-	import type { ColSpec, FilterField, FooterMeta, MessageItem, ResellerResponse } from '$lib/types';
+	import type { ColSpec, FilterField, FooterMeta, ResellerResponse } from '$lib/types';
 	import { paramsEqual } from '$lib/params';
-	import { buildQuery, initFilterFromUrl, initStack, navigate, todayISO } from '$lib/utils';
+	import { buildQuery, initFilterFromUrl, initStack } from '$lib/utils';
+	import { todayISO } from '$lib/date';
+	import {
+		applyDateDefaults,
+		calcSkeletonCount,
+		normalizeMessageBody,
+		popStackCursor,
+		pushStackCursor,
+		rebuildStack,
+		saveCursorStack,
+		shouldFetch,
+		statusOptionsFor,
+		type MessageBody,
+		type MessageData
+	} from '$lib/messageQuery';
+	import { navigate } from '$lib/navigation';
 	import { Columns3, SlidersHorizontal } from '@lucide/svelte';
 	import { untrack } from 'svelte';
 	import { SvelteURLSearchParams } from 'svelte/reactivity';
 	import ColumnPanel from './ColumnPanel.svelte';
 	import MessageFilters from './MessageFilters.svelte';
 	import MessageTable from './MessageTable.svelte';
-
-	type MessageData = { items: MessageItem[]; meta: FooterMeta };
 
 	let {
 		path,
@@ -37,21 +49,9 @@
 
 	let cursorStack = $state<(number | null)[]>(untrack(() => initStack(stackKey)));
 
-	function saveStack() {
-		if (cursorStack.length === 1 && cursorStack[0] === null) {
-			sessionStorage.removeItem(stackKey);
-		} else {
-			sessionStorage.setItem(stackKey, JSON.stringify(cursorStack));
-		}
-	}
-
 	function initialQuery(): Record<string, string> {
-		const q = initFilterFromUrl(filters, page.url.searchParams);
-		if (!page.url.searchParams.has('startDate') && !page.url.searchParams.has('endDate')) {
-			q['startDate'] = todayISO();
-			q['endDate'] = todayISO();
-		}
-		return q;
+		const u = applyDateDefaults(new SvelteURLSearchParams(page.url.searchParams), 'today');
+		return initFilterFromUrl(filters, u);
 	}
 
 	let dateScope = $state<'today' | 'all'>('today');
@@ -125,16 +125,12 @@
 
 	$effect(() => {
 		if (typeof window === 'undefined') return;
-		const params = new SvelteURLSearchParams(page.url.searchParams);
-		if (dateScope === 'today' && !params.has('startDate') && !params.has('endDate')) {
-			params.set('startDate', todayISO());
-			params.set('endDate', todayISO());
-		}
+		const params = applyDateDefaults(new SvelteURLSearchParams(page.url.searchParams), dateScope);
 		const qs = params.toString();
 		void retryTick;
 
 		const key = endpoint + (qs ? '?' + qs : '');
-		if (lastFetchKey === key && lastRetryTick === retryTick) {
+		if (!shouldFetch(lastFetchKey, lastRetryTick, key, retryTick)) {
 			loading = false;
 			loadError = null;
 			return;
@@ -152,22 +148,14 @@
 					goto(resolve('/login'));
 					throw new Error('Sesi berakhir.');
 				}
-				return res.json() as Promise<{
-					status: string;
-					data?: MessageData;
-					message?: string;
-					detail?: string;
-				}>;
+				return res.json() as Promise<MessageBody>;
 			})
 			.then((body) => {
 				if (lastFetchKey !== key) return;
-				if (body.status === 'sukses' && body.data) {
-					messageData = { items: body.data.items ?? [], meta: body.data.meta };
-				} else {
-					messageData = null;
-					loadError = body.message ?? 'Gagal memuat data.';
-					loadErrorCause = body.detail ?? null;
-				}
+				const r = normalizeMessageBody(body);
+				messageData = r.data;
+				loadError = r.error;
+				loadErrorCause = r.cause;
 			})
 			.catch(() => {
 				if (lastFetchKey !== key) return;
@@ -181,18 +169,19 @@
 
 	$effect(() => {
 		if (typeof window === 'undefined') return;
-		const ctrl = new AbortController();
-		fetch('/api/references/resellers', { signal: ctrl.signal })
+		let active = true;
+		fetch('/api/references/resellers')
 			.then((res) => res.json() as Promise<{ status: string; data?: ResellerResponse }>)
 			.then((body) => {
-				if (ctrl.signal.aborted) return;
-				resellers = body.status === 'sukses' && body.data ? body.data : null;
+				if (active) resellers = body.status === 'sukses' && body.data ? body.data : null;
 			})
 			.catch(() => {
-				if (!ctrl.signal.aborted) resellers = null;
+				if (active) resellers = null;
 			});
 
-		return () => ctrl.abort();
+		return () => {
+			active = false;
+		};
 	});
 
 	const controlsDisabled = $derived(loading || navigating.type !== null);
@@ -231,47 +220,37 @@
 	afterNavigate((nav) => {
 		restoreScroll();
 		pageSize = page.url.searchParams.get('pageSize') ?? '';
-		query = initFilterFromUrl(filters, page.url.searchParams);
-		if (
-			!page.url.searchParams.has('startDate') &&
-			!page.url.searchParams.has('endDate') &&
-			dateScope === 'today'
-		) {
-			query['startDate'] = todayISO();
-			query['endDate'] = todayISO();
-		}
+		const u = applyDateDefaults(new SvelteURLSearchParams(page.url.searchParams), dateScope);
+		query = initFilterFromUrl(filters, u);
 		if (nav && nav.type === 'popstate') {
 			const raw = page.url.searchParams.get('cursor');
 			const cur = raw === null ? null : Number(raw);
-			const idx = cursorStack.findIndex((x) => x === cur);
-			cursorStack = idx >= 0 ? cursorStack.slice(0, idx + 1) : [cur];
-			saveStack();
+			cursorStack = rebuildStack(cursorStack, cur);
+			saveCursorStack(stackKey, cursorStack);
 		}
 	});
 
-	const statusOptions = $derived(Object.entries(path === '/outbox' ? OUTBOX_STATUS : INBOX_STATUS));
+	const statusOptions = $derived(statusOptionsFor(path));
 	const limitN = $derived(Number(query['limit']));
 	const pageSizeN = $derived(Number(pageSize));
-	const skeletonCount = $derived(
-		Math.min(limitN || pageSizeN || 10, pageSizeN || limitN || 10, 15)
-	);
+	const skeletonCount = $derived(calcSkeletonCount(limitN, pageSizeN));
 	const skeletonRows = $derived(Array.from({ length: skeletonCount }, (_, i) => i));
 
 	function goNext(meta: FooterMeta) {
 		if (!meta.has_next_page || busy) return;
 		saveScroll();
-		cursorStack.push(meta.next_cursor);
-		saveStack();
+		cursorStack = pushStackCursor(cursorStack, meta.next_cursor);
+		saveCursorStack(stackKey, cursorStack);
 		navigate(path, buildQuery(query, pageSize, meta.next_cursor).toString());
 	}
 
 	function goPrev(meta: FooterMeta) {
 		if (!meta.has_prev_page || busy) return;
 		saveScroll();
-		cursorStack.pop();
-		const prev = cursorStack[cursorStack.length - 1] ?? null;
-		saveStack();
-		navigate(path, buildQuery(query, pageSize, prev).toString());
+		const r = popStackCursor(cursorStack);
+		cursorStack = r.stack;
+		saveCursorStack(stackKey, cursorStack);
+		navigate(path, buildQuery(query, pageSize, r.prev).toString());
 	}
 
 	function applyFilter(): boolean {
@@ -288,7 +267,7 @@
 		const next = buildQuery(query, pageSize, null);
 		if (paramsEqual(next, page.url.searchParams)) return false;
 		cursorStack = [null];
-		saveStack();
+		saveCursorStack(stackKey, cursorStack);
 		navigate(path, next.toString());
 		return true;
 	}
@@ -297,7 +276,7 @@
 		query = { startDate: todayISO(), endDate: todayISO() };
 		dateScope = 'today';
 		cursorStack = [null];
-		saveStack();
+		saveCursorStack(stackKey, cursorStack);
 		navigate(path, buildQuery(query, pageSize, null).toString());
 	}
 

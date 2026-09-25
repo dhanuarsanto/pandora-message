@@ -1,13 +1,18 @@
+import { RULES } from './config.ts';
 import type { ColSpec } from './types';
-
-const BULAN = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+import { BULAN_PENDEK } from './date.ts';
 
 export function formatDate(raw: string | number | undefined): string {
 	if (raw === null || raw === undefined || raw === '') return '-';
 	const m = /^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})(?::(\d{2}))?/.exec(String(raw));
 	if (!m) return String(raw);
 	const detik = m[6] ? ':' + m[6] : '';
-	return `${m[3]} ${BULAN[+m[2] - 1]} ${m[1]} ${m[4]}:${m[5]}${detik}`;
+	return `${m[3]} ${BULAN_PENDEK[+m[2] - 1]} ${m[1]} ${m[4]}:${m[5]}${detik}`;
+}
+
+export function formatRules(code: string | null): string | null {
+	if (!code) return null;
+	return RULES[code.trim().toLowerCase()] ?? code;
 }
 
 export function statusClasses(raw: string | number | undefined): string {

@@ -6,7 +6,7 @@ export const COOKIE_RULES = 'rules';
 export const SESSION_TTL_SEC = 86400;
 
 export function secureCookie(): boolean {
-	return import.meta.env.PROD && process.env.COOKIE_SECURE !== 'false';
+	return Boolean(import.meta.env?.PROD) && process.env.COOKIE_SECURE !== 'false';
 }
 
 export function setSessionCookies(
