@@ -297,9 +297,10 @@
 										{:else if c.status}
 											<td class="border-b border-(--c-border) px-3.5 py-3">
 												<span
-													class="inline-block rounded-full px-2.5 py-0.5 text-[11px] font-semibold whitespace-nowrap {statusClasses(
-														raw
-													)}">{cellText(raw)}</span
+													class={cn(
+														'inline-block rounded-full px-2.5 py-0.5 text-[11px] font-semibold whitespace-nowrap',
+														statusClasses(raw)
+													)}>{cellText(raw)}</span
 												>
 											</td>
 										{:else}

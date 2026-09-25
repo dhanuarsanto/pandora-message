@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { theme } from '$lib/theme';
+	import { cn } from '$lib/utils';
 	import { Moon, Sun } from '@lucide/svelte';
 
 	let { isDark, size = 'md' }: { isDark: boolean; size?: 'md' | 'lg' } = $props();
@@ -9,7 +10,10 @@
 
 <button
 	onclick={() => theme.toggle()}
-	class="flex {box} items-center justify-center rounded-[10px] text-(--c-fg-muted) transition-colors hover:bg-(--c-surface-3) hover:text-(--c-fg) disabled:cursor-not-allowed disabled:opacity-60"
+	class={cn(
+		'flex items-center justify-center rounded-[10px] text-(--c-fg-muted) transition-colors hover:bg-(--c-surface-3) hover:text-(--c-fg) disabled:cursor-not-allowed disabled:opacity-60',
+		box
+	)}
 	aria-label={isDark ? 'Mode terang' : 'Mode gelap'}
 	title={isDark ? 'Mode terang' : 'Mode gelap'}
 >

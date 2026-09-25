@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { ArrowRight } from '@lucide/svelte';
 	import { KODE_TERMINAL } from '$lib/config';
 	import type { FilterField, ResellerResponse } from '$lib/types';
+	import { cn } from '$lib/utils';
 	import { SvelteDate } from 'svelte/reactivity';
 	import DateInput from './DateInput.svelte';
 
@@ -111,54 +111,49 @@
 	<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5">
 		{#each datePairs as pair (pair.start.param)}
 			<div
-				class="rounded-lg border border-(--c-border) bg-(--c-surface-2) p-4 sm:col-span-2 md:col-span-4 lg:col-span-5"
+				class="rounded-lg border border-(--c-border) bg-(--c-surface-2) p-4 sm:col-span-2 md:col-span-2 lg:col-span-2"
 			>
-				<div class="mb-3 flex flex-wrap items-center justify-between gap-2">
-					<span class="text-[11px] font-semibold tracking-widest text-(--c-fg-muted) uppercase"
-						>Rentang Tanggal</span
-					>
-					<div class="flex flex-wrap gap-1.5">
-						{#each PRESETS as p (p.label)}
-							<button
-								type="button"
-								disabled={controlsDisabled || applying}
-								onclick={() => {
-									applyPreset(p);
-								}}
-								class="rounded-full border px-3 py-1 text-[11px] font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50 {presetActive(
-									p
-								)
+				<span class="text-[11px] font-semibold tracking-widest text-(--c-fg-muted) uppercase"
+					>Rentang Tanggal</span
+				>
+				<div class="mt-3 flex flex-wrap gap-1.5">
+					{#each PRESETS as p (p.label)}
+						<button
+							type="button"
+							disabled={controlsDisabled || applying}
+							onclick={() => {
+								applyPreset(p);
+							}}
+							class={cn(
+								'rounded-full border px-3 py-1 text-[11px] font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50',
+								presetActive(p)
 									? 'border-(--c-accent) bg-(--c-accent-soft) text-(--c-accent-strong)'
-									: 'border-(--c-border) text-(--c-fg-muted) hover:border-(--c-accent) hover:text-(--c-accent)'}"
-								>{p.label}</button
-							>
-						{/each}
-					</div>
+									: 'border-(--c-border) text-(--c-fg-muted) hover:border-(--c-accent) hover:text-(--c-accent)'
+							)}>{p.label}</button
+						>
+					{/each}
 				</div>
-				<div class="grid grid-cols-1 items-end gap-3 sm:max-w-lg sm:grid-cols-[1fr_auto_1fr]">
+				<div class="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
 					<div>
-						<label
-							for={'f-' + pair.start.param}
+						<span
 							class="mb-1.5 block text-[11px] font-semibold tracking-widest text-(--c-fg-muted) uppercase"
-							>{pair.start.label}</label
+							>{pair.start.label}</span
 						>
 						<DateInput
 							id={'f-' + pair.start.param}
+							ariaLabel={pair.start.label}
 							bind:value={query[pair.start.param]}
 							disabled={controlsDisabled}
 						/>
 					</div>
-					<div class="hidden pb-2.5 text-(--c-fg-faint) sm:block">
-						<ArrowRight class="h-4 w-4" />
-					</div>
 					<div>
-						<label
-							for={'f-' + pair.end.param}
+						<span
 							class="mb-1.5 block text-[11px] font-semibold tracking-widest text-(--c-fg-muted) uppercase"
-							>{pair.end.label}</label
+							>{pair.end.label}</span
 						>
 						<DateInput
 							id={'f-' + pair.end.param}
+							ariaLabel={pair.end.label}
 							bind:value={query[pair.end.param]}
 							disabled={controlsDisabled}
 						/>
@@ -168,12 +163,16 @@
 		{/each}
 		{#each standaloneDates as f (f.param)}
 			<div>
-				<label
-					for={'f-' + f.param}
+				<span
 					class="mb-1.5 block text-[11px] font-semibold tracking-widest text-(--c-fg-muted) uppercase"
-					>{f.label}</label
+					>{f.label}</span
 				>
-				<DateInput id={'f-' + f.param} bind:value={query[f.param]} disabled={controlsDisabled} />
+				<DateInput
+					id={'f-' + f.param}
+					ariaLabel={f.label}
+					bind:value={query[f.param]}
+					disabled={controlsDisabled}
+				/>
 			</div>
 		{/each}
 		{#each nonDateFields as f (f.param)}
