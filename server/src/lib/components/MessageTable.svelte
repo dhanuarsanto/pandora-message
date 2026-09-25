@@ -85,18 +85,13 @@
 						<TableHeader {cols} {onReorderColumns} />
 						<tbody>
 							{#each data.items as item, i (item.kode + '-' + i)}
-								<tr
-									class={cn(
-										'transition-colors hover:bg-(--c-row-hover)',
-										i % 2 && 'bg-(--c-surface-2)'
-									)}
-								>
+								<tr class="transition-colors hover:bg-(--c-row-hover)">
 									{#each cols as c (c.key)}
 										{@const raw = (item as Record<string, string | number>)[c.key]}
 										{#if c.badge}
 											<td class="border-b border-(--c-border) px-3.5 py-3">
 												<span
-													class="inline-block rounded bg-(--c-surface-2) px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap text-(--c-fg-muted)"
+													class="inline-block rounded bg-(--c-border) px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap text-(--c-fg-muted)"
 													>{cellText(raw)}</span
 												>
 											</td>

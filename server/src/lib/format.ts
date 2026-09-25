@@ -22,7 +22,7 @@ export function statusClasses(raw: string | number | undefined): string {
 	if (s === 50 || s === 52 || s === 55 || s === 69) {
 		return 'bg-(--c-warning-bg) text-(--c-warning)';
 	}
-	return 'bg-(--c-surface-2) text-(--c-fg-muted)';
+	return 'bg-(--c-border) text-(--c-fg-muted)';
 }
 
 export function cellText(raw: string | number | undefined): string {

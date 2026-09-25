@@ -1,6 +1,5 @@
 <script lang="ts">
 	import type { ColSpec } from '$lib/message/types';
-	import { cn } from '$lib/utils';
 
 	let {
 		cols,
@@ -17,7 +16,7 @@
 
 <tbody>
 	{#each skeletonRows as r (r)}
-		<tr class={cn('animate-pulse border-b border-(--c-border)', r % 2 && 'bg-(--c-surface-2)')}>
+		<tr class="animate-pulse border-b border-(--c-border)">
 			{#each cols, ci (ci)}
 				<td class="border-b border-(--c-border) px-3.5 py-3">
 					<div class="h-3.5 rounded bg-(--c-surface-2)" style="width: {barPct(ci)}%"></div>
