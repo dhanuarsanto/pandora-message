@@ -46,6 +46,17 @@ test('initFilterFromUrl: checkbox hanya true', () => {
 	assert.equal(initFilterFromUrl(fs, new URLSearchParams())['c'], '');
 });
 
+test('initFilterFromUrl: defaultChecked terisi true saat tanpa param', () => {
+	const fs: FilterField[] = [
+		{ param: 'a', label: 'A', type: 'checkbox', defaultChecked: true },
+		{ param: 'b', label: 'B', type: 'checkbox' }
+	];
+	assert.equal(initFilterFromUrl(fs, new URLSearchParams())['a'], 'true');
+	assert.equal(initFilterFromUrl(fs, new URLSearchParams())['b'], '');
+	assert.equal(initFilterFromUrl(fs, new URLSearchParams('a=false'))['a'], '');
+	assert.equal(initFilterFromUrl(fs, new URLSearchParams('b=true'))['b'], 'true');
+});
+
 test('buildQuery: buang nilai kosong', () => {
 	const q = { a: '', b: 'x', c: '' };
 	assert.equal(buildQuery(q, '', null).toString(), 'b=x');

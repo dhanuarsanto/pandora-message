@@ -243,7 +243,12 @@
 							class="sr-only"
 							checked={query[f.param] === 'true'}
 							disabled={controlsDisabled}
-							onchange={(e) => (query[f.param] = e.currentTarget.checked ? 'true' : '')}
+							onchange={(e) =>
+								(query[f.param] = e.currentTarget.checked
+									? 'true'
+									: f.defaultChecked
+										? 'false'
+										: '')}
 						/>
 						<span
 							class={cn(

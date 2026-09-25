@@ -18,7 +18,7 @@ export type FilterField =
 	| { type: 'status'; param: string; label: string }
 	| { type: 'tipe'; param: string; label: string; source: Record<string, string> }
 	| { type: 'reseller'; param: string; label: string }
-	| { type: 'checkbox'; param: string; label: string };
+	| { type: 'checkbox'; param: string; label: string; defaultChecked?: boolean };
 
 export type FooterMeta = {
 	has_next_page: boolean;

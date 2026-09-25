@@ -1,7 +1,9 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
+	applyCheckboxDefaults,
 	applyDateDefaults,
+	applyLimitDefault,
 	calcSkeletonCount,
 	normalizeMessageBody,
 	popStackCursor,
@@ -50,6 +52,30 @@ test('applyDateDefaults: param lain dipertahankan', () => {
 	assert.equal(p.get('pageSize'), '25');
 	assert.equal(p.get('b'), 'x');
 	assert.equal(p.get('startDate'), p.get('endDate'));
+});
+
+test('applyLimitDefault: tanpa param limit -> 20', () => {
+	const p = applyLimitDefault(new URLSearchParams());
+	assert.equal(p.get('limit'), '20');
+});
+
+test('applyLimitDefault: limit sudah ada -> dipertahankan', () => {
+	const p = applyLimitDefault(new URLSearchParams('limit=50'));
+	assert.equal(p.get('limit'), '50');
+	const p2 = applyLimitDefault(new URLSearchParams('limit='));
+	assert.equal(p2.get('limit'), '');
+});
+
+test('applyCheckboxDefaults: defaultChecked diterapkan hanya saat param hilang', () => {
+	const fs = [
+		{ param: 'req', label: 'R', type: 'checkbox' as const, defaultChecked: true },
+		{ param: 'jawab', label: 'J', type: 'checkbox' as const }
+	];
+	const p = applyCheckboxDefaults(new URLSearchParams(), fs);
+	assert.equal(p.get('req'), 'true');
+	assert.equal(p.has('jawab'), false);
+	const p2 = applyCheckboxDefaults(new URLSearchParams('req=false'), fs);
+	assert.equal(p2.get('req'), 'false');
 });
 
 test('calcSkeletonCount: nilai normal & fallback', () => {

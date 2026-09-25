@@ -28,13 +28,18 @@ export const INBOX_COLS: ColSpec[] = [
 export const INBOX_FILTERS: FilterField[] = [
 	{ type: 'date', param: 'startDate', label: 'Tgl Mulai' },
 	{ type: 'date', param: 'endDate', label: 'Tgl Akhir' },
-	{ type: 'number', param: 'limit', label: 'Limit', placeholder: 'Mis. 100' },
+	{ type: 'number', param: 'limit', label: 'Limit', placeholder: 'Mis. 20' },
 	{ type: 'terminal', param: 'terminal', label: 'Terminal' },
 	{ type: 'reseller', param: 'reseller', label: 'Reseller' },
 	{ type: 'text', param: 'pengirim', label: 'Pengirim', placeholder: 'Cari pengirim...' },
 	{ type: 'tipe', param: 'tipe', label: 'Tipe Pengirim', source: TIPE_PENGIRIM },
 	{ type: 'status', param: 'status', label: 'Status' },
 	{ type: 'text', param: 'pesan', label: 'Pesan', placeholder: 'Isi pesan...' },
-	{ type: 'checkbox', param: 'requestFromReseller', label: 'Request dari Reseller' },
+	{
+		type: 'checkbox',
+		param: 'requestFromReseller',
+		label: 'Request dari Reseller',
+		defaultChecked: true
+	},
 	{ type: 'checkbox', param: 'jawabanFromProvider', label: 'Jawaban dari Provider' }
 ];

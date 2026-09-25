@@ -26,7 +26,11 @@ export function initFilterFromUrl(
 	for (const f of filters) {
 		out[f.param] = '';
 		const v = params.get(f.param);
-		if (f.type === 'checkbox' ? v === 'true' : v) out[f.param] = v as string;
+		if (v !== null) {
+			out[f.param] = f.type === 'checkbox' ? (v === 'true' ? 'true' : '') : v;
+		} else if (f.type === 'checkbox' && f.defaultChecked) {
+			out[f.param] = 'true';
+		}
 	}
 	return out;
 }

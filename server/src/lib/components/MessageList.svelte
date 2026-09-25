@@ -10,7 +10,9 @@
 	import { buildQuery, initFilterFromUrl, initStack } from '$lib/utils';
 	import { todayISO } from '$lib/date';
 	import {
+		applyCheckboxDefaults,
 		applyDateDefaults,
+		applyLimitDefault,
 		calcSkeletonCount,
 		normalizeMessageBody,
 		popStackCursor,
@@ -51,7 +53,9 @@
 	let cursorStack = $state<(number | null)[]>(untrack(() => initStack(stackKey)));
 
 	function initialQuery(): Record<string, string> {
-		const u = applyDateDefaults(new SvelteURLSearchParams(page.url.searchParams), 'today');
+		const u = applyLimitDefault(
+			applyDateDefaults(new SvelteURLSearchParams(page.url.searchParams), 'today')
+		);
 		return initFilterFromUrl(filters, u);
 	}
 
@@ -126,7 +130,12 @@
 
 	$effect(() => {
 		if (typeof window === 'undefined') return;
-		const params = applyDateDefaults(new SvelteURLSearchParams(page.url.searchParams), dateScope);
+		const params = applyLimitDefault(
+			applyCheckboxDefaults(
+				applyDateDefaults(new SvelteURLSearchParams(page.url.searchParams), dateScope),
+				filters
+			)
+		);
 		const qs = params.toString();
 		void retryTick;
 
@@ -221,7 +230,9 @@
 	afterNavigate((nav) => {
 		restoreScroll();
 		pageSize = page.url.searchParams.get('pageSize') ?? '';
-		const u = applyDateDefaults(new SvelteURLSearchParams(page.url.searchParams), dateScope);
+		const u = applyLimitDefault(
+			applyDateDefaults(new SvelteURLSearchParams(page.url.searchParams), dateScope)
+		);
 		query = initFilterFromUrl(filters, u);
 		if (nav && nav.type === 'popstate') {
 			const raw = page.url.searchParams.get('cursor');
@@ -274,7 +285,7 @@
 	}
 
 	function resetFilters() {
-		query = { startDate: todayISO(), endDate: todayISO() };
+		query = { startDate: todayISO(), endDate: todayISO(), limit: '20' };
 		dateScope = 'today';
 		cursorStack = [null];
 		saveCursorStack(stackKey, cursorStack);

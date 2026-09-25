@@ -22,7 +22,8 @@
 		return `${d.getDate()} ${BULAN[d.getMonth()]} ${d.getFullYear()}`;
 	}
 
-	const today = parseISODate(todayISO()) ?? new Date();
+	const isoToday = todayISO();
+	const today = parseISODate(isoToday) ?? new Date();
 	const key = Symbol();
 	const open = $derived(isPickerOpen(key));
 	let view = $state<Date>(parseISODate(value) ? (parseISODate(value) as Date) : new Date(today));
@@ -47,6 +48,14 @@
 		if (mode === 'days') view = new Date(y, m + delta, 1);
 		else if (mode === 'months') view = new Date(y + delta, m, 1);
 		else view = new Date(y + delta * 12, m, 1);
+	}
+
+	function canNext(): boolean {
+		if (mode === 'days') {
+			return view.getFullYear() !== today.getFullYear() || view.getMonth() < today.getMonth();
+		}
+		if (mode === 'months') return view.getFullYear() < today.getFullYear();
+		return yearsBase < today.getFullYear();
 	}
 
 	function enterMode() {
@@ -151,12 +160,13 @@
 				<button
 					type="button"
 					onclick={() => moveView(1)}
+					disabled={!canNext()}
 					aria-label={mode === 'days'
 						? 'Bulan berikutnya'
 						: mode === 'months'
 							? 'Tahun berikutnya'
 							: 'Rentang tahun berikutnya'}
-					class="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-(--c-fg-muted) transition-colors hover:bg-(--c-surface-2) hover:text-(--c-accent)"
+					class="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-(--c-fg-muted) transition-colors hover:bg-(--c-surface-2) hover:text-(--c-accent) disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-(--c-fg-muted)"
 				>
 					<ChevronRight class="h-4 w-4" /></button
 				>
@@ -177,15 +187,18 @@
 								type="button"
 								tabindex="-1"
 								aria-label={cell.iso}
+								disabled={cell.iso > isoToday}
 								onclick={() => pick(cell.iso)}
 								onkeydown={(e) => onDayKeydown(cell.iso, e)}
 								class={cn(
 									'flex h-8 items-center justify-center rounded-lg text-[12.5px] transition-colors',
-									cell.iso === value
-										? 'bg-(--c-accent) font-semibold text-white'
-										: cell.iso === toISODate(today)
-											? 'font-semibold text-(--c-accent)'
-											: 'text-(--c-fg) hover:bg-(--c-surface-2)'
+									cell.iso > isoToday
+										? 'cursor-not-allowed text-(--c-fg-faint)'
+										: cell.iso === value
+											? 'bg-(--c-accent) font-semibold text-white'
+											: cell.iso === isoToday
+												? 'font-semibold text-(--c-accent)'
+												: 'text-(--c-fg) hover:bg-(--c-surface-2)'
 								)}>{cell.d}</button
 							>
 						{/if}
@@ -197,15 +210,18 @@
 						<button
 							type="button"
 							tabindex="-1"
+							disabled={view.getFullYear() === today.getFullYear() && i > today.getMonth()}
 							onclick={() => {
 								view = new Date(view.getFullYear(), i, 1);
 								mode = 'days';
 							}}
 							class={cn(
 								'flex h-9 items-center justify-center rounded-lg text-[12.5px] transition-colors',
-								i === view.getMonth()
-									? 'bg-(--c-accent) font-semibold text-white'
-									: 'text-(--c-fg) hover:bg-(--c-surface-2)'
+								view.getFullYear() === today.getFullYear() && i > today.getMonth()
+									? 'cursor-not-allowed text-(--c-fg-faint)'
+									: i === view.getMonth()
+										? 'bg-(--c-accent) font-semibold text-white'
+										: 'text-(--c-fg) hover:bg-(--c-surface-2)'
 							)}>{b.slice(0, 3)}</button
 						>
 					{/each}
@@ -216,15 +232,18 @@
 						<button
 							type="button"
 							tabindex="-1"
+							disabled={yy > today.getFullYear()}
 							onclick={() => {
 								view = new Date(yy, view.getMonth(), 1);
 								mode = 'months';
 							}}
 							class={cn(
 								'flex h-9 items-center justify-center rounded-lg text-[12.5px] transition-colors',
-								yy === view.getFullYear()
-									? 'bg-(--c-accent) font-semibold text-white'
-									: 'text-(--c-fg) hover:bg-(--c-surface-2)'
+								yy > today.getFullYear()
+									? 'cursor-not-allowed text-(--c-fg-faint)'
+									: yy === view.getFullYear()
+										? 'bg-(--c-accent) font-semibold text-white'
+										: 'text-(--c-fg) hover:bg-(--c-surface-2)'
 							)}>{yy}</button
 						>
 					{/each}

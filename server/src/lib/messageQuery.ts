@@ -1,4 +1,5 @@
 import type { FooterMeta, MessageItem } from './message/types.ts';
+import type { FilterField } from './message/types.ts';
 import { INBOX_STATUS, OUTBOX_STATUS } from './config.ts';
 import { todayISO } from './date.ts';
 
@@ -18,6 +19,23 @@ export function applyDateDefaults(
 	if (scope === 'today' && !params.has('startDate') && !params.has('endDate')) {
 		params.set('startDate', todayISO());
 		params.set('endDate', todayISO());
+	}
+	return params;
+}
+
+export function applyLimitDefault(params: URLSearchParams): URLSearchParams {
+	if (!params.has('limit')) params.set('limit', '20');
+	return params;
+}
+
+export function applyCheckboxDefaults(
+	params: URLSearchParams,
+	filters: FilterField[]
+): URLSearchParams {
+	for (const f of filters) {
+		if (f.type === 'checkbox' && f.defaultChecked && !params.has(f.param)) {
+			params.set(f.param, 'true');
+		}
 	}
 	return params;
 }
