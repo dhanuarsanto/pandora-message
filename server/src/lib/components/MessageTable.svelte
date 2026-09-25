@@ -64,7 +64,7 @@
 	>
 		{#if loading || !data}
 			<div class="min-h-0 flex-1 overflow-auto" bind:this={tableContainer}>
-				<table class="w-full border-separate border-spacing-0">
+				<table class="min-w-full border-separate border-spacing-0">
 					<TableHeader {cols} {onReorderColumns} />
 					<TableSkeleton {cols} {skeletonRows} />
 				</table>
@@ -81,7 +81,7 @@
 						</div>
 					</div>
 				{:else}
-					<table class="w-full border-separate border-spacing-0">
+					<table class="min-w-full border-separate border-spacing-0">
 						<TableHeader {cols} {onReorderColumns} />
 						<tbody>
 							{#each data.items as item, i (item.kode + '-' + i)}

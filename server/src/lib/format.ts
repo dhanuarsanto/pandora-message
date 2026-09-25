@@ -32,7 +32,7 @@ export function cellText(raw: string | number | undefined): string {
 
 export function cellClass(c: ColSpec): string {
 	let cls = 'border-b border-(--c-border) px-3.5 py-3';
-	cls += c.mono ? ' font-mono text-[11px] whitespace-nowrap' : ' text-[12px]';
+	cls += c.mono ? ' font-mono text-[11px] whitespace-nowrap' : ' text-[12px] whitespace-nowrap';
 	if (c.strong) cls += ' font-semibold';
 	if (c.muted) cls += ' text-(--c-fg-soft)';
 	return cls;

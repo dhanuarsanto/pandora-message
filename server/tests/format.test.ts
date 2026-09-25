@@ -45,7 +45,7 @@ test('cellText', () => {
 test('cellClass kombinasi flag', () => {
 	assert.equal(
 		cellClass({ key: 'a', label: 'a' }),
-		'border-b border-(--c-border) px-3.5 py-3 text-[12px]'
+		'border-b border-(--c-border) px-3.5 py-3 text-[12px] whitespace-nowrap'
 	);
 	assert.equal(
 		cellClass({ key: 'a', label: 'a', mono: true, strong: true, muted: true }),
