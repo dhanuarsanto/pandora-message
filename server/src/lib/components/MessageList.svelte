@@ -69,9 +69,12 @@
 	let showFilter = $state(false);
 	let showColumns = $state(false);
 
-	const colKey = $derived(stackKey.replace('-cursor-stack', '-cols'));
+	const username = $derived(page.data.username ?? '');
+	const colsRoute = $derived(path === '/outbox' ? 'outbox' : 'inbox');
 
-	let colPrefs = $state<ReturnType<typeof loadColPrefs>>(untrack(() => loadColPrefs(colKey, cols)));
+	let colPrefs = $state<ReturnType<typeof loadColPrefs>>(
+		untrack(() => loadColPrefs(username, colsRoute, cols))
+	);
 	let columnsRef = $state<HTMLElement | null>(null);
 	let columnsBtn = $state<HTMLButtonElement | null>(null);
 
@@ -100,7 +103,7 @@
 
 	function setColPrefs(next: typeof colPrefs) {
 		colPrefs = next;
-		saveColPrefs(colKey, next);
+		saveColPrefs(username, colsRoute, next);
 	}
 
 	function toggleCol(key: string) {
@@ -118,8 +121,8 @@
 	}
 
 	function resetColumns() {
-		clearColPrefs(colKey);
-		colPrefs = loadColPrefs(colKey, cols);
+		clearColPrefs(username, colsRoute, cols);
+		colPrefs = loadColPrefs(username, colsRoute, cols);
 	}
 
 	let messageData = $state<MessageData | null>(null);
