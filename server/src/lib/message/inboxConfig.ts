@@ -9,9 +9,9 @@ export const INBOX_STACK_KEY = 'pandora-inbox-cursor-stack';
 export const INBOX_COLS: ColSpec[] = [
 	{ key: 'kode', label: 'Kode', mono: true, strong: true },
 	{ key: 'tgl_entri', label: 'Tgl Entri', muted: true, date: true },
-	{ key: 'penerima', label: 'Penerima', strong: true },
+	// { key: 'penerima', label: 'Penerima', strong: true },
 	{ key: 'pengirim', label: 'Pengirim', strong: true },
-	{ key: 'tipe_pengirim', label: 'Tipe Pengirim', badge: true },
+	// { key: 'tipe_pengirim', label: 'Tipe Pengirim', badge: true },
 	{ key: 'pesan', label: 'Pesan', muted: true },
 	{ key: 'status', label: 'Status', status: true },
 	{ key: 'kode_terminal', label: 'Kode Terminal', mono: true },
@@ -19,11 +19,11 @@ export const INBOX_COLS: ColSpec[] = [
 	{ key: 'kode_reseller', label: 'Kode Reseller', mono: true },
 	{ key: 'nama_reseller', label: 'Nama Reseller' },
 	{ key: 'kode_transaksi', label: 'Kode Transaksi', mono: true },
-	{ key: 'is_jawaban', label: 'Jawaban' },
-	{ key: 'service_center', label: 'Service Center' },
-	{ key: 'is_cs', label: 'Is CS' },
-	{ key: 'kode_jawaban_cs', label: 'Kode Jawaban CS', mono: true },
-	{ key: 'hash', label: 'Hash', mono: true, muted: true }
+	// { key: 'is_jawaban', label: 'Jawaban' },
+	{ key: 'service_center', label: 'Service Center' }
+	// { key: 'is_cs', label: 'Is CS' },
+	// { key: 'kode_jawaban_cs', label: 'Kode Jawaban CS', mono: true },
+	// { key: 'hash', label: 'Hash', mono: true, muted: true }
 ];
 
 export const INBOX_FILTERS: FilterField[] = [

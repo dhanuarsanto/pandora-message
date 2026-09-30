@@ -84,7 +84,7 @@
 					<table class="min-w-full border-separate border-spacing-0">
 						<TableHeader {cols} {onReorderColumns} />
 						<tbody>
-							{#each data.items as item, i (item.kode + '-' + i)}
+							{#each data.items as item, i (item.tgl_entri + '-' + i)}
 								<tr class="transition-colors hover:bg-(--c-row-hover)">
 									{#each cols as c (c.key)}
 										{@const raw = (item as Record<string, string | number>)[c.key]}

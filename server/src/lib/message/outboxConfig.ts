@@ -7,25 +7,25 @@ export const OUTBOX_SUBTITLE = 'Pesan terkirim dari sistem.';
 export const OUTBOX_STACK_KEY = 'pandora-outbox-cursor-stack';
 
 export const OUTBOX_COLS: ColSpec[] = [
-	{ key: 'kode', label: 'Kode', mono: true, strong: true },
+	// { key: 'kode', label: 'Kode', mono: true, strong: true },
 	{ key: 'tgl_entri', label: 'Tgl Entri', muted: true, date: true },
 	{ key: 'penerima', label: 'Penerima', strong: true },
-	{ key: 'tipe_penerima', label: 'Tipe Penerima', badge: true },
+	// { key: 'tipe_penerima', label: 'Tipe Penerima', badge: true },
 	{ key: 'pesan', label: 'Pesan', muted: true },
 	{ key: 'status', label: 'Status', status: true },
 	{ key: 'tgl_status', label: 'Tgl Status', muted: true, date: true },
-	{ key: 'kode_inbox', label: 'Kode Inbox', mono: true },
+	// { key: 'kode_inbox', label: 'Kode Inbox', mono: true },
 	{ key: 'kode_transaksi', label: 'Kode Transaksi', mono: true },
 	{ key: 'kode_reseller', label: 'Kode Reseller', mono: true },
-	{ key: 'nama_reseller', label: 'Nama Reseller' },
-	{ key: 'bebas_biaya', label: 'Bebas Biaya' },
-	{ key: 'is_perintah', label: 'Perintah' },
-	{ key: 'kode_modul', label: 'Kode Modul', mono: true },
-	{ key: 'prioritas', label: 'Prioritas' },
-	{ key: 'modul_proses', label: 'Modul Proses' },
-	{ key: 'pengirim', label: 'Pengirim', strong: true },
-	{ key: 'kode_terminal', label: 'Kode Terminal', mono: true },
-	{ key: 'ctr_kirim', label: 'Ctr Kirim' }
+	{ key: 'nama_reseller', label: 'Nama Reseller' }
+	// { key: 'bebas_biaya', label: 'Bebas Biaya' },
+	// { key: 'is_perintah', label: 'Perintah' },
+	// { key: 'kode_modul', label: 'Kode Modul', mono: true },
+	// { key: 'prioritas', label: 'Prioritas' },
+	// { key: 'modul_proses', label: 'Modul Proses' },
+	// { key: 'pengirim', label: 'Pengirim', strong: true },
+	// { key: 'kode_terminal', label: 'Kode Terminal', mono: true },
+	// { key: 'ctr_kirim', label: 'Ctr Kirim' }
 ];
 
 export const OUTBOX_FILTERS: FilterField[] = [
