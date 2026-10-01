@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="id">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="text-scale" content="scale" />
+		<script src="%sveltekit.assets%/theme-init.js"></script>
+		<link rel="icon" href="%sveltekit.assets%/icon.svg" type="image/svg+xml" />
+		<link rel="alternate icon" href="%sveltekit.assets%/favicon.ico" sizes="32x32" />
+		<link rel="apple-touch-icon" href="%sveltekit.assets%/apple-touch-icon.png" />
+		<link rel="manifest" href="%sveltekit.assets%/manifest.webmanifest" />
+		%sveltekit.head%
+		<style>
+			#pandora-preloader {
+				position: fixed;
+				inset: 0;
+				z-index: 9999;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				background: #f4f6f3;
+				transition: opacity 0.3s ease;
+			}
+			html.dark #pandora-preloader {
+				background: #111814;
+			}
+			#pandora-preloader.is-hiding {
+				opacity: 0;
+				pointer-events: none;
+			}
+			.preloader-inner {
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				gap: 18px;
+			}
+			.preloader-logo {
+				width: 56px;
+				height: 56px;
+				border-radius: 16px;
+				background: linear-gradient(135deg, #16a34a, #0a5f3a);
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				box-shadow: 0 12px 28px -8px rgba(14, 122, 74, 0.55);
+			}
+			.preloader-logo svg {
+				width: 28px;
+				height: 28px;
+				stroke: #ffffff;
+			}
+			.preloader-name {
+				font-family:
+					'Space Grotesk',
+					-apple-system,
+					BlinkMacSystemFont,
+					'Segoe UI',
+					system-ui,
+					sans-serif;
+				font-size: 17px;
+				font-weight: 700;
+				letter-spacing: -0.01em;
+				color: #14201a;
+			}
+			html.dark .preloader-name {
+				color: #e8eee9;
+			}
+			.preloader-spinner {
+				width: 22px;
+				height: 22px;
+				border-radius: 50%;
+				border: 2px solid rgba(14, 122, 74, 0.15);
+				border-top-color: #0e7a4a;
+				animation: preloader-spin 0.7s linear infinite;
+			}
+			html.dark .preloader-spinner {
+				border-color: rgba(22, 163, 74, 0.2);
+				border-top-color: #16a34a;
+			}
+			@keyframes preloader-spin {
+				to {
+					transform: rotate(360deg);
+				}
+			}
+		</style>
+	</head>
+	<body data-sveltekit-preload-data="hover">
+		<div id="pandora-preloader" aria-hidden="true">
+			<div class="preloader-inner">
+				<div class="preloader-logo">
+					<svg
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+					>
+						<rect x="2" y="4" width="20" height="16" rx="2" />
+						<path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7" />
+					</svg>
+				</div>
+				<span class="preloader-name">Pandora</span>
+				<div class="preloader-spinner"></div>
+			</div>
+		</div>
+		<div style="display: contents">%sveltekit.body%</div>
+
+		<script src="%sveltekit.assets%/preloader.js"></script>
+	</body>
+</html>

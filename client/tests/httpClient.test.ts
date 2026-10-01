@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { ApiError } from '../src/lib/server/apiError.ts';
-import { createHttpClient } from '../src/lib/server/httpClient.ts';
+import { ApiError } from '../src/lib/api/apiError.ts';
+import { createHttpClient } from '../src/lib/api/httpClient.ts';
 
 const BASE = 'https://api.test';
 const KEY = 'kunci';

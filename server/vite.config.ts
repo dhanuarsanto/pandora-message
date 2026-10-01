@@ -8,6 +8,21 @@ export default defineConfig({
 		host: '0.0.0.0',
 		port: 3000
 	},
+	optimizeDeps: {
+		include: [
+			'@lucide/svelte',
+			'clsx',
+			'svelte',
+			'svelte/attachments',
+			'svelte/events',
+			'svelte/internal/client',
+			'svelte/internal/disclose-version',
+			'svelte/legacy',
+			'svelte/reactivity',
+			'svelte/store',
+			'tailwind-merge'
+		]
+	},
 	plugins: [
 		tailwindcss(),
 		sveltekit({

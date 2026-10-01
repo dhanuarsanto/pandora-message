@@ -18,7 +18,7 @@ function securityHeaders(response: Response): void {
 	response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
 
 	if (import.meta.env.PROD) {
-		response.headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+		response.headers.set('Strict-Transport-Security', 'max-age=31536000');
 	}
 }
 
