@@ -161,7 +161,7 @@
 	<TableError {error} {errorDetail} {onRetry} {reloadPath} />
 {:else}
 	<div
-		class="relative flex min-h-0 flex-1 flex-col overflow-clip rounded-xl border border-(--c-border) bg-(--c-surface)"
+		class="relative flex min-h-72 flex-1 flex-col overflow-clip rounded-xl border border-(--c-border) bg-(--c-surface)"
 	>
 		{#if loading || !data}
 			<div class="min-h-0 flex-1 overflow-auto" bind:this={tableContainer}>

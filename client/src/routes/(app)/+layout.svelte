@@ -201,7 +201,7 @@
 		{/if}
 	</header>
 
-	<div id="app-scroll" class="min-h-0 flex-1 overflow-y-auto md:overflow-hidden">
+	<div id="app-scroll" class="min-h-0 flex-1 overflow-y-auto">
 		{@render children()}
 	</div>
 </div>
