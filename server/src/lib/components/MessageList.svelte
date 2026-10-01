@@ -25,7 +25,7 @@
 		type MessageData
 	} from '$lib/messageQuery';
 	import { navigate } from '$lib/client/navigation';
-	import { Columns3, SlidersHorizontal } from '@lucide/svelte';
+	import { Columns3, RefreshCw, SlidersHorizontal } from '@lucide/svelte';
 	import { untrack } from 'svelte';
 	import { SvelteURLSearchParams } from 'svelte/reactivity';
 	import ColumnPanel from './ColumnPanel.svelte';
@@ -340,6 +340,14 @@
 			<p class="mt-0.5 text-[13px] text-(--c-fg-muted)">{subtitle}</p>
 		</div>
 		<div class="relative flex flex-wrap items-center gap-3" bind:this={columnsRef}>
+			<button
+				onclick={retryLoad}
+				disabled={controlsDisabled}
+				class="flex items-center gap-2 rounded-lg border border-(--c-border) bg-(--c-surface) px-3 py-1.5 text-xs font-medium text-(--c-fg-muted) transition-colors hover:border-(--c-accent) hover:text-(--c-accent) disabled:pointer-events-none disabled:opacity-50"
+			>
+				<RefreshCw class={loading ? 'h-3.5 w-3.5 animate-spin' : 'h-3.5 w-3.5'} />
+				Refresh
+			</button>
 			<button
 				bind:this={columnsBtn}
 				onclick={() => {
