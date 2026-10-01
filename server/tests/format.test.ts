@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
+	cellBodyClass,
 	cellClass,
 	cellText,
 	cellTextFor,
@@ -58,6 +59,21 @@ test('cellClass kombinasi flag', () => {
 	assert.equal(
 		cellClass({ key: 'a', label: 'a', mono: true, strong: true, muted: true }),
 		'border-b border-(--c-border) px-3.5 py-3 font-mono text-[11px] whitespace-nowrap font-semibold text-(--c-fg-soft)'
+	);
+	assert.equal(
+		cellClass({ key: 'a', label: 'a', wrap: true }),
+		'border-b border-(--c-border) px-3.5 py-3 text-[12px] align-top',
+		'kolom wrap tidak boleh whitespace-nowrap, hanya rata atas'
+	);
+});
+
+test('cellBodyClass: hanya kolom wrap yang dibungkus', () => {
+	assert.equal(cellBodyClass({ key: 'a', label: 'a' }), '');
+	assert.equal(cellBodyClass({ key: 'a', label: 'a', mono: true }), '');
+	assert.equal(
+		cellBodyClass({ key: 'a', label: 'a', wrap: true }),
+		'block max-w-[40rem] whitespace-normal break-words',
+		'isi penuh dibungkus baris, bukan dipotong'
 	);
 });
 

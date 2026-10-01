@@ -11,7 +11,7 @@ export const INBOX_COLS: ColSpec[] = [
 	// { key: 'penerima', label: 'Penerima', strong: true },
 	{ key: 'pengirim', label: 'Pengirim', strong: true },
 	// { key: 'tipe_pengirim', label: 'Tipe Pengirim', badge: true },
-	{ key: 'pesan', label: 'Pesan', muted: true },
+	{ key: 'pesan', label: 'Pesan', muted: true, wrap: true },
 	{ key: 'status', label: 'Status', status: true },
 	{ key: 'kode_terminal', label: 'Kode Terminal', mono: true },
 	{ key: 'tgl_status', label: 'Tgl Status', muted: true, date: true },

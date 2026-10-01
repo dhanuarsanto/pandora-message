@@ -7,6 +7,7 @@ export type ColSpec = {
 	muted?: boolean;
 	date?: boolean;
 	status?: boolean;
+	wrap?: boolean;
 };
 
 export type FilterField =

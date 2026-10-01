@@ -40,8 +40,14 @@ export function rowKeyOf(item: { tgl_entri: string }, index: number): string {
 
 export function cellClass(c: ColSpec): string {
 	let cls = 'border-b border-(--c-border) px-3.5 py-3';
-	cls += c.mono ? ' font-mono text-[11px] whitespace-nowrap' : ' text-[12px] whitespace-nowrap';
+	cls += c.mono ? ' font-mono text-[11px]' : ' text-[12px]';
+	cls += c.wrap ? ' align-top' : ' whitespace-nowrap';
 	if (c.strong) cls += ' font-semibold';
 	if (c.muted) cls += ' text-(--c-fg-soft)';
 	return cls;
+}
+
+export function cellBodyClass(c: ColSpec): string {
+	if (!c.wrap) return '';
+	return 'block max-w-[40rem] whitespace-normal break-words';
 }

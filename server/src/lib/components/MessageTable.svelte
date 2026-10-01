@@ -1,6 +1,13 @@
 ﻿<script lang="ts">
 	import { copyText } from '$lib/client/clipboard';
-	import { cellClass, cellText, cellTextFor, rowKeyOf, statusClasses } from '$lib/format';
+	import {
+		cellBodyClass,
+		cellClass,
+		cellText,
+		cellTextFor,
+		rowKeyOf,
+		statusClasses
+	} from '$lib/format';
 	import type { ColSpec, FooterMeta, MessageItem } from '$lib/message/types';
 	import type { SortDir } from '$lib/sortRows';
 	import { cn } from '$lib/utils';
@@ -255,7 +262,7 @@
 														selectedClass(i, c.key)
 													)}
 												>
-													{cellTextFor(c, raw)}</td
+													<span class={cellBodyClass(c)}>{cellTextFor(c, raw)}</span></td
 												>
 											{/if}
 										{/each}
