@@ -25,7 +25,7 @@
 		type MessageData
 	} from '$lib/messageQuery';
 	import { navigate } from '$lib/client/navigation';
-	import { Columns3, RefreshCw, SlidersHorizontal } from '@lucide/svelte';
+	import { Columns3, RefreshCw, RotateCcw, SlidersHorizontal } from '@lucide/svelte';
 	import { untrack } from 'svelte';
 	import { SvelteURLSearchParams } from 'svelte/reactivity';
 	import ColumnPanel from './ColumnPanel.svelte';
@@ -378,6 +378,14 @@
 				<SlidersHorizontal class="h-3.5 w-3.5" />
 				{showFilter ? 'Sembunyikan Filter' : 'Tampilkan Filter'}
 			</button>
+			<button
+				onclick={resetFilters}
+				disabled={controlsDisabled}
+				class="flex items-center gap-2 rounded-lg border border-(--c-border) bg-(--c-surface) px-3 py-1.5 text-xs font-medium text-(--c-fg-muted) transition-colors hover:border-(--c-danger) hover:bg-(--c-danger-bg) hover:text-(--c-danger) disabled:pointer-events-none disabled:opacity-50"
+			>
+				<RotateCcw class="h-3.5 w-3.5" />
+				Reset filter
+			</button>
 		</div>
 	</div>
 
@@ -389,7 +397,6 @@
 			{resellers}
 			{resellersLoaded}
 			{controlsDisabled}
-			onReset={resetFilters}
 			onApply={applyFilter}
 		/>
 	{/if}

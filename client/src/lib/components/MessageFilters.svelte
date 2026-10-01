@@ -4,7 +4,7 @@
 	import type { FilterField } from '$lib/message/types';
 	import type { ResellerResponse } from '$lib/references/types';
 	import { cn } from '$lib/utils';
-	import { CalendarRange, Hash, RotateCcw, Search } from '@lucide/svelte';
+	import { CalendarRange, Hash, Search } from '@lucide/svelte';
 	import DateInput from './DateInput.svelte';
 	import FilterSelect from './FilterSelect.svelte';
 
@@ -15,7 +15,6 @@
 		resellers,
 		resellersLoaded,
 		controlsDisabled,
-		onReset,
 		onApply
 	}: {
 		query: Record<string, string>;
@@ -24,7 +23,6 @@
 		resellers: ResellerResponse | null;
 		resellersLoaded: boolean;
 		controlsDisabled: boolean;
-		onReset: () => void;
 		onApply: () => boolean;
 	} = $props();
 
@@ -126,18 +124,7 @@
 		applying = onApply();
 	}}
 >
-	<div class="mb-4 flex flex-wrap items-center justify-between gap-3">
-		<h3 class="text-[13px] font-semibold text-(--c-fg)">Filter</h3>
-		<button
-			type="button"
-			onclick={onReset}
-			disabled={controlsDisabled}
-			class="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-(--c-border) bg-(--c-surface) px-3 py-1.5 text-xs font-medium text-(--c-fg-muted) transition-colors hover:border-(--c-danger) hover:bg-(--c-danger-bg) hover:text-(--c-danger) disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:border-(--c-border) disabled:hover:bg-(--c-surface) disabled:hover:text-(--c-fg-muted)"
-		>
-			<RotateCcw class="h-3.5 w-3.5" />
-			Reset semua
-		</button>
-	</div>
+	<h3 class="mb-4 text-[13px] font-semibold text-(--c-fg)">Filter</h3>
 
 	{#if nonCheckboxFields.some((f) => f.type === 'date')}
 		<div class="mb-4 flex flex-wrap items-center gap-x-4 gap-y-2">
