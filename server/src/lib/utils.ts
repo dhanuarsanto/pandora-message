@@ -3,21 +3,6 @@ import { SvelteURLSearchParams } from 'svelte/reactivity';
 import { twMerge } from 'tailwind-merge';
 import type { FilterField } from './message/types.ts';
 
-export function initStack(stackKey: string): (number | null)[] {
-	try {
-		const raw = sessionStorage.getItem(stackKey);
-		if (raw) {
-			const saved: unknown = JSON.parse(raw);
-			if (Array.isArray(saved) && saved.every((x) => x === null || typeof x === 'number')) {
-				return saved as (number | null)[];
-			}
-		}
-	} catch {
-		// korup -> mulai dari halaman pertama
-	}
-	return [null];
-}
-
 function checkboxParamValue(f: FilterField, v: string): string {
 	if (f.type !== 'checkbox') return v;
 	if (v === 'true') return 'true';
@@ -42,14 +27,8 @@ export function initFilterFromUrl(
 	return out;
 }
 
-export function buildQuery(
-	query: Record<string, string>,
-	pageSize: string,
-	cursor: number | null
-): URLSearchParams {
+export function buildQuery(query: Record<string, string>): URLSearchParams {
 	const u = new SvelteURLSearchParams();
-	if (cursor !== null) u.set('cursor', String(cursor));
-	if (pageSize !== '' && Number(pageSize) > 0) u.set('pageSize', pageSize);
 	for (const [k, v] of Object.entries(query)) {
 		if (v === '') continue;
 		u.set(k, v);

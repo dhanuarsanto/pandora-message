@@ -6,7 +6,6 @@
 		INBOX_FILTERS,
 		INBOX_LABEL,
 		INBOX_PATH,
-		INBOX_STACK_KEY,
 		INBOX_SUBTITLE
 	} from '$lib/message/inboxConfig';
 </script>
@@ -19,5 +18,4 @@
 	subtitle={INBOX_SUBTITLE}
 	cols={INBOX_COLS}
 	filters={INBOX_FILTERS}
-	stackKey={INBOX_STACK_KEY}
 />

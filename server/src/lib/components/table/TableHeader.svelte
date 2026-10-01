@@ -1,14 +1,22 @@
 <script lang="ts">
 	import { reorderKeys } from '$lib/client/colPrefs';
+	import { ArrowDown, ArrowUp, ChevronsUpDown } from '@lucide/svelte';
 	import type { ColSpec } from '$lib/message/types';
+	import type { SortDir } from '$lib/sortRows';
 	import { cn } from '$lib/utils';
 
 	let {
 		cols,
-		onReorderColumns
+		onReorderColumns,
+		sortKey = null,
+		sortDir = 'asc',
+		onSort
 	}: {
 		cols: ColSpec[];
 		onReorderColumns: (keys: string[]) => void;
+		sortKey?: string | null;
+		sortDir?: SortDir;
+		onSort: (key: string) => void;
 	} = $props();
 
 	let dragKey = $state<string | null>(null);
@@ -85,11 +93,23 @@
 			moveColumn(key, 1);
 		}
 	}
+
+	function sortIcon(key: string) {
+		if (key === sortKey) return sortDir === 'asc' ? ArrowUp : ArrowDown;
+		return ChevronsUpDown;
+	}
+
+	function ariaSort(key: string): 'ascending' | 'descending' | 'none' {
+		if (key !== sortKey) return 'none';
+		return sortDir === 'asc' ? 'ascending' : 'descending';
+	}
 </script>
 
 <thead>
 	<tr>
 		{#each cols as c (c.key)}
+			{@const SortIcon = sortIcon(c.key)}
+			{@const isSorted = c.key === sortKey}
 			<th
 				scope="col"
 				data-key={c.key}
@@ -105,13 +125,32 @@
 				)}
 				draggable={cols.length > 1}
 				tabindex={cols.length > 1 ? 0 : undefined}
+				aria-sort={ariaSort(c.key)}
 				title={cols.length > 1 ? 'Seret, atau Alt+←/→ untuk memindahkan kolom' : undefined}
 				ondragstart={(e) => onHeaderDragStart(c.key, e)}
 				ondragover={(e) => onHeaderDragOver(c.key, e)}
 				ondrop={(e) => onHeaderDrop(e)}
 				ondragend={() => onHeaderDragEnd()}
-				onkeydown={(e) => onHeaderKeydown(c.key, e)}>{c.label}</th
+				onkeydown={(e) => onHeaderKeydown(c.key, e)}
 			>
+				<button
+					type="button"
+					class={cn(
+						'-mx-1 flex cursor-pointer items-center gap-1 rounded px-1 py-0.5 transition-colors hover:text-(--c-accent)',
+						isSorted ? 'text-(--c-accent)' : ''
+					)}
+					title={isSorted ? 'Klik untuk membalik urutan' : 'Klik untuk mengurutkan'}
+					aria-label={'Urutkan menurut ' + c.label}
+					onpointerdown={(e) => e.stopPropagation()}
+					onclick={(e) => {
+						e.stopPropagation();
+						onSort(c.key);
+					}}
+				>
+					<span>{c.label}</span>
+					<SortIcon class="h-3 w-3 shrink-0" />
+				</button>
+			</th>
 		{/each}
 	</tr>
 </thead>

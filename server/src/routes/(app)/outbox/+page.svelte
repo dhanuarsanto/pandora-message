@@ -6,7 +6,6 @@
 		OUTBOX_FILTERS,
 		OUTBOX_LABEL,
 		OUTBOX_PATH,
-		OUTBOX_STACK_KEY,
 		OUTBOX_SUBTITLE
 	} from '$lib/message/outboxConfig';
 </script>
@@ -19,5 +18,4 @@
 	subtitle={OUTBOX_SUBTITLE}
 	cols={OUTBOX_COLS}
 	filters={OUTBOX_FILTERS}
-	stackKey={OUTBOX_STACK_KEY}
 />

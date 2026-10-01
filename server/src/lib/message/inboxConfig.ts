@@ -4,7 +4,6 @@ import type { ColSpec, FilterField } from '$lib/message/types';
 export const INBOX_PATH = '/inbox' as const;
 export const INBOX_LABEL = 'Kotak Masuk';
 export const INBOX_SUBTITLE = 'Pesan masuk dari sistem.';
-export const INBOX_STACK_KEY = 'pandora-inbox-cursor-stack';
 
 export const INBOX_COLS: ColSpec[] = [
 	{ key: 'kode', label: 'Kode', mono: true, strong: true },

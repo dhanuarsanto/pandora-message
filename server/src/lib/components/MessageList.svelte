@@ -4,10 +4,10 @@
 	import { resolve } from '$app/paths';
 	import { appBusy } from '$lib/client/appBusy.svelte';
 	import { clearColPrefs, loadColPrefs, saveColPrefs, visibleOf } from '$lib/client/colPrefs';
-	import type { ColSpec, FilterField, FooterMeta } from '$lib/message/types';
+	import type { ColSpec, FilterField } from '$lib/message/types';
 	import type { ResellerResponse } from '$lib/references/types';
 	import { paramsEqual } from '$lib/params';
-	import { buildQuery, initFilterFromUrl, initStack, sortedParamsString } from '$lib/utils';
+	import { buildQuery, initFilterFromUrl, sortedParamsString } from '$lib/utils';
 	import { todayISO } from '$lib/date';
 	import {
 		applyCheckboxDefaults,
@@ -15,16 +15,13 @@
 		applyLimitDefault,
 		calcSkeletonCount,
 		normalizeMessageBody,
-		popStackCursor,
-		pushStackCursor,
-		rebuildStack,
-		saveCursorStack,
 		shouldFetch,
 		statusOptionsFor,
 		type MessageBody,
 		type MessageData
 	} from '$lib/messageQuery';
 	import { navigate } from '$lib/client/navigation';
+	import { clampPage, sortRows, type SortDir } from '$lib/sortRows';
 	import { Columns3, RefreshCw, RotateCcw, SlidersHorizontal } from '@lucide/svelte';
 	import { untrack } from 'svelte';
 	import { SvelteURLSearchParams } from 'svelte/reactivity';
@@ -38,21 +35,17 @@
 		title,
 		subtitle,
 		cols,
-		filters,
-		stackKey
+		filters
 	}: {
 		path: '/inbox' | '/outbox';
 		title: string;
 		subtitle: string;
 		cols: ColSpec[];
 		filters: FilterField[];
-		stackKey: string;
 	} = $props();
 
 	let resellers = $state<ResellerResponse | null>(null);
 	let resellersLoaded = $state(false);
-
-	let cursorStack = $state<(number | null)[]>(untrack(() => initStack(stackKey)));
 
 	function initialQuery(): Record<string, string> {
 		const u = applyLimitDefault(
@@ -66,7 +59,6 @@
 
 	let dateScope = $state<'today' | 'all'>('today');
 	let query = $state<Record<string, string>>(initialQuery());
-	let pageSize = $state(page.url.searchParams.get('pageSize') ?? '');
 	let showFilter = $state(false);
 	let showColumns = $state(false);
 
@@ -134,6 +126,11 @@
 	let lastFetchKey = '';
 	let lastRetryTick = 0;
 
+	let sortKey = $state<string | null>(null);
+	let sortDir = $state<SortDir>('asc');
+	let currentPage = $state(1);
+	let pageSize = $state(10);
+
 	const endpoint = $derived('/api/messages' + path);
 
 	$effect(() => {
@@ -144,6 +141,8 @@
 				filters
 			)
 		);
+		params.delete('cursor');
+		params.delete('pageSize');
 		const qs = sortedParamsString(params);
 		void retryTick;
 
@@ -174,6 +173,7 @@
 				messageData = r.data;
 				loadError = r.error;
 				loadErrorCause = r.cause;
+				currentPage = 1;
 			})
 			.catch(() => {
 				if (lastFetchKey !== key) return;
@@ -225,76 +225,71 @@
 		return () => mq.removeEventListener('change', onChange);
 	});
 
-	const scrollKey = $derived(stackKey.replace('-cursor-stack', '-scroll'));
-
-	function saveScroll() {
-		const el = document.getElementById('app-scroll');
-		if (el) sessionStorage.setItem(scrollKey, String(el.scrollTop));
-	}
-
-	function restoreScroll() {
-		const el = document.getElementById('app-scroll');
-		const pos = Number(sessionStorage.getItem(scrollKey) ?? 0);
-		if (!el || !pos) return;
-		requestAnimationFrame(() => {
-			el.scrollTop = pos;
-			setTimeout(() => (el.scrollTop = pos), 80);
-		});
-	}
-
-	afterNavigate((nav) => {
-		restoreScroll();
-		pageSize = page.url.searchParams.get('pageSize') ?? '';
+	afterNavigate(() => {
 		const raw = new SvelteURLSearchParams(page.url.searchParams);
+		raw.delete('cursor');
+		raw.delete('pageSize');
 		const hasAnyDate = !!(raw.get('startDate') || raw.get('endDate'));
 		dateScope = raw.size === 0 || hasAnyDate ? 'today' : 'all';
 		const u = applyLimitDefault(applyDateDefaults(raw, dateScope));
 		query = initFilterFromUrl(filters, u);
-		if (nav && nav.type === 'popstate') {
-			const raw = page.url.searchParams.get('cursor');
-			const cur = raw === null ? null : Number(raw);
-			cursorStack = rebuildStack(cursorStack, cur);
-			saveCursorStack(stackKey, cursorStack);
-		}
 	});
 
 	const statusOptions = $derived(statusOptionsFor(path));
 	const limitN = $derived(Number(query['limit']));
-	const pageSizeN = $derived(Number(pageSize));
-	const skeletonCount = $derived(calcSkeletonCount(limitN, pageSizeN));
+	const skeletonCount = $derived(calcSkeletonCount(limitN));
 	const skeletonRows = $derived(Array.from({ length: skeletonCount }, (_, i) => i));
 
 	const resellerNames = $derived(
 		new Map((resellers?.data.items ?? []).map((r) => [r.kode, r.nama]))
 	);
 
-	const enrichedData = $derived(
+	const enrichedItems = $derived(
 		messageData
-			? {
-					items: messageData.items.map((item) => ({
-						...item,
-						nama_reseller: resellerNames.get(item.kode_reseller) ?? item.kode_reseller
-					})),
-					meta: messageData.meta
-				}
-			: null
+			? messageData.items.map((item) => ({
+					...item,
+					nama_reseller: resellerNames.get(item.kode_reseller) ?? item.kode_reseller
+				}))
+			: []
 	);
 
-	function goNext(meta: FooterMeta) {
-		if (!meta.has_next_page || busy) return;
-		saveScroll();
-		cursorStack = pushStackCursor(cursorStack, meta.next_cursor);
-		saveCursorStack(stackKey, cursorStack);
-		navigate(path, buildQuery(query, pageSize, meta.next_cursor).toString());
+	const sortSpec = $derived(sortKey === null ? undefined : cols.find((c) => c.key === sortKey));
+	const sortedItems = $derived(sortRows(enrichedItems, sortKey, sortDir, sortSpec));
+	const total = $derived(sortedItems.length);
+
+	$effect(() => {
+		const p = clampPage(currentPage, total, pageSize);
+		if (p !== currentPage) currentPage = p;
+	});
+
+	const visibleItems = $derived(
+		sortedItems.slice((currentPage - 1) * pageSize, currentPage * pageSize)
+	);
+
+	const enrichedData = $derived(
+		messageData ? { items: visibleItems, meta: messageData.meta } : null
+	);
+
+	function sortBy(key: string) {
+		if (sortKey === key) {
+			if (sortDir === 'asc') sortDir = 'desc';
+			else {
+				sortKey = null;
+				sortDir = 'asc';
+			}
+			return;
+		}
+		sortKey = key;
+		sortDir = 'asc';
 	}
 
-	function goPrev(meta: FooterMeta) {
-		if (!meta.has_prev_page || busy) return;
-		saveScroll();
-		const r = popStackCursor(cursorStack);
-		cursorStack = r.stack;
-		saveCursorStack(stackKey, cursorStack);
-		navigate(path, buildQuery(query, pageSize, r.prev).toString());
+	function goToPage(next: number) {
+		currentPage = next;
+	}
+
+	function changePageSize(size: number) {
+		pageSize = size;
+		currentPage = 1;
 	}
 
 	function applyFilter(): boolean {
@@ -308,10 +303,8 @@
 		if (query['startDate'] && !query['endDate']) {
 			query['endDate'] = todayISO();
 		}
-		const next = buildQuery(query, pageSize, null);
+		const next = buildQuery(query);
 		if (paramsEqual(next, page.url.searchParams)) return false;
-		cursorStack = [null];
-		saveCursorStack(stackKey, cursorStack);
 		navigate(path, next.toString());
 		return true;
 	}
@@ -319,14 +312,7 @@
 	function resetFilters() {
 		query = { startDate: todayISO(), endDate: todayISO(), limit: '20' };
 		dateScope = 'today';
-		cursorStack = [null];
-		saveCursorStack(stackKey, cursorStack);
-		navigate(path, buildQuery(query, pageSize, null).toString());
-	}
-
-	function changePageSize(value: string) {
-		pageSize = value;
-		applyFilter();
+		navigate(path, buildQuery(query).toString());
 	}
 
 	function retryLoad() {
@@ -410,11 +396,15 @@
 		errorDetail={loadErrorCause}
 		cols={visibleCols}
 		{skeletonRows}
+		page={currentPage}
+		{total}
 		{pageSize}
-		{busy}
+		{sortKey}
+		{sortDir}
+		pagerDisabled={controlsDisabled}
+		onSort={sortBy}
+		onPage={goToPage}
 		onPageSizeChange={changePageSize}
-		onGoNext={goNext}
-		onGoPrev={goPrev}
 		onReorderColumns={reorderFromVisible}
 		onRetry={retryLoad}
 		reloadPath={path}

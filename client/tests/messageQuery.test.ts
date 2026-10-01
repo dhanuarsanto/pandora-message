@@ -6,12 +6,7 @@ import {
 	applyLimitDefault,
 	calcSkeletonCount,
 	normalizeMessageBody,
-	popStackCursor,
-	pushStackCursor,
-	rebuildStack,
-	saveCursorStack,
 	shouldFetch,
-	stackStorageValue,
 	statusOptionsFor
 } from '../src/lib/messageQuery.ts';
 
@@ -48,8 +43,8 @@ test('applyDateDefaults: scope all -> tidak pernah menambah tanggal', () => {
 });
 
 test('applyDateDefaults: param lain dipertahankan', () => {
-	const p = applyDateDefaults(new URLSearchParams('pageSize=25&b=x'), 'today');
-	assert.equal(p.get('pageSize'), '25');
+	const p = applyDateDefaults(new URLSearchParams('limit=25&b=x'), 'today');
+	assert.equal(p.get('limit'), '25');
 	assert.equal(p.get('b'), 'x');
 	assert.equal(p.get('startDate'), p.get('endDate'));
 });
@@ -79,64 +74,11 @@ test('applyCheckboxDefaults: defaultChecked diterapkan hanya saat param hilang',
 });
 
 test('calcSkeletonCount: nilai normal & fallback', () => {
-	assert.equal(calcSkeletonCount(25, 10), 10);
-	assert.equal(calcSkeletonCount(0, 0), 10);
-	assert.equal(calcSkeletonCount(0, 25), 15);
-	assert.equal(calcSkeletonCount(15, 0), 15);
-	assert.equal(calcSkeletonCount(100, 100), 15);
-	assert.equal(calcSkeletonCount(5, 3), 3);
-});
-
-test('pushStackCursor: tambah di belakang', () => {
-	assert.deepEqual(pushStackCursor([null], 50), [null, 50]);
-	assert.deepEqual(pushStackCursor([null, 50], 100), [null, 50, 100]);
-	const asli = [null];
-	pushStackCursor(asli, 50);
-	assert.deepEqual(asli, [null], 'tidak memutasi input');
-});
-
-test('popStackCursor: kembalikan stack baru + prev', () => {
-	const r = popStackCursor([null, 50, 100]);
-	assert.deepEqual(r.stack, [null, 50]);
-	assert.equal(r.prev, 50);
-	const r2 = popStackCursor([null, 50]);
-	assert.deepEqual(r2.stack, [null]);
-	assert.equal(r2.prev, null);
-	const r3 = popStackCursor([null]);
-	assert.deepEqual(r3.stack, []);
-	assert.equal(r3.prev, null);
-});
-
-test('rebuildStack: potong sesuai cursor atau mulai baru', () => {
-	assert.deepEqual(rebuildStack([null, 50, 100, 150], 100), [null, 50, 100]);
-	assert.deepEqual(rebuildStack([null, 50], 50), [null, 50]);
-	assert.deepEqual(rebuildStack([null, 50, 100], 42), [42]);
-	assert.deepEqual(rebuildStack([null, 50], null), [null]);
-});
-
-test('stackStorageValue: null payload -> null, selainnya JSON', () => {
-	assert.equal(stackStorageValue([null]), null);
-	assert.equal(stackStorageValue([]), '[]');
-	assert.equal(stackStorageValue([null, 25]), '[null,25]');
-	assert.equal(stackStorageValue([25]), '[25]');
-});
-
-test('saveCursorStack: null -> hapus, lain -> simpan', () => {
-	const store: Record<string, string> = {};
-	let removedKey: string | null = null;
-	(globalThis as Record<string, unknown>).sessionStorage = {
-		getItem: (k: string) => store[k] ?? null,
-		setItem: (k: string, v: string) => (store[k] = v),
-		removeItem: (k: string) => {
-			delete store[k];
-			removedKey = k;
-		}
-	};
-	saveCursorStack('k', [null, 5]);
-	assert.equal(store['k'], '[null,5]');
-	saveCursorStack('k', [null]);
-	assert.equal(removedKey, 'k');
-	assert.equal(store['k'], undefined);
+	assert.equal(calcSkeletonCount(25), 15);
+	assert.equal(calcSkeletonCount(0), 10);
+	assert.equal(calcSkeletonCount(15), 15);
+	assert.equal(calcSkeletonCount(100), 15);
+	assert.equal(calcSkeletonCount(5), 5);
 });
 
 test('shouldFetch: beda key/retry -> fetch, sama -> skip', () => {

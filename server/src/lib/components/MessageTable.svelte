@@ -2,11 +2,12 @@
 	import { copyText } from '$lib/client/clipboard';
 	import { cellClass, cellText, cellTextFor, rowKeyOf, statusClasses } from '$lib/format';
 	import type { ColSpec, FooterMeta, MessageItem } from '$lib/message/types';
+	import type { SortDir } from '$lib/sortRows';
 	import { cn } from '$lib/utils';
 	import { onDestroy } from 'svelte';
 	import TableError from './table/TableError.svelte';
-	import TableFooter from './table/TableFooter.svelte';
 	import TableHeader from './table/TableHeader.svelte';
+	import TablePager from './table/TablePager.svelte';
 	import TableSkeleton from './table/TableSkeleton.svelte';
 
 	let {
@@ -16,11 +17,15 @@
 		errorDetail,
 		cols,
 		skeletonRows,
+		page,
+		total,
 		pageSize,
-		busy,
+		sortKey,
+		sortDir,
+		pagerDisabled,
+		onSort,
+		onPage,
 		onPageSizeChange,
-		onGoNext,
-		onGoPrev,
 		onReorderColumns,
 		onRetry,
 		reloadPath
@@ -31,11 +36,15 @@
 		errorDetail: string | null;
 		cols: ColSpec[];
 		skeletonRows: number[];
-		pageSize: string;
-		busy: boolean;
-		onPageSizeChange: (value: string) => void;
-		onGoNext: (meta: FooterMeta) => void;
-		onGoPrev: (meta: FooterMeta) => void;
+		page: number;
+		total: number;
+		pageSize: number;
+		sortKey: string | null;
+		sortDir: SortDir;
+		pagerDisabled: boolean;
+		onSort: (key: string) => void;
+		onPage: (page: number) => void;
+		onPageSizeChange: (size: number) => void;
 		onReorderColumns: (keys: string[]) => void;
 		onRetry: () => void;
 		reloadPath: '/inbox' | '/outbox';
@@ -152,6 +161,15 @@
 		copied = null;
 	});
 
+	let lastPage = $state(1);
+
+	$effect(() => {
+		const p = page;
+		if (p === lastPage) return;
+		lastPage = p;
+		tableContainer?.scrollTo({ top: 0 });
+	});
+
 	onDestroy(() => {
 		if (copyTimer) clearTimeout(copyTimer);
 	});
@@ -164,100 +182,101 @@
 		class="relative flex min-h-72 flex-1 flex-col overflow-clip rounded-xl border border-(--c-border) bg-(--c-surface)"
 	>
 		{#if loading || !data}
-			<div class="min-h-0 flex-1 overflow-auto" bind:this={tableContainer}>
-				<table class="min-w-full border-separate border-spacing-0">
-					<TableHeader {cols} {onReorderColumns} />
-					<TableSkeleton {cols} {skeletonRows} />
-				</table>
-			</div>
-		{:else}
-			<div class="min-h-0 flex-1 overflow-auto" bind:this={tableContainer}>
-				{#if data.items.length === 0}
-					<div class="flex h-full min-h-40 items-center justify-center px-6 py-10" role="status">
-						<div class="text-center">
-							<p class="text-sm font-semibold text-(--c-fg-soft)">Tidak ada pesan.</p>
-							<p class="mt-1 text-[12px] text-(--c-fg-faint)">
-								Coba ubah filter atau rentang tanggal.
-							</p>
-						</div>
-					</div>
-				{:else}
+			<div class="relative min-h-0 flex-1">
+				<div class="h-full overflow-auto" bind:this={tableContainer}>
 					<table class="min-w-full border-separate border-spacing-0">
-						<TableHeader {cols} {onReorderColumns} />
-						<tbody>
-							{#each data.items as item, i (rowKeyOf(item, i))}
-								<tr class="transition-colors hover:bg-(--c-row-hover)">
-									{#each cols as c (c.key)}
-										{@const raw = (item as Record<string, string | number>)[c.key]}
-										{#if c.badge}
-											<td
-												data-cell-row={i}
-												data-cell-col={c.key}
-												class={cn(
-													'border-b border-(--c-border) px-3.5 py-3',
-													selectedClass(i, c.key)
-												)}
-											>
-												<span
-													class="inline-block rounded bg-(--c-border) px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap text-(--c-fg-muted)"
-													>{cellText(raw)}</span
-												>
-											</td>
-										{:else if c.status}
-											<td
-												data-cell-row={i}
-												data-cell-col={c.key}
-												class={cn(
-													'border-b border-(--c-border) px-3.5 py-3',
-													selectedClass(i, c.key)
-												)}
-											>
-												<span
-													class={cn(
-														'inline-block rounded-full px-2.5 py-0.5 text-[11px] font-semibold whitespace-nowrap',
-														statusClasses(raw)
-													)}>{cellText(raw)}</span
-												>
-											</td>
-										{:else}
-											<td
-												data-cell-row={i}
-												data-cell-col={c.key}
-												class={cn(
-													cellClass(c),
-													c.date && 'whitespace-nowrap',
-													selectedClass(i, c.key)
-												)}
-											>
-												{cellTextFor(c, raw)}</td
-											>
-										{/if}
-									{/each}
-								</tr>
-							{/each}
-						</tbody>
+						<TableHeader {cols} {onReorderColumns} {sortKey} {sortDir} {onSort} />
+						<TableSkeleton {cols} {skeletonRows} />
 					</table>
+				</div>
+				{#if scrollable}
+					<div
+						class="pointer-events-none absolute inset-y-0 right-0 z-20 w-6 bg-linear-to-l from-(--c-surface) to-transparent"
+					></div>
 				{/if}
 			</div>
+		{:else}
+			<div class="relative min-h-0 flex-1">
+				<div class="h-full overflow-auto" bind:this={tableContainer}>
+					{#if data.items.length === 0}
+						<div class="flex h-full min-h-40 items-center justify-center px-6 py-10" role="status">
+							<div class="text-center">
+								<p class="text-sm font-semibold text-(--c-fg-soft)">Tidak ada pesan.</p>
+								<p class="mt-1 text-[12px] text-(--c-fg-faint)">
+									Coba ubah filter atau rentang tanggal.
+								</p>
+							</div>
+						</div>
+					{:else}
+						<table class="min-w-full border-separate border-spacing-0">
+							<TableHeader {cols} {onReorderColumns} {sortKey} {sortDir} {onSort} />
+							<tbody>
+								{#each data.items as item, i (rowKeyOf(item, i))}
+									<tr class="transition-colors hover:bg-(--c-row-hover)">
+										{#each cols as c (c.key)}
+											{@const raw = (item as Record<string, string | number>)[c.key]}
+											{#if c.badge}
+												<td
+													data-cell-row={i}
+													data-cell-col={c.key}
+													class={cn(
+														'border-b border-(--c-border) px-3.5 py-3',
+														selectedClass(i, c.key)
+													)}
+												>
+													<span
+														class="inline-block rounded bg-(--c-border) px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap text-(--c-fg-muted)"
+														>{cellText(raw)}</span
+													>
+												</td>
+											{:else if c.status}
+												<td
+													data-cell-row={i}
+													data-cell-col={c.key}
+													class={cn(
+														'border-b border-(--c-border) px-3.5 py-3',
+														selectedClass(i, c.key)
+													)}
+												>
+													<span
+														class={cn(
+															'inline-block rounded-full px-2.5 py-0.5 text-[11px] font-semibold whitespace-nowrap',
+															statusClasses(raw)
+														)}>{cellText(raw)}</span
+													>
+												</td>
+											{:else}
+												<td
+													data-cell-row={i}
+													data-cell-col={c.key}
+													class={cn(
+														cellClass(c),
+														c.date && 'whitespace-nowrap',
+														selectedClass(i, c.key)
+													)}
+												>
+													{cellTextFor(c, raw)}</td
+												>
+											{/if}
+										{/each}
+									</tr>
+								{/each}
+							</tbody>
+						</table>
+					{/if}
+				</div>
+				{#if scrollable}
+					<div
+						class="pointer-events-none absolute inset-y-0 right-0 z-20 w-6 bg-linear-to-l from-(--c-surface) to-transparent"
+					></div>
+				{/if}
+			</div>
+			<TablePager {page} {total} {pageSize} disabled={pagerDisabled} {onPage} {onPageSizeChange} />
 		{/if}
-		{#if scrollable}
-			<div
-				class="pointer-events-none absolute right-0 bottom-12 z-20 w-6 bg-linear-to-l from-(--c-surface) to-transparent"
-			></div>
-		{/if}
-		<TableFooter
-			meta={data?.meta ?? null}
-			{pageSize}
-			{busy}
-			{loading}
-			{onPageSizeChange}
-			{onGoNext}
-			{onGoPrev}
-		/>
 		{#if copied}
 			<div
 				role="status"
-				class="pointer-events-none absolute right-4 bottom-16 z-30 animate-[slideDown_0.2s_ease] rounded-md border border-(--c-border) bg-(--c-surface) px-3 py-1.5 text-[11px] font-semibold text-(--c-success) shadow-lg"
+				class="pointer-events-none absolute right-4 bottom-4 z-30 animate-[slideDown_0.2s_ease] rounded-md border border-(--c-border) bg-(--c-surface) px-3 py-1.5 text-[11px] font-semibold text-(--c-success) shadow-lg"
 			>
 				Tersalin
 			</div>

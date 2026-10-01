@@ -4,7 +4,6 @@ import type { ColSpec, FilterField } from '$lib/message/types';
 export const OUTBOX_PATH = '/outbox' as const;
 export const OUTBOX_LABEL = 'Kotak Keluar';
 export const OUTBOX_SUBTITLE = 'Pesan terkirim dari sistem.';
-export const OUTBOX_STACK_KEY = 'pandora-outbox-cursor-stack';
 
 export const OUTBOX_COLS: ColSpec[] = [
 	// { key: 'kode', label: 'Kode', mono: true, strong: true },
