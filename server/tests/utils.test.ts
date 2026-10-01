@@ -59,8 +59,23 @@ test('initFilterFromUrl: defaultChecked terisi true saat tanpa param', () => {
 	];
 	assert.equal(initFilterFromUrl(fs, new URLSearchParams())['a'], 'true');
 	assert.equal(initFilterFromUrl(fs, new URLSearchParams())['b'], '');
-	assert.equal(initFilterFromUrl(fs, new URLSearchParams('a=false'))['a'], '');
+	assert.equal(initFilterFromUrl(fs, new URLSearchParams('a=false'))['a'], 'false');
+	assert.equal(initFilterFromUrl(fs, new URLSearchParams('a=true'))['a'], 'true');
+	assert.equal(initFilterFromUrl(fs, new URLSearchParams('a=lain'))['a'], '');
+	assert.equal(initFilterFromUrl(fs, new URLSearchParams('b=false'))['b'], '');
 	assert.equal(initFilterFromUrl(fs, new URLSearchParams('b=true'))['b'], 'true');
+});
+
+test('initFilterFromUrl + buildQuery: status false bertahan saat filter lain berubah', () => {
+	const fs: FilterField[] = [
+		{ param: 'a', label: 'A', type: 'checkbox', defaultChecked: true },
+		{ param: 'pesan', label: 'Pesan', type: 'text' }
+	];
+	const parsed = initFilterFromUrl(fs, new URLSearchParams('a=false'));
+	assert.equal(parsed['a'], 'false');
+	const next = buildQuery({ ...parsed, pesan: 'halo' }, '', null).toString();
+	assert.equal(next.includes('a=false'), true);
+	assert.equal(initFilterFromUrl(fs, new URLSearchParams(next))['a'], 'false');
 });
 
 test('buildQuery: buang nilai kosong', () => {

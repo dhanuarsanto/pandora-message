@@ -18,6 +18,13 @@ export function initStack(stackKey: string): (number | null)[] {
 	return [null];
 }
 
+function checkboxParamValue(f: FilterField, v: string): string {
+	if (f.type !== 'checkbox') return v;
+	if (v === 'true') return 'true';
+	if (v === 'false' && f.defaultChecked) return 'false';
+	return '';
+}
+
 export function initFilterFromUrl(
 	filters: FilterField[],
 	params: URLSearchParams
@@ -27,7 +34,7 @@ export function initFilterFromUrl(
 		out[f.param] = '';
 		const v = params.get(f.param);
 		if (v !== null) {
-			out[f.param] = f.type === 'checkbox' ? (v === 'true' ? 'true' : '') : v;
+			out[f.param] = checkboxParamValue(f, v);
 		} else if (f.type === 'checkbox' && f.defaultChecked) {
 			out[f.param] = 'true';
 		}
