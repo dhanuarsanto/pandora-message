@@ -76,6 +76,45 @@ test('sortRows: tanggal dengan milidetik tidak seragam tetap urut waktu', () => 
 	);
 });
 
+test('sortRows: nilai tanggal tetap monoton di kedua arah walau ada waktu kembar', () => {
+	const items = [
+		row(1, { tgl_entri: '2026-08-11T14:37:07Z' }),
+		row(2, { tgl_entri: '2026-09-19T10:00:00.025Z' }),
+		row(3, { tgl_entri: '2026-09-19T10:00:00.025Z' }),
+		row(4, { tgl_entri: '2026-09-19T10:00:00.9Z' }),
+		row(5, { tgl_entri: '2026-09-19T10:00:00.9Z' })
+	];
+	const waktu = (list: Row[]) => list.map((r) => Date.parse(r.tgl_entri));
+
+	for (const dir of ['asc', 'desc'] as const) {
+		const hasil = waktu(sortRows(items, 'tgl_entri', dir, { date: true }));
+		for (let i = 1; i < hasil.length; i++) {
+			if (dir === 'asc') {
+				assert.ok(hasil[i] >= hasil[i - 1], `naik: posisi ${i} lebih kecil dari sebelumnya`);
+			} else {
+				assert.ok(hasil[i] <= hasil[i - 1], `turun: posisi ${i} lebih besar dari sebelumnya`);
+			}
+		}
+	}
+});
+
+test('sortRows: waktu kembar tetap urut asal di kedua arah', () => {
+	const items = [
+		row(1, { tgl_entri: '2026-09-19T10:00:00.025Z' }),
+		row(2, { tgl_entri: '2026-09-19T10:00:00.025Z' }),
+		row(3, { tgl_entri: '2026-09-19T10:00:00.025Z' })
+	];
+	assert.deepEqual(
+		sortRows(items, 'tgl_entri', 'asc', { date: true }).map((r) => r.kode),
+		[1, 2, 3]
+	);
+	assert.deepEqual(
+		sortRows(items, 'tgl_entri', 'desc', { date: true }).map((r) => r.kode),
+		[1, 2, 3],
+		'turun tidak membalik urutan asal di antara waktu yang sama'
+	);
+});
+
 test('sortRows: detik milidetik yang menentukan urutan', () => {
 	const items = [
 		row(1, { tgl_entri: '2026-09-19T10:00:00.9Z' }),
