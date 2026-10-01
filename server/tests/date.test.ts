@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
 	addDaysISO,
+	endOfMonthISO,
 	firstOfMonthISO,
 	HARI,
 	monthCells,
@@ -63,6 +64,15 @@ test('firstOfMonthISO: awal bulan', () => {
 	const expected = `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-01`;
 	assert.equal(firstOfMonthISO(0), expected);
 	assert.equal(firstOfMonthISO(-2).endsWith('-01'), true);
+});
+
+test('endOfMonthISO: hari terakhir bulan', () => {
+	const t = new Date();
+	const y = t.getFullYear();
+	const m = t.getMonth();
+	assert.equal(endOfMonthISO(0), toISODate(new Date(y, m + 1, 0)));
+	assert.equal(endOfMonthISO(-2), toISODate(new Date(y, m - 1, 0)));
+	assert.match(endOfMonthISO(0), /^\d{4}-\d{2}-\d{2}$/);
 });
 
 test('monthCells: September 2026 (mulai Selasa, 30 hari)', () => {

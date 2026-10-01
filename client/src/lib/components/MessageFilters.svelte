@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { KODE_TERMINAL } from '$lib/config';
-	import { BULAN_PENDEK, addDaysISO, firstOfMonthISO, todayISO } from '$lib/date';
+	import { BULAN_PENDEK, addDaysISO, endOfMonthISO, firstOfMonthISO, todayISO } from '$lib/date';
 	import type { FilterField } from '$lib/message/types';
 	import type { ResellerResponse } from '$lib/references/types';
 	import { cn } from '$lib/utils';
@@ -37,16 +37,15 @@
 	const inputCls =
 		'h-9 w-full rounded-lg border border-(--c-border) bg-(--c-surface) pl-8.5 pr-2.5 text-[13px] text-(--c-fg) outline-none focus:border-(--c-accent) disabled:cursor-not-allowed disabled:opacity-60';
 
-	type DatePreset = { label: string; start: string; end: string };
+	type DatePreset = { label: string; start: string; end: string; separate?: boolean };
 
 	function getPresets(): DatePreset[] {
 		const today = todayISO();
 		return [
 			{ label: 'Hari Ini', start: today, end: today },
 			{ label: '7 Hari', start: addDaysISO(-6), end: today },
-			{ label: 'Bulan Ini', start: firstOfMonthISO(0), end: today },
-			{ label: '3 Bulan', start: firstOfMonthISO(-2), end: today },
-			{ label: 'Semua Data', start: '', end: '' }
+			{ label: 'Bulan Ini', start: firstOfMonthISO(0), end: endOfMonthISO(0) },
+			{ label: 'Semua Data', start: '', end: '', separate: true }
 		];
 	}
 
@@ -158,6 +157,7 @@
 						}}
 						class={cn(
 							'cursor-pointer rounded-md px-2.5 py-1.5 text-[12px] font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50 sm:px-3',
+							p.separate && 'ml-1.5 border-l border-(--c-border) pl-1.5',
 							presetActive(p)
 								? 'bg-(--c-accent-soft) font-semibold text-(--c-accent-strong)'
 								: 'text-(--c-fg-muted) hover:bg-(--c-surface-3) hover:text-(--c-accent)'
@@ -185,6 +185,7 @@
 						ariaLabel={f.label}
 						bind:value={query[f.param]}
 						disabled={controlsDisabled}
+						max={/^end/.test(f.param) ? endOfMonthISO(0) : todayISO()}
 					/>
 				{:else if f.type === 'number'}
 					<div class="relative">

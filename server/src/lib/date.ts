@@ -66,6 +66,11 @@ export function firstOfMonthISO(offset: number): string {
 	return toISODate(new Date(t.getFullYear(), t.getMonth() + offset, 1));
 }
 
+export function endOfMonthISO(offset: number): string {
+	const t = todayDate();
+	return toISODate(new Date(t.getFullYear(), t.getMonth() + offset + 1, 0));
+}
+
 export function monthCells(year: number, month: number): { d: number | null; iso: string }[] {
 	const firstDow = new Date(year, month, 1).getDay();
 	const offset = firstDow === 0 ? 6 : firstDow - 1;

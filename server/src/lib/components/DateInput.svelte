@@ -8,12 +8,14 @@
 		value = $bindable(),
 		id,
 		ariaLabel,
-		disabled
+		disabled,
+		max
 	}: {
 		value?: string;
 		id: string;
 		ariaLabel?: string;
 		disabled: boolean;
+		max?: string;
 	} = $props();
 
 	function fmtDisp(v: string | undefined): string {
@@ -24,6 +26,8 @@
 
 	const isoToday = todayISO();
 	const today = parseISODate(isoToday) ?? new Date();
+	const isoMax = $derived(max ?? isoToday);
+	const maxDate = $derived(parseISODate(isoMax) ?? today);
 	const key = Symbol();
 	const open = $derived(isPickerOpen(key));
 	let view = $state<Date>(parseISODate(value) ? (parseISODate(value) as Date) : new Date(today));
@@ -52,10 +56,10 @@
 
 	function canNext(): boolean {
 		if (mode === 'days') {
-			return view.getFullYear() !== today.getFullYear() || view.getMonth() < today.getMonth();
+			return view.getFullYear() !== maxDate.getFullYear() || view.getMonth() < maxDate.getMonth();
 		}
-		if (mode === 'months') return view.getFullYear() < today.getFullYear();
-		return yearsBase < today.getFullYear();
+		if (mode === 'months') return view.getFullYear() < maxDate.getFullYear();
+		return yearsBase < maxDate.getFullYear();
 	}
 
 	function enterMode() {
@@ -187,12 +191,12 @@
 								type="button"
 								tabindex="-1"
 								aria-label={cell.iso}
-								disabled={cell.iso > isoToday}
+								disabled={cell.iso > isoMax}
 								onclick={() => pick(cell.iso)}
 								onkeydown={(e) => onDayKeydown(cell.iso, e)}
 								class={cn(
 									'flex h-8 cursor-pointer items-center justify-center rounded-lg text-[12.5px] transition-colors',
-									cell.iso > isoToday
+									cell.iso > isoMax
 										? 'cursor-not-allowed text-(--c-fg-faint)'
 										: cell.iso === value
 											? 'bg-(--c-accent) font-semibold text-white'
@@ -210,14 +214,14 @@
 						<button
 							type="button"
 							tabindex="-1"
-							disabled={view.getFullYear() === today.getFullYear() && i > today.getMonth()}
+							disabled={view.getFullYear() === maxDate.getFullYear() && i > maxDate.getMonth()}
 							onclick={() => {
 								view = new Date(view.getFullYear(), i, 1);
 								mode = 'days';
 							}}
 							class={cn(
 								'flex h-9 cursor-pointer items-center justify-center rounded-lg text-[12.5px] transition-colors',
-								view.getFullYear() === today.getFullYear() && i > today.getMonth()
+								view.getFullYear() === maxDate.getFullYear() && i > maxDate.getMonth()
 									? 'cursor-not-allowed text-(--c-fg-faint)'
 									: i === view.getMonth()
 										? 'bg-(--c-accent) font-semibold text-white'
@@ -232,14 +236,14 @@
 						<button
 							type="button"
 							tabindex="-1"
-							disabled={yy > today.getFullYear()}
+							disabled={yy > maxDate.getFullYear()}
 							onclick={() => {
 								view = new Date(yy, view.getMonth(), 1);
 								mode = 'months';
 							}}
 							class={cn(
 								'flex h-9 cursor-pointer items-center justify-center rounded-lg text-[12.5px] transition-colors',
-								yy > today.getFullYear()
+								yy > maxDate.getFullYear()
 									? 'cursor-not-allowed text-(--c-fg-faint)'
 									: yy === view.getFullYear()
 										? 'bg-(--c-accent) font-semibold text-white'
