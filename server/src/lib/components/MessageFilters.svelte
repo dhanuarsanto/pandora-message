@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { KODE_TERMINAL } from '$lib/config';
-	import { BULAN_PENDEK, addDaysISO, endOfMonthISO, firstOfMonthISO, todayISO } from '$lib/date';
+	import { endOfMonthISO, todayISO } from '$lib/date';
 	import type { FilterField } from '$lib/message/types';
 	import type { ResellerResponse } from '$lib/references/types';
 	import { cn } from '$lib/utils';
-	import { CalendarRange, Hash, Search } from '@lucide/svelte';
+	import { Hash, Search } from '@lucide/svelte';
 	import DateInput from './DateInput.svelte';
 	import FilterSelect from './FilterSelect.svelte';
 
@@ -35,41 +35,7 @@
 	const inputCls =
 		'h-9 w-full rounded-lg border border-(--c-border) bg-(--c-surface) pl-8.5 pr-2.5 text-[13px] text-(--c-fg) outline-none focus:border-(--c-accent) disabled:cursor-not-allowed disabled:opacity-60';
 
-	type DatePreset = { label: string; start: string; end: string; separate?: boolean };
-
-	function getPresets(): DatePreset[] {
-		const today = todayISO();
-		return [
-			{ label: 'Hari Ini', start: today, end: today },
-			{ label: '7 Hari', start: addDaysISO(-6), end: today },
-			{ label: 'Bulan Ini', start: firstOfMonthISO(0), end: endOfMonthISO(0) },
-			{ label: 'Semua Data', start: '', end: '', separate: true }
-		];
-	}
-
-	function fmtShort(iso: string): string {
-		const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
-		if (!m) return iso;
-		return `${+m[3]} ${BULAN_PENDEK[+m[2] - 1]} ${m[1]}`;
-	}
-
 	const nonCheckboxFields = $derived(filters.filter((f) => f.type !== 'checkbox'));
-
-	const activeRange = $derived.by(() => {
-		for (const f of nonCheckboxFields) {
-			if (f.type !== 'date') continue;
-			const m = /^start(.+)$/.exec(f.param);
-			if (!m) continue;
-			const end = nonCheckboxFields.find((e) => e.type === 'date' && e.param === 'end' + m[1]);
-			const startVal = query[f.param];
-			const endVal = end ? query[end.param] : '';
-			if (!startVal || !endVal) continue;
-			return startVal === endVal
-				? fmtShort(startVal)
-				: `${fmtShort(startVal)} – ${fmtShort(endVal)}`;
-		}
-		return '';
-	});
 
 	function fieldCls(f: FilterField): string {
 		if (f.type === 'number') return 'w-full sm:w-40 sm:shrink-0';
@@ -91,73 +57,15 @@
 				return [];
 		}
 	}
-
-	function presetActive(p: DatePreset): boolean {
-		const pairs = nonCheckboxFields.filter((f) => f.type === 'date' && /^start.+$/.test(f.param));
-		return (
-			pairs.length > 0 &&
-			pairs.every((f) => {
-				const m = /^start(.+)$/.exec(f.param)!;
-				const end = nonCheckboxFields.find((e) => e.type === 'date' && e.param === 'end' + m[1]);
-				return !end || (query[f.param] === p.start && query[end.param] === p.end);
-			})
-		);
-	}
-
-	function applyPreset(p: DatePreset) {
-		for (const f of nonCheckboxFields) {
-			if (f.type !== 'date') continue;
-			const m = /^start(.+)$/.exec(f.param);
-			if (!m) continue;
-			const end = nonCheckboxFields.find((e) => e.type === 'date' && e.param === 'end' + m[1]);
-			query[f.param] = p.start;
-			if (end) query[end.param] = p.end;
-		}
-		applying = onApply();
-	}
 </script>
 
 <form
-	class="mb-5 rounded-xl border border-(--c-border) bg-(--c-surface) p-5"
+	class="mb-5 rounded-xl border border-(--c-border) bg-(--c-surface) p-4"
 	onsubmit={(e) => {
 		e.preventDefault();
 		applying = onApply();
 	}}
 >
-	<h3 class="mb-4 text-[13px] font-semibold text-(--c-fg)">Filter</h3>
-
-	{#if nonCheckboxFields.some((f) => f.type === 'date')}
-		<div class="mb-4 flex flex-wrap items-center gap-x-4 gap-y-2">
-			<span
-				class="flex shrink-0 items-center gap-1.5 text-[11px] font-semibold tracking-widest text-(--c-fg-muted) uppercase"
-			>
-				<CalendarRange class="h-3.5 w-3.5" />
-				Preset
-			</span>
-			<div class="flex flex-wrap items-center gap-1 rounded-lg bg-(--c-surface-2) p-1">
-				{#each getPresets() as p (p.label)}
-					<button
-						type="button"
-						disabled={controlsDisabled || applying}
-						onclick={() => {
-							applyPreset(p);
-						}}
-						class={cn(
-							'cursor-pointer rounded-md px-2.5 py-1.5 text-[12px] font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50 sm:px-3',
-							p.separate && 'ml-1.5 border-l border-(--c-border) pl-1.5',
-							presetActive(p)
-								? 'bg-(--c-accent-soft) font-semibold text-(--c-accent-strong)'
-								: 'text-(--c-fg-muted) hover:bg-(--c-surface-3) hover:text-(--c-accent)'
-						)}>{p.label}</button
-					>
-				{/each}
-			</div>
-			{#if activeRange}
-				<span class="text-[12px] text-(--c-fg-muted)">{activeRange}</span>
-			{/if}
-		</div>
-	{/if}
-
 	<div class="flex flex-wrap gap-4">
 		{#each nonCheckboxFields as f (f.param)}
 			<div class={fieldCls(f)}>

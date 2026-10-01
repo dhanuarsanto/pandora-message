@@ -31,6 +31,7 @@
 	import ColumnPanel from './ColumnPanel.svelte';
 	import MessageFilters from './MessageFilters.svelte';
 	import MessageTable from './MessageTable.svelte';
+	import PresetMenu from './PresetMenu.svelte';
 
 	let {
 		path,
@@ -340,6 +341,7 @@
 			<p class="mt-0.5 text-[13px] text-(--c-fg-muted)">{subtitle}</p>
 		</div>
 		<div class="relative flex flex-wrap items-center gap-3" bind:this={columnsRef}>
+			<PresetMenu bind:query {filters} {controlsDisabled} onApply={applyFilter} />
 			<button
 				onclick={retryLoad}
 				disabled={controlsDisabled}
