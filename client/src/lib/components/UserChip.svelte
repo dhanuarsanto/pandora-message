@@ -19,7 +19,7 @@
 		class="flex items-center gap-1.5 rounded-[10px] border border-(--c-border) bg-(--c-surface) py-1.5 pr-3 pl-1.5 transition-colors hover:border-(--c-accent)"
 	>
 		<div
-			class="flex h-8 w-8 items-center justify-center rounded-lg bg-linear-to-br from-(--c-accent) to-(--c-accent-strong) text-xs font-bold text-white shadow-[0_4px_10px_-4px_rgba(14,122,74,0.5)]"
+			class="flex h-8 w-8 items-center justify-center rounded-lg bg-linear-to-br from-(--c-accent) to-(--c-accent-strong) text-xs font-bold text-(--c-on-accent) shadow-[0_4px_10px_-4px_rgba(14,122,74,0.5)]"
 		>
 			{initial}
 		</div>
@@ -40,7 +40,7 @@
 {:else}
 	<div class="flex items-center gap-3">
 		<div
-			class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-linear-to-br from-(--c-accent) to-(--c-accent-strong) text-sm font-bold text-white shadow-[0_4px_10px_-4px_rgba(14,122,74,0.5)]"
+			class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-linear-to-br from-(--c-accent) to-(--c-accent-strong) text-sm font-bold text-(--c-on-accent) shadow-[0_4px_10px_-4px_rgba(14,122,74,0.5)]"
 		>
 			{initial}
 		</div>

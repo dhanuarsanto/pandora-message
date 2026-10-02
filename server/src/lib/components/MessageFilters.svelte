@@ -174,7 +174,7 @@
 		<button
 			type="submit"
 			disabled={controlsDisabled || applying}
-			class="cursor-pointer rounded-lg bg-(--c-accent) px-5 py-2 text-[13px] font-semibold text-white transition-colors hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+			class="cursor-pointer rounded-lg bg-(--c-accent) px-5 py-2 text-[13px] font-semibold text-(--c-on-accent) transition-colors hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
 		>
 			Terapkan Filter
 		</button>

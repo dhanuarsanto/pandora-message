@@ -13,7 +13,7 @@
 	import type { ColSpec, FilterField } from '$lib/message/types';
 	import type { ResellerResponse } from '$lib/references/types';
 	import { paramsEqual } from '$lib/params';
-	import { buildQuery, initFilterFromUrl, sortedParamsString } from '$lib/utils';
+	import { buildQuery, cn, initFilterFromUrl, sortedParamsString } from '$lib/utils';
 	import { todayISO } from '$lib/date';
 	import {
 		applyCheckboxDefaults,
@@ -344,7 +344,7 @@
 				disabled={controlsDisabled}
 				class="flex items-center gap-2 rounded-lg border border-(--c-border) bg-(--c-surface) px-3 py-1.5 text-xs font-medium text-(--c-fg-muted) transition-colors hover:border-(--c-accent) hover:text-(--c-accent) disabled:pointer-events-none disabled:opacity-50"
 			>
-				<RefreshCw class={loading ? 'h-3.5 w-3.5 animate-spin' : 'h-3.5 w-3.5'} />
+				<RefreshCw class={cn('h-3.5 w-3.5', loading && 'animate-spin')} />
 				Refresh
 			</button>
 			<button

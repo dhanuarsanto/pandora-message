@@ -27,7 +27,7 @@
 	const blocks = $derived(new Intl.NumberFormat('id-ID').format);
 
 	const btn =
-		'flex h-8 min-w-8 items-center justify-center rounded-md border text-xs font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-40';
+		'flex h-7 min-w-7 items-center justify-center rounded-md border text-xs font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-40 sm:h-8 sm:min-w-8';
 
 	function go(next: number) {
 		if (disabled) return;
@@ -37,10 +37,15 @@
 </script>
 
 <div
-	class="sticky bottom-0 z-10 flex shrink-0 flex-wrap items-center justify-between gap-2 border-t border-(--c-border) bg-(--c-surface) px-5 py-3.5"
+	class="sticky bottom-0 z-10 flex shrink-0 flex-wrap items-center justify-center gap-2 border-t border-(--c-border) bg-(--c-surface) px-3 py-3 sm:justify-between sm:px-5 sm:py-3.5"
 >
-	<div class="flex items-center gap-3">
-		<label class="flex items-center gap-2 text-[12px] text-(--c-fg-muted)">
+	<div
+		class="flex w-full flex-col items-center gap-1 sm:w-auto sm:flex-row sm:items-center sm:gap-3"
+	>
+		<span class="order-1 text-center text-[12px] text-(--c-fg-muted) sm:order-2 sm:text-left">
+			Menampilkan {blocks(range.from)}–{blocks(range.to)} dari {blocks(total)}
+		</span>
+		<label class="order-2 flex items-center gap-2 text-[12px] text-(--c-fg-muted) sm:order-1">
 			Baris/halaman
 			<select
 				value={pageSize}
@@ -56,11 +61,11 @@
 				{/each}
 			</select>
 		</label>
-		<span class="text-[12px] text-(--c-fg-muted)">
-			Menampilkan {blocks(range.from)}–{blocks(range.to)} dari {blocks(total)}
-		</span>
 	</div>
-	<nav aria-label="Penomoran halaman" class="flex items-center gap-1.5">
+	<nav
+		aria-label="Penomoran halaman"
+		class="flex max-w-full items-center gap-1 overflow-x-auto sm:gap-1.5 sm:overflow-visible"
+	>
 		<button
 			type="button"
 			class={cn(
@@ -96,7 +101,7 @@
 					class={cn(
 						btn,
 						p === page
-							? 'border-(--c-accent) bg-(--c-accent) text-white'
+							? 'border-(--c-accent) bg-(--c-accent) text-(--c-on-accent)'
 							: 'border-(--c-border) bg-(--c-surface) text-(--c-fg-muted) enabled:cursor-pointer enabled:hover:border-(--c-accent) enabled:hover:text-(--c-accent)'
 					)}
 					{disabled}

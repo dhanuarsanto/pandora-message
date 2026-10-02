@@ -114,7 +114,7 @@
 				scope="col"
 				data-key={c.key}
 				class={cn(
-					'sticky top-0 z-2 border-b border-(--c-border) bg-(--c-table-head) px-3.5 py-2.5 text-left text-[11px] font-semibold tracking-widest whitespace-nowrap text-(--c-fg-soft) uppercase select-none',
+					'sticky top-0 z-2 border-b border-(--c-border) bg-(--c-table-head) text-left text-[11px] font-semibold tracking-widest whitespace-nowrap text-(--c-fg-soft) uppercase select-none',
 					cols.length > 1 && 'cursor-grab active:cursor-grabbing',
 					c.key === dropInfo?.key &&
 						dropInfo.side === 'before' &&
@@ -136,7 +136,7 @@
 				<button
 					type="button"
 					class={cn(
-						'-mx-1 flex cursor-pointer items-center gap-1 rounded px-1 py-0.5 transition-colors hover:text-(--c-accent)',
+						'flex w-full cursor-pointer items-center gap-1 px-3.5 py-2.5 text-left transition-colors hover:text-(--c-accent)',
 						isSorted ? 'text-(--c-accent)' : ''
 					)}
 					title={isSorted ? 'Klik untuk membalik urutan' : 'Klik untuk mengurutkan'}

@@ -27,7 +27,7 @@
 		<div class="mt-4 flex flex-wrap items-center justify-center gap-2">
 			<button
 				onclick={onRetry}
-				class="rounded-lg bg-(--c-accent) px-4 py-1.5 text-xs font-semibold text-white transition-colors hover:opacity-90"
+				class="rounded-lg bg-(--c-accent) px-4 py-1.5 text-xs font-semibold text-(--c-on-accent) transition-colors hover:opacity-90"
 			>
 				Coba lagi
 			</button>

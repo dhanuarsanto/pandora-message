@@ -199,7 +199,7 @@
 									cell.iso > isoMax
 										? 'cursor-not-allowed text-(--c-fg-faint)'
 										: cell.iso === value
-											? 'bg-(--c-accent) font-semibold text-white'
+											? 'bg-(--c-accent) font-semibold text-(--c-on-accent)'
 											: cell.iso === isoToday
 												? 'font-semibold text-(--c-accent)'
 												: 'text-(--c-fg) hover:bg-(--c-surface-2)'
@@ -224,7 +224,7 @@
 								view.getFullYear() === maxDate.getFullYear() && i > maxDate.getMonth()
 									? 'cursor-not-allowed text-(--c-fg-faint)'
 									: i === view.getMonth()
-										? 'bg-(--c-accent) font-semibold text-white'
+										? 'bg-(--c-accent) font-semibold text-(--c-on-accent)'
 										: 'text-(--c-fg) hover:bg-(--c-surface-2)'
 							)}>{b.slice(0, 3)}</button
 						>
@@ -246,7 +246,7 @@
 								yy > maxDate.getFullYear()
 									? 'cursor-not-allowed text-(--c-fg-faint)'
 									: yy === view.getFullYear()
-										? 'bg-(--c-accent) font-semibold text-white'
+										? 'bg-(--c-accent) font-semibold text-(--c-on-accent)'
 										: 'text-(--c-fg) hover:bg-(--c-surface-2)'
 							)}>{yy}</button
 						>
