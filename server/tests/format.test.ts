@@ -54,16 +54,23 @@ test('cellText', () => {
 test('cellClass kombinasi flag', () => {
 	assert.equal(
 		cellClass({ key: 'a', label: 'a' }),
-		'border-b border-(--c-border) px-3.5 py-3 text-[12px] whitespace-nowrap'
+		'border-b border-(--c-table-line) px-3.5 py-3 text-[13px] whitespace-nowrap'
 	);
 	assert.equal(
 		cellClass({ key: 'a', label: 'a', mono: true, strong: true, muted: true }),
-		'border-b border-(--c-border) px-3.5 py-3 font-mono text-[11px] whitespace-nowrap font-semibold text-(--c-fg-soft)'
+		'border-b border-(--c-table-line) px-3.5 py-3 font-mono text-[12px] whitespace-nowrap font-semibold text-(--c-fg-soft)'
 	);
 	assert.equal(
 		cellClass({ key: 'a', label: 'a', wrap: true }),
-		'border-b border-(--c-border) px-3.5 py-3 text-[12px] align-top',
+		'border-b border-(--c-table-line) px-3.5 py-3 text-[13px] align-top',
 		'kolom wrap tidak boleh whitespace-nowrap, hanya rata atas'
+	);
+});
+
+test('cellClass kolom tanggal memakai angka rata lebar', () => {
+	assert.equal(
+		cellClass({ key: 'a', label: 'a', date: true }),
+		'border-b border-(--c-table-line) px-3.5 py-3 text-[13px] tabular-nums whitespace-nowrap'
 	);
 });
 
@@ -72,8 +79,8 @@ test('cellBodyClass: hanya kolom wrap yang dibungkus', () => {
 	assert.equal(cellBodyClass({ key: 'a', label: 'a', mono: true }), '');
 	assert.equal(
 		cellBodyClass({ key: 'a', label: 'a', wrap: true }),
-		'block max-w-[40rem] whitespace-normal break-words',
-		'isi penuh dibungkus baris, bukan dipotong'
+		'block max-w-[40rem] whitespace-normal break-words leading-[1.6]',
+		'isi penuh dibungkus baris dengan jarak baca lega, bukan dipotong'
 	);
 });
 

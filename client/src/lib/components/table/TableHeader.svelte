@@ -114,7 +114,7 @@
 				scope="col"
 				data-key={c.key}
 				class={cn(
-					'sticky top-0 z-2 border-b border-(--c-border) bg-(--c-table-head) text-left text-[11px] font-semibold tracking-widest whitespace-nowrap text-(--c-fg-soft) uppercase select-none',
+					'sticky top-0 z-2 border-b border-(--c-table-line) bg-(--c-table-head) text-left text-[11px] font-semibold tracking-widest whitespace-nowrap text-(--c-fg-soft) uppercase select-none',
 					cols.length > 1 && 'cursor-grab active:cursor-grabbing',
 					c.key === dropInfo?.key &&
 						dropInfo.side === 'before' &&

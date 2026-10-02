@@ -227,7 +227,7 @@
 													data-cell-row={i}
 													data-cell-col={c.key}
 													class={cn(
-														'border-b border-(--c-border) px-3.5 py-3',
+														'border-b border-(--c-table-line) px-3.5 py-3',
 														selectedClass(i, c.key)
 													)}
 												>
@@ -241,7 +241,7 @@
 													data-cell-row={i}
 													data-cell-col={c.key}
 													class={cn(
-														'border-b border-(--c-border) px-3.5 py-3',
+														'border-b border-(--c-table-line) px-3.5 py-3',
 														selectedClass(i, c.key)
 													)}
 												>

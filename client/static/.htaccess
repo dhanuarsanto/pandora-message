@@ -1,13 +1,12 @@
 <IfModule mod_rewrite.c>
 	RewriteEngine On
-	RewriteBase /
 
 	RewriteRule ^index\.html$ - [L]
 
-	RewriteCond %{REQUEST_URI} !^/_app/
+	RewriteCond %{REQUEST_URI} !/_app/
 	RewriteCond %{REQUEST_FILENAME} !-f
 	RewriteCond %{REQUEST_FILENAME} !-d
-	RewriteRule . /index.html [L]
+	RewriteRule . index.html [L]
 </IfModule>
 
 <IfModule mod_mime.c>
@@ -15,7 +14,7 @@
 </IfModule>
 
 <IfModule mod_setenvif.c>
-	SetEnvIf Request_URI "^/_app/immutable/" immutable_asset
+	SetEnvIf Request_URI "/_app/immutable/" immutable_asset
 </IfModule>
 
 <IfModule mod_headers.c>
@@ -31,6 +30,8 @@
 	</FilesMatch>
 </IfModule>
 
-<IfModule mod_deflate.c>
-	AddOutputFilterByType DEFLATE text/css application/javascript application/json image/svg+xml
+<IfModule mod_filter.c>
+	<IfModule mod_deflate.c>
+		AddOutputFilterByType DEFLATE text/css application/javascript application/json image/svg+xml
+	</IfModule>
 </IfModule>

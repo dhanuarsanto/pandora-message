@@ -5,7 +5,6 @@ const BASE = 'http://localhost:3000';
 const OUT = 'test-results/shots';
 const USER = process.env.APP_USER;
 const PASS = process.env.APP_PASS;
-const WIDTHS = [1440, 1280, 1100, 1024, 900, 768, 640, 480, 390];
 
 if (!USER || !PASS) {
 	console.error('APP_USER dan APP_PASS harus diisi lewat lingkungan.');
@@ -15,111 +14,78 @@ if (!USER || !PASS) {
 await mkdir(OUT, { recursive: true });
 
 const browser = await chromium.launch();
-const context = await browser.newContext({
-	viewport: { width: 1440, height: 900 },
-	colorScheme: 'light',
-	locale: 'id-ID'
-});
-const page = await context.newPage();
-const errors = [];
-page.on('console', (m) => {
-	if (m.type() === 'error') errors.push(m.text());
-});
-page.on('pageerror', (e) => errors.push(String(e)));
+const hasil = {};
 
-await page.goto(BASE + '/login');
-await page.waitForLoadState('networkidle');
-await page.waitForTimeout(1200);
-await page.fill('#username', USER);
-await page.fill('#password', PASS);
-await page.click('button[type=submit]');
-try {
-	await page.waitForURL('**/inbox', { timeout: 15000 });
-} catch {
-	const teks = await page.locator('form').innerText().catch(() => '');
-	throw new Error(`Masuk gagal. URL: ${page.url()}\n${teks.slice(0, 200)}`);
-}
-await page.waitForSelector('table', { timeout: 20000 });
-await page.waitForTimeout(1500);
+async function cek(scheme, viewport, nama) {
+	const context = await browser.newContext({ viewport, colorScheme: scheme, locale: 'id-ID' });
+	const page = await context.newPage();
+	const galat = [];
+	page.on('console', (m) => {
+		if (m.type() === 'error') galat.push(m.text());
+	});
+	page.on('pageerror', (e) => galat.push(String(e)));
 
-const SWITCH = page.locator('label', { hasText: 'Perbarui otomatis' });
-if (!(await SWITCH.locator('input').isChecked())) await SWITCH.click();
+	await page.goto(BASE + '/login');
+	await page.waitForLoadState('networkidle');
+	await page.waitForTimeout(1200);
+	await page.fill('#username', USER);
+	await page.fill('#password', PASS);
+	await page.click('button[type=submit]');
+	await page.waitForURL('**/inbox', { timeout: 60000 });
+	await page.waitForSelector('table', { timeout: 60000 });
 
-function ukur() {
-	return page.evaluate(() => {
-		const tombol = document.querySelector('button[aria-label="Selang penyegaran otomatis"]');
-		const panel = document.querySelector('[role=listbox]');
-		const tag = (el) => {
-			if (!el) return null;
-			const r = el.getBoundingClientRect();
-			return {
-				w: Math.round(r.width),
-				l: Math.round(r.left),
-				teks: el.textContent.trim(),
-				potong: el.scrollWidth > el.clientWidth + 1,
-				scrollW: el.scrollWidth,
-				clientW: el.clientWidth
-			};
-		};
-		const row = tombol?.parentElement?.parentElement;
-		const pembungkus = tombol?.parentElement;
+	await page.goto(BASE + '/inbox?startDate=2019-01-01&endDate=2026-12-31');
+	await page.waitForSelector('tbody td.tabular-nums', { timeout: 60000 });
+	await page.waitForTimeout(2500);
+
+	hasil[nama] = await page.evaluate(() => {
+		const sel = document.querySelector('tbody tr');
+		const td = sel?.querySelector('td');
+		const gl = getComputedStyle(document.documentElement);
+		const mono = [...document.querySelectorAll('tbody td')].find((e) =>
+			e.className.includes('font-mono')
+		);
+		const angka = document.querySelector('tbody td.tabular-nums');
+		const isi = document.querySelector('tbody td > span.block');
 		return {
-			tombol: tag(tombol),
-			labelTombol: tag(tombol?.querySelector('span')),
-			row: row && {
-				w: Math.round(row.getBoundingClientRect().width),
-				gaya: getComputedStyle(row).flexWrap
+			tokenGaris: gl.getPropertyValue('--c-table-line').trim(),
+			'sel biasa': {
+				ukuran: td ? getComputedStyle(td).fontSize : null,
+				garisBawah: td ? getComputedStyle(td).borderBottomColor : null,
+				tebal: td ? getComputedStyle(td).fontWeight : null
 			},
-			pembungkus: pembungkus && {
-				w: Math.round(pembungkus.getBoundingClientRect().width),
-				gaya: getComputedStyle(pembungkus).display
-			},
-			panel: panel && { w: Math.round(panel.getBoundingClientRect().width) },
-			item: panel
-				? [...panel.querySelectorAll('[role=option]')].map((o) => tag(o.querySelector('span') ?? o))
-				: []
+			'sel mono': mono ? { ukuran: getComputedStyle(mono).fontSize } : null,
+			kolomTanggal: angka
+				? {
+						ukuran: getComputedStyle(angka).fontSize,
+						bentukAngka: getComputedStyle(angka).fontVariantNumeric
+					}
+				: null,
+			selIsiPesan: isi
+				? {
+						ukuran: getComputedStyle(isi).fontSize,
+						jarakBaris: getComputedStyle(isi).lineHeight,
+						tinggi: isi.getBoundingClientRect().height.toFixed(1)
+					}
+				: null,
+			jumlahBaris: document.querySelectorAll('tbody tr').length,
+			kepala: (() => {
+				const th = document.querySelector('thead th');
+				return th ? getComputedStyle(th).fontSize : null;
+			})()
 		};
 	});
+	hasil[nama].galat = galat;
+
+	await page.screenshot({ path: `${OUT}/${nama}.png` });
+	await context.close();
 }
 
-const hasil = {};
-for (const w of WIDTHS) {
-	await page.setViewportSize({ width: w, height: 900 });
-	await page.waitForTimeout(400);
-	if (await page.locator('[role=listbox]').count()) {
-		await page.keyboard.press('Escape');
-		await page.waitForTimeout(200);
-	}
-	const buka = page.locator('button', { hasText: 'Tampilkan Filter' });
-	if (await buka.count()) {
-		await buka.first().click();
-		await page.waitForTimeout(400);
-	}
-	if (await SWITCH.count()) {
-		const sw = SWITCH.locator('input');
-		if (await sw.count() && !(await sw.isChecked())) await SWITCH.click();
-		await page.waitForTimeout(200);
-	}
-	await page.click('button[aria-label="Selang penyegaran otomatis"]');
-	await page.waitForTimeout(250);
-	hasil[w] = await ukur();
-	await page.screenshot({ path: `${OUT}/lebar-${w}.png` });
-	await page.keyboard.press('Escape');
-	await page.waitForTimeout(150);
-}
+await cek('light', { width: 1440, height: 900 }, 'tabel-terang');
+await cek('dark', { width: 1440, height: 900 }, 'tabel-gelap');
+await cek('light', { width: 390, height: 844 }, 'tabel-mobile');
 
-const ringkas = {};
-for (const [w, h] of Object.entries(hasil)) {
-	ringkas[w] = {
-		tombolW: h.tombol.w,
-		labelPotong: h.labelTombol.potong,
-		panelW: h.panel?.w,
-		terpotong: h.item.filter((i) => i.potong).map((i) => i.teks),
-		lebarItem: h.item.map((i) => `${i.teks}=${i.w}`)
-	};
-}
-const laporan = { ringkas, galat: errors };
-await writeFile(`${OUT}/laporan.json`, JSON.stringify(laporan, null, 2));
+await writeFile(`${OUT}/tabel-ukur.json`, JSON.stringify(hasil, null, 2));
 console.log('SELESAI');
 
 await browser.close();

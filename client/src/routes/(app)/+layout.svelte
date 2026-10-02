@@ -6,6 +6,7 @@
 	import LogoutControl from '$lib/components/LogoutControl.svelte';
 	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
 	import UserChip from '$lib/components/UserChip.svelte';
+	import { isRouteActive, type AppRoute } from '$lib/activeRoute';
 	import { APP_NAME } from '$lib/config';
 	import { formatRules } from '$lib/format';
 	import { theme } from '$lib/client/theme';
@@ -16,6 +17,9 @@
 	let { children } = $props();
 
 	const pathname = $derived(page.url.pathname);
+	const activeRoute = $derived(page.route.id as AppRoute | null);
+	const inboxActive = $derived(isRouteActive(activeRoute, '/inbox'));
+	const outboxActive = $derived(isRouteActive(activeRoute, '/outbox'));
 	let confirmLogout = $state(false);
 	let loggingOut = $state(false);
 	let menuOpen = $state(false);
@@ -93,7 +97,7 @@
 					aria-disabled={navBusy}
 					class={cn(
 						'flex items-center gap-1.75 rounded-[10px] px-3.5 py-2 text-[13px] font-semibold transition-colors',
-						pathname.startsWith('/inbox')
+						inboxActive
 							? 'bg-(--c-accent-soft) text-(--c-accent-strong)'
 							: 'text-(--c-fg-muted) hover:bg-(--c-surface-3) hover:text-(--c-fg)',
 						navBusy && 'pointer-events-none'
@@ -107,7 +111,7 @@
 					aria-disabled={navBusy}
 					class={cn(
 						'flex items-center gap-1.75 rounded-[10px] px-3.5 py-2 text-[13px] font-semibold transition-colors',
-						pathname.startsWith('/outbox')
+						outboxActive
 							? 'bg-(--c-accent-soft) text-(--c-accent-strong)'
 							: 'text-(--c-fg-muted) hover:bg-(--c-surface-3) hover:text-(--c-fg)',
 						navBusy && 'pointer-events-none'
@@ -160,7 +164,7 @@
 						onclick={() => (menuOpen = false)}
 						class={cn(
 							'flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
-							pathname.startsWith('/inbox')
+							inboxActive
 								? 'bg-(--c-accent-soft) text-(--c-accent-strong)'
 								: 'text-(--c-fg-muted) hover:bg-(--c-surface-3) hover:text-(--c-fg)',
 							navBusy && 'pointer-events-none'
@@ -175,7 +179,7 @@
 						onclick={() => (menuOpen = false)}
 						class={cn(
 							'flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
-							pathname.startsWith('/outbox')
+							outboxActive
 								? 'bg-(--c-accent-soft) text-(--c-accent-strong)'
 								: 'text-(--c-fg-muted) hover:bg-(--c-surface-3) hover:text-(--c-fg)',
 							navBusy && 'pointer-events-none'

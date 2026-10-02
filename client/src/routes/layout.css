@@ -1,5 +1,4 @@
 @import 'tailwindcss';
-@plugin '@tailwindcss/typography';
 
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -23,6 +22,7 @@
 	--c-accent-strong: #0a5f3a;
 	--c-accent-soft: #e4f4ea;
 	--c-table-head: #fafafa;
+	--c-table-line: #d0d8ce;
 	--c-row-hover: #eef6f0;
 	--c-cell-sel: #dcefe3;
 	--c-cell-copied: #c3ecd3;
@@ -53,6 +53,7 @@ html.dark {
 	--c-accent-strong: #7fd4a8;
 	--c-accent-soft: #1b2a21;
 	--c-table-head: #202b23;
+	--c-table-line: #35473c;
 	--c-row-hover: #202b23;
 	--c-cell-sel: #16301f;
 	--c-cell-copied: #1c4530;

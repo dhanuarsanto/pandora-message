@@ -16,6 +16,12 @@ function apiOrigin(env: Record<string, string>): ConnectSrc {
 	}
 }
 
+function appBasePath(raw: string | undefined): '' | `/${string}` {
+	const bersih = (raw ?? '').trim().replace(/\/+$/, '');
+	if (!bersih) return '';
+	return (bersih.startsWith('/') ? bersih : `/${bersih}`) as `/${string}`;
+}
+
 export default defineConfig(({ mode }) => {
 	const env = loadEnv(mode, process.cwd(), '');
 
@@ -46,6 +52,9 @@ export default defineConfig(({ mode }) => {
 					// Force runes mode for the project, except for libraries. Can be removed in svelte 6.
 					runes: ({ filename }) =>
 						filename.split(/[/\\]/).includes('node_modules') ? undefined : true
+				},
+				paths: {
+					base: appBasePath(env.PUBLIC_BASE_PATH)
 				},
 				adapter: adapter({
 					fallback: 'index.html'
