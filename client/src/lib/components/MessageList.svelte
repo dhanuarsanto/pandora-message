@@ -19,10 +19,14 @@
 		applyCheckboxDefaults,
 		applyDateDefaults,
 		applyLimitDefault,
+		autoRefreshMs,
 		calcSkeletonCount,
+		canAutoRefresh,
+		DEFAULT_AUTO_REFRESH,
 		normalizeMessageBody,
-		shouldFetch,
+		planFetch,
 		statusOptionsFor,
+		type FetchTrigger,
 		type MessageBody,
 		type MessageData
 	} from '$lib/messageQuery';
@@ -128,9 +132,12 @@
 	let loadError = $state<string | null>(null);
 	let loadErrorCause = $state<string | null>(null);
 	let retryTick = $state(0);
+	let refreshTick = $state(0);
 	let loading = $state(true);
-	let lastFetchKey = '';
-	let lastRetryTick = 0;
+	let lastFetch: FetchTrigger = { key: '', retry: 0, refresh: 0 };
+
+	let autoRefresh = $state(false);
+	let refreshSeconds = $state(DEFAULT_AUTO_REFRESH);
 
 	let sortKey = $state<string | null>(null);
 	let sortDir = $state<SortDir>('asc');
@@ -152,23 +159,30 @@
 		params.delete('pageSize');
 		const qs = sortedParamsString(params);
 		void retryTick;
+		void refreshTick;
 
-		const key = endpoint + (qs ? '?' + qs : '');
-		if (!token || !shouldFetch(lastFetchKey, lastRetryTick, key, retryTick)) {
+		const current: FetchTrigger = {
+			key: endpoint + (qs ? '?' + qs : ''),
+			retry: retryTick,
+			refresh: refreshTick
+		};
+		const plan = planFetch(lastFetch, current);
+		if (!token || !plan.run) {
 			loading = false;
 			loadError = null;
 			return;
 		}
-		lastFetchKey = key;
-		lastRetryTick = retryTick;
+		lastFetch = current;
 
-		loading = true;
-		loadError = null;
-		loadErrorCause = null;
+		if (!plan.silent) {
+			loading = true;
+			loadError = null;
+			loadErrorCause = null;
+		}
 
-		apiGet<InboxResponse | OutboxResponse>(key, token)
+		apiGet<InboxResponse | OutboxResponse>(current.key, token)
 			.then((res) => {
-				if (lastFetchKey !== key) return;
+				if (lastFetch !== current) return;
 				const r = normalizeMessageBody({
 					status: 'sukses',
 					data: res.data as MessageBody['data']
@@ -176,23 +190,39 @@
 				messageData = r.data;
 				loadError = r.error;
 				loadErrorCause = r.cause;
-				currentPage = 1;
+				if (!plan.silent) currentPage = 1;
 			})
 			.catch((err: unknown) => {
-				if (lastFetchKey !== key) return;
+				if (lastFetch !== current) return;
 				if (err instanceof ApiError && err.status === 401) {
 					session.logout();
 					void goto(resolve('/login'));
 					return;
 				}
+				if (plan.silent) return;
 				const { message, detail } = describeError(err);
 				messageData = null;
 				loadError = message;
 				loadErrorCause = detail ?? null;
 			})
 			.finally(() => {
-				if (lastFetchKey === key) loading = false;
+				if (lastFetch === current) loading = false;
 			});
+	});
+
+	$effect(() => {
+		if (!autoRefresh) return;
+		const tick = () => {
+			if (typeof document === 'undefined') return;
+			if (!canAutoRefresh(autoRefresh, document.hidden, loading)) return;
+			refreshTick += 1;
+		};
+		const handle = setInterval(tick, autoRefreshMs(refreshSeconds));
+		document.addEventListener('visibilitychange', tick);
+		return () => {
+			clearInterval(handle);
+			document.removeEventListener('visibilitychange', tick);
+		};
 	});
 
 	$effect(() => {
@@ -396,6 +426,8 @@
 			{resellers}
 			{resellersLoaded}
 			{controlsDisabled}
+			bind:autoRefresh
+			bind:refreshSeconds
 			onApply={applyFilter}
 		/>
 	{/if}

@@ -1,12 +1,14 @@
 <script lang="ts">
 	import { KODE_TERMINAL } from '$lib/config';
 	import { endOfMonthISO, todayISO } from '$lib/date';
+	import { AUTO_REFRESH_OPTIONS } from '$lib/messageQuery';
 	import type { FilterField } from '$lib/message/types';
 	import type { ResellerResponse } from '$lib/references/types';
 	import { cn } from '$lib/utils';
-	import { Hash, Search } from '@lucide/svelte';
+	import { ChevronDown, Hash, Search } from '@lucide/svelte';
 	import DateInput from './DateInput.svelte';
 	import FilterSelect from './FilterSelect.svelte';
+	import MenuList from './MenuList.svelte';
 
 	let {
 		query = $bindable(),
@@ -15,6 +17,8 @@
 		resellers,
 		resellersLoaded,
 		controlsDisabled,
+		autoRefresh = $bindable(),
+		refreshSeconds = $bindable(),
 		onApply
 	}: {
 		query: Record<string, string>;
@@ -23,10 +27,36 @@
 		resellers: ResellerResponse | null;
 		resellersLoaded: boolean;
 		controlsDisabled: boolean;
+		autoRefresh: boolean;
+		refreshSeconds: string;
 		onApply: () => boolean;
 	} = $props();
 
 	let applying = $state(false);
+	let refreshOpen = $state(false);
+	let refreshBtn: HTMLButtonElement | null = $state(null);
+
+	const refreshItems = $derived(
+		AUTO_REFRESH_OPTIONS.map((o) => ({ value: o.value, label: o.label }))
+	);
+
+	const refreshLabel = $derived(
+		AUTO_REFRESH_OPTIONS.find((o) => o.value === refreshSeconds)?.label ?? refreshSeconds
+	);
+
+	function toggleRefreshMenu() {
+		refreshOpen = !refreshOpen;
+	}
+
+	function closeRefreshMenu() {
+		refreshOpen = false;
+		refreshBtn?.focus();
+	}
+
+	function pickRefresh(value: string) {
+		refreshSeconds = value;
+		closeRefreshMenu();
+	}
 
 	$effect(() => {
 		if (!controlsDisabled) applying = false;
@@ -136,41 +166,88 @@
 	<div
 		class="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-(--c-border) pt-4"
 	>
-		{#if filters.some((f) => f.type === 'checkbox')}
-			<div class="flex flex-wrap items-center gap-6">
-				{#each filters.filter((f) => f.type === 'checkbox') as f (f.param)}
-					<label class="flex cursor-pointer items-center gap-2.5">
-						<input
-							type="checkbox"
-							class="sr-only"
-							checked={query[f.param] === 'true'}
-							disabled={controlsDisabled}
-							onchange={(e) =>
-								(query[f.param] = e.currentTarget.checked
-									? 'true'
-									: f.defaultChecked
-										? 'false'
-										: '')}
-						/>
+		<div class="flex flex-wrap items-center gap-6">
+			{#each filters.filter((f) => f.type === 'checkbox') as f (f.param)}
+				<label class="flex cursor-pointer items-center gap-2.5">
+					<input
+						type="checkbox"
+						class="sr-only"
+						checked={query[f.param] === 'true'}
+						disabled={controlsDisabled}
+						onchange={(e) =>
+							(query[f.param] = e.currentTarget.checked ? 'true' : f.defaultChecked ? 'false' : '')}
+					/>
+					<span
+						class={cn(
+							'relative h-5 w-9 shrink-0 rounded-full transition-colors',
+							query[f.param] === 'true' ? 'bg-(--c-accent)' : 'bg-(--c-border)',
+							controlsDisabled && 'opacity-60'
+						)}
+					>
 						<span
 							class={cn(
-								'relative h-5 w-9 shrink-0 rounded-full transition-colors',
-								query[f.param] === 'true' ? 'bg-(--c-accent)' : 'bg-(--c-border)',
-								controlsDisabled && 'opacity-60'
+								'absolute top-0.5 left-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform',
+								query[f.param] === 'true' && 'translate-x-4'
 							)}
-						>
-							<span
-								class={cn(
-									'absolute top-0.5 left-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform',
-									query[f.param] === 'true' && 'translate-x-4'
-								)}
-							></span>
-						</span>
-						<span class="text-[13px] text-(--c-fg-muted) select-none">{f.label}</span>
-					</label>
-				{/each}
+						></span>
+					</span>
+					<span class="text-[13px] text-(--c-fg-muted) select-none">{f.label}</span>
+				</label>
+			{/each}
+			<div class="flex flex-wrap items-center gap-3">
+				<label class="flex cursor-pointer items-center gap-2.5">
+					<input
+						type="checkbox"
+						class="sr-only"
+						checked={autoRefresh}
+						onchange={(e) => (autoRefresh = e.currentTarget.checked)}
+					/>
+					<span
+						class={cn(
+							'relative h-5 w-9 shrink-0 rounded-full transition-colors',
+							autoRefresh ? 'bg-(--c-accent)' : 'bg-(--c-border)'
+						)}
+					>
+						<span
+							class={cn(
+								'absolute top-0.5 left-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform',
+								autoRefresh && 'translate-x-4'
+							)}
+						></span>
+					</span>
+					<span class="text-[13px] text-(--c-fg-muted) select-none">Perbarui otomatis</span>
+				</label>
+				<div class="relative" data-menu-list>
+					<button
+						bind:this={refreshBtn}
+						type="button"
+						disabled={!autoRefresh}
+						aria-haspopup="listbox"
+						aria-expanded={refreshOpen}
+						aria-label="Selang penyegaran otomatis"
+						onclick={toggleRefreshMenu}
+						class="flex h-9 w-full cursor-pointer items-center justify-between gap-2 rounded-lg border border-(--c-border) bg-(--c-surface) px-3 text-left text-[13px] text-(--c-fg) outline-none focus:border-(--c-accent) disabled:cursor-not-allowed disabled:opacity-60"
+					>
+						<span class="min-w-0 truncate">{refreshLabel}</span>
+						<ChevronDown
+							class={cn(
+								'h-4 w-4 shrink-0 text-(--c-fg-faint) transition-transform',
+								refreshOpen && 'rotate-180'
+							)}
+						/>
+					</button>
+					<MenuList
+						open={refreshOpen}
+						items={refreshItems}
+						selectedValue={refreshSeconds}
+						onSelect={pickRefresh}
+						onClose={closeRefreshMenu}
+						ariaLabel="Selang penyegaran otomatis"
+						width="w-max min-w-full"
+					/>
+				</div>
 			</div>
-		{/if}
+		</div>
 		<button
 			type="submit"
 			disabled={controlsDisabled || applying}

@@ -1,12 +1,16 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
+	AUTO_REFRESH_OPTIONS,
+	autoRefreshMs,
 	applyCheckboxDefaults,
 	applyDateDefaults,
 	applyLimitDefault,
 	calcSkeletonCount,
+	canAutoRefresh,
+	DEFAULT_AUTO_REFRESH,
 	normalizeMessageBody,
-	shouldFetch,
+	planFetch,
 	statusOptionsFor
 } from '../src/lib/messageQuery.ts';
 
@@ -81,11 +85,59 @@ test('calcSkeletonCount: nilai normal & fallback', () => {
 	assert.equal(calcSkeletonCount(5), 5);
 });
 
-test('shouldFetch: beda key/retry -> fetch, sama -> skip', () => {
-	assert.equal(shouldFetch('a', 0, 'a', 0), false);
-	assert.equal(shouldFetch('a', 0, 'a', 1), true);
-	assert.equal(shouldFetch('a', 0, 'b', 0), true);
-	assert.equal(shouldFetch('', 0, 'a', 0), true);
+test('planFetch: tidak ada yang berubah -> jangan jalankan', () => {
+	const t = { key: 'a', retry: 0, refresh: 0 };
+	assert.deepEqual(planFetch(t, { ...t }), { run: false, silent: false });
+});
+
+test('planFetch: key berubah -> jalankan, bukan senyap', () => {
+	const r = planFetch({ key: 'a', retry: 0, refresh: 0 }, { key: 'b', retry: 0, refresh: 0 });
+	assert.deepEqual(r, { run: true, silent: false });
+});
+
+test('planFetch: retry berubah -> jalankan, bukan senyap', () => {
+	const r = planFetch({ key: 'a', retry: 0, refresh: 0 }, { key: 'a', retry: 1, refresh: 0 });
+	assert.deepEqual(r, { run: true, silent: false });
+});
+
+test('planFetch: hanya refresh berubah -> jalankan senyap', () => {
+	const r = planFetch({ key: 'a', retry: 0, refresh: 0 }, { key: 'a', retry: 0, refresh: 1 });
+	assert.deepEqual(r, { run: true, silent: true });
+});
+
+test('planFetch: refresh dan key berubah bersamaan -> bukan senyap', () => {
+	const r = planFetch({ key: 'a', retry: 0, refresh: 0 }, { key: 'b', retry: 0, refresh: 1 });
+	assert.deepEqual(r, { run: true, silent: false });
+});
+
+test('planFetch: retry dan refresh berubah bersamaan -> bukan senyap', () => {
+	const r = planFetch({ key: 'a', retry: 0, refresh: 0 }, { key: 'a', retry: 1, refresh: 1 });
+	assert.deepEqual(r, { run: true, silent: false });
+});
+
+test('autoRefreshMs: detik valid, tidak valid, dan bawaan', () => {
+	assert.equal(autoRefreshMs('30'), 30000);
+	assert.equal(autoRefreshMs('120'), 120000);
+	assert.equal(autoRefreshMs(''), 30000);
+	assert.equal(autoRefreshMs('abc'), 30000);
+	assert.equal(autoRefreshMs('0'), 30000);
+	assert.equal(autoRefreshMs('-5'), 30000);
+});
+
+test('canAutoRefresh: hanya aktif saat menyala, tab terlihat, dan tidak sedang memuat', () => {
+	assert.equal(canAutoRefresh(true, false, false), true);
+	assert.equal(canAutoRefresh(false, false, false), false);
+	assert.equal(canAutoRefresh(true, true, false), false);
+	assert.equal(canAutoRefresh(true, false, true), false);
+});
+
+test('pilihan penyegaran otomatis: 30/60/120 dengan bawaan 30', () => {
+	assert.deepEqual(
+		AUTO_REFRESH_OPTIONS.map((o) => o.value),
+		['30', '60', '120']
+	);
+	assert.ok(AUTO_REFRESH_OPTIONS.some((o) => o.value === DEFAULT_AUTO_REFRESH));
+	assert.equal(DEFAULT_AUTO_REFRESH, '30');
 });
 
 test('normalizeMessageBody: sukses -> data', () => {

@@ -2,7 +2,8 @@
 	import { BULAN_PENDEK, addDaysISO, endOfMonthISO, firstOfMonthISO, todayISO } from '$lib/date';
 	import type { FilterField } from '$lib/message/types';
 	import { cn } from '$lib/utils';
-	import { CalendarRange, Check, ChevronDown } from '@lucide/svelte';
+	import { CalendarRange, ChevronDown } from '@lucide/svelte';
+	import MenuList from './MenuList.svelte';
 
 	let {
 		query = $bindable(),
@@ -20,7 +21,6 @@
 
 	let open = $state(false);
 	let applying = $state(false);
-	let root: HTMLDivElement | null = $state(null);
 	let btn: HTMLButtonElement | null = $state(null);
 
 	$effect(() => {
@@ -76,17 +76,27 @@
 		return '';
 	});
 
-	const label = $derived(
-		getPresets().find((p) => presetActive(p))?.label || activeRange || 'Preset'
+	const activePreset = $derived(getPresets().find((p) => presetActive(p)));
+
+	const menuItems = $derived(
+		getPresets().map((p) => ({ value: p.label, label: p.label, separate: p.separate }))
 	);
 
-	function applyPreset(p: DatePreset) {
+	const label = $derived(activePreset?.label || activeRange || 'Preset');
+
+	function closeMenu() {
+		open = false;
+		btn?.focus();
+	}
+
+	function applyPresetByLabel(value: string) {
+		const p = getPresets().find((x) => x.label === value);
+		if (!p) return;
 		for (const pair of datePairs) {
 			query[pair.start] = p.start;
 			if (pair.end !== null) query[pair.end] = p.end;
 		}
-		open = false;
-		btn?.focus();
+		closeMenu();
 		applying = onApply();
 	}
 
@@ -94,28 +104,9 @@
 		if (controlsDisabled || applying) return;
 		open = !open;
 	}
-
-	$effect(() => {
-		if (typeof window === 'undefined' || !open) return;
-		const onPointer = (e: PointerEvent) => {
-			const t = e.target as Node | null;
-			if (root && t && !root.contains(t)) open = false;
-		};
-		const onKey = (e: KeyboardEvent) => {
-			if (e.key !== 'Escape') return;
-			open = false;
-			btn?.focus();
-		};
-		window.addEventListener('pointerdown', onPointer);
-		window.addEventListener('keydown', onKey);
-		return () => {
-			window.removeEventListener('pointerdown', onPointer);
-			window.removeEventListener('keydown', onKey);
-		};
-	});
 </script>
 
-<div class="relative" bind:this={root}>
+<div class="relative" data-menu-list>
 	<button
 		bind:this={btn}
 		type="button"
@@ -136,34 +127,13 @@
 		/>
 	</button>
 
-	{#if open}
-		<div
-			role="listbox"
-			aria-label="Preset rentang tanggal"
-			class="absolute z-40 mt-2 flex w-56 flex-col rounded-xl border border-(--c-border) bg-(--c-surface) p-1 shadow-[0_16px_48px_-12px_rgba(20,32,26,0.28)]"
-		>
-			{#each getPresets() as p (p.label)}
-				{#if p.separate}
-					<div class="my-1 h-px bg-(--c-border)"></div>
-				{/if}
-				<button
-					type="button"
-					role="option"
-					aria-selected={presetActive(p)}
-					onclick={() => applyPreset(p)}
-					class={cn(
-						'flex w-full cursor-pointer items-center justify-between gap-2 rounded-lg px-3 py-2 text-left text-[13px] transition-colors',
-						presetActive(p)
-							? 'bg-(--c-accent-soft) font-semibold text-(--c-accent-strong)'
-							: 'text-(--c-fg) hover:bg-(--c-surface-2)'
-					)}
-				>
-					<span class="min-w-0 flex-1 truncate">{p.label}</span>
-					{#if presetActive(p)}
-						<Check class="h-4 w-4 shrink-0" />
-					{/if}
-				</button>
-			{/each}
-		</div>
-	{/if}
+	<MenuList
+		{open}
+		items={menuItems}
+		selectedValue={activePreset?.label ?? null}
+		onSelect={applyPresetByLabel}
+		onClose={closeMenu}
+		ariaLabel="Preset rentang tanggal"
+		width="w-56"
+	/>
 </div>
