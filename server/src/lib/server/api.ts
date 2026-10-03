@@ -1,11 +1,11 @@
-import { PRIVATE_API_BASE_URL, PRIVATE_API_KEY } from '$env/static/private';
+import { env } from '$env/dynamic/private';
 import { APP_UNIT } from '$lib/config';
 import { ApiError } from './apiError.ts';
 import { createHttpClient } from './httpClient.ts';
 
 export { ApiError };
 
-const client = createHttpClient(PRIVATE_API_BASE_URL, PRIVATE_API_KEY, [
+const client = createHttpClient(env.PRIVATE_API_BASE_URL, env.PRIVATE_API_KEY, [
 	`/api/v1/${APP_UNIT}/auth/login`
 ]);
 
