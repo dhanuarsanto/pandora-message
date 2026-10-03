@@ -24,11 +24,12 @@ function appBasePath(raw: string | undefined): '' | `/${string}` {
 
 export default defineConfig(({ mode }) => {
 	const env = loadEnv(mode, process.cwd(), '');
+	const port = Number(env.PORT) || 3000;
 
 	return {
 		server: {
 			host: '0.0.0.0',
-			port: 3000
+			port
 		},
 		optimizeDeps: {
 			include: [
@@ -49,7 +50,6 @@ export default defineConfig(({ mode }) => {
 			tailwindcss(),
 			sveltekit({
 				compilerOptions: {
-					// Force runes mode for the project, except for libraries. Can be removed in svelte 6.
 					runes: ({ filename }) =>
 						filename.split(/[/\\]/).includes('node_modules') ? undefined : true
 				},

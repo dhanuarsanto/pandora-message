@@ -14,7 +14,7 @@ export const GET: RequestHandler = async ({ cookies, locals }) => {
 
 	try {
 		const res = await getResellers(token, locals.clientIp);
-		return json({ status: 'sukses', data: res.data });
+		return json({ status: 'sukses', data: res });
 	} catch (err) {
 		const { message, status, detail } = describeError(err);
 		return json({ status: 'gagal', message, ...(detail ? { detail } : {}) }, { status });
