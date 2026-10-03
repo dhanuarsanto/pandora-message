@@ -3,13 +3,17 @@ import { ApiError } from './apiError.ts';
 const TIMEOUT_MS = 180000;
 
 export function createHttpClient(baseUrl: string, apiKey: string, publicPaths: readonly string[]) {
-	async function request<T>(path: string, options: RequestInit): Promise<T> {
+	async function request<T>(path: string, options: RequestInit, clientIp?: string): Promise<T> {
 		const controller = new AbortController();
 		const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
 		try {
 			const headers = new Headers(options.headers);
 			headers.set('X-API-KEY', apiKey);
+
+			if (clientIp) {
+				headers.set('X-Forwarded-For', clientIp);
+			}
 
 			if (!headers.has('Content-Type')) {
 				headers.set('Content-Type', 'application/json');
@@ -38,21 +42,29 @@ export function createHttpClient(baseUrl: string, apiKey: string, publicPaths: r
 	}
 
 	return {
-		get: <T>(path: string, token: string) =>
-			request<T>(path, {
-				method: 'GET',
-				headers: { Authorization: `Bearer ${token}` }
-			}),
-		post: <T>(path: string, body: unknown, token?: string) => {
+		get: <T>(path: string, token: string, clientIp?: string) =>
+			request<T>(
+				path,
+				{
+					method: 'GET',
+					headers: { Authorization: `Bearer ${token}` }
+				},
+				clientIp
+			),
+		post: <T>(path: string, body: unknown, token?: string, clientIp?: string) => {
 			if (!token && !publicPaths.includes(path)) {
 				throw new ApiError(401, 'Permintaan gagal');
 			}
 
-			return request<T>(path, {
-				method: 'POST',
-				body: JSON.stringify(body),
-				headers: token ? { Authorization: `Bearer ${token}` } : {}
-			});
+			return request<T>(
+				path,
+				{
+					method: 'POST',
+					body: JSON.stringify(body),
+					headers: token ? { Authorization: `Bearer ${token}` } : {}
+				},
+				clientIp
+			);
 		}
 	};
 }

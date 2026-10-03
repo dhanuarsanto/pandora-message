@@ -12,6 +12,14 @@ function isPublicPath(pathname: string): boolean {
 	return PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(p + '/'));
 }
 
+function getClientIp(event: Parameters<Handle>[0]['event']): string {
+	const forwarded = event.request.headers.get('x-forwarded-for');
+	if (forwarded) {
+		return forwarded.split(',')[0].trim();
+	}
+	return event.getClientAddress();
+}
+
 function securityHeaders(response: Response): void {
 	response.headers.set('X-Content-Type-Options', 'nosniff');
 	response.headers.set('X-Frame-Options', 'DENY');
@@ -28,6 +36,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 
 	event.locals.username = event.cookies.get(COOKIE_USERNAME) ?? null;
 	event.locals.rules = event.cookies.get(COOKIE_RULES) ?? null;
+	event.locals.clientIp = getClientIp(event);
 
 	if (!token && !isPublicPath(pathname)) {
 		throw redirect(302, '/login');

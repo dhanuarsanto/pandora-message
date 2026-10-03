@@ -54,6 +54,7 @@ pnpm run build
 ### 2. Konfigurasi `ecosystem.config.cjs`
 
 Edit property `env` dengan nilai production:
+
 - `PRIVATE_API_BASE_URL` — URL backend production
 - `COOKIE_SECURE` — `true` kalau HTTPS, `false` kalau HTTP
 - `PORT` — port server (default 3000)

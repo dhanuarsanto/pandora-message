@@ -7,7 +7,7 @@ import type { InboxResponse, OutboxResponse } from '$lib/message/types';
 
 const MODES = new Set(['inbox', 'outbox']);
 
-export const GET: RequestHandler = async ({ params, url, cookies }) => {
+export const GET: RequestHandler = async ({ params, url, cookies, locals }) => {
 	const mode = params.mode ?? '';
 
 	if (!MODES.has(mode)) {
@@ -27,7 +27,8 @@ export const GET: RequestHandler = async ({ params, url, cookies }) => {
 	try {
 		const res = await apiGet<InboxResponse | OutboxResponse>(
 			`/api/v1/${APP_UNIT}/${mode}${qs ? '?' + qs : ''}`,
-			token
+			token,
+			locals.clientIp
 		);
 		return json({ status: 'sukses', data: res.data });
 	} catch (err) {

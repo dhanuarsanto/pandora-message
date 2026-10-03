@@ -1,13 +1,13 @@
 import { APP_UNIT } from '$lib/config';
 import { ApiError, apiPost } from '$lib/server/api';
 import { setSessionCookies } from '$lib/server/auth';
-import { getClientIp, isRateLimited, recordAttempt, resetAttempts } from '$lib/server/rateLimiter';
+import { isRateLimited, recordAttempt, resetAttempts } from '$lib/server/rateLimiter';
 import { validateLogin } from '$lib/server/validateLogin';
 import type { LoginRequest, LoginResponse } from '$lib/server/auth';
 import { json, type RequestHandler } from '@sveltejs/kit';
 
 export const POST: RequestHandler = async (event) => {
-	const ip = getClientIp(event);
+	const ip = event.locals.clientIp;
 
 	if (isRateLimited(ip)) {
 		return json(
@@ -30,7 +30,12 @@ export const POST: RequestHandler = async (event) => {
 			return json({ status: 'gagal', message: validationError }, { status: 400 });
 		}
 
-		const data = await apiPost<LoginResponse>(`/api/v1/${APP_UNIT}/auth/login`, body);
+		const data = await apiPost<LoginResponse>(
+			`/api/v1/${APP_UNIT}/auth/login`,
+			body,
+			undefined,
+			event.locals.clientIp
+		);
 
 		if (data.status !== 'sukses' || !data.data?.token) {
 			recordAttempt(ip);

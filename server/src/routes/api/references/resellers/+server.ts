@@ -3,7 +3,7 @@ import { getToken } from '$lib/server/auth';
 import { describeError } from '$lib/server/messageError';
 import { getResellers } from '$lib/server/resellerClient';
 
-export const GET: RequestHandler = async ({ cookies }) => {
+export const GET: RequestHandler = async ({ cookies, locals }) => {
 	const token = getToken(cookies);
 	if (!token) {
 		return json(
@@ -13,8 +13,8 @@ export const GET: RequestHandler = async ({ cookies }) => {
 	}
 
 	try {
-		const res = await getResellers(token);
-		return json({ status: 'sukses', data: res });
+		const res = await getResellers(token, locals.clientIp);
+		return json({ status: 'sukses', data: res.data });
 	} catch (err) {
 		const { message, status, detail } = describeError(err);
 		return json({ status: 'gagal', message, ...(detail ? { detail } : {}) }, { status });

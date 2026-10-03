@@ -10,6 +10,7 @@ declare global {
 		interface Locals {
 			username: string | null;
 			rules: string | null;
+			clientIp: string;
 		}
 	}
 }

@@ -5,11 +5,20 @@ import { createResellerCache } from '../src/lib/server/resellerCache.ts';
 function makeGetter() {
 	let n = 0;
 	let fail = false;
-	const getter = async (token: string) => {
+	const getter = async (
+		token: string,
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
+		_clientIp?: string
+	): Promise<{
+		status: string;
+		data: { items: { kode: string; nama: string }[]; trace_id: string };
+	}> => {
 		n++;
 		if (fail) throw new Error('gagal');
-		const d = { token } as never;
-		return d;
+		return {
+			status: 'sukses',
+			data: { items: [{ kode: token, nama: 'Test' }], trace_id: 'test' }
+		};
 	};
 	return { getter, called: () => n, setFail: (v: boolean) => (fail = v) };
 }
@@ -20,7 +29,7 @@ test('getResellers: panggilan kedua dari cache (getter sekali)', async () => {
 	const a = await c.getResellers('t1');
 	const b = await c.getResellers('t1');
 	assert.equal(g.called(), 1);
-	assert.equal(a, b);
+	assert.deepEqual(a, b);
 });
 
 test('getResellers: token berbeda -> fetcher dipanggil lagi', async () => {
@@ -36,7 +45,7 @@ test('getResellers: request kembar (inflight) hanya satu fetch', async () => {
 	const c = createResellerCache(g.getter);
 	const [a, b] = await Promise.all([c.getResellers('t1'), c.getResellers('t1')]);
 	assert.equal(g.called(), 1);
-	assert.equal(a, b);
+	assert.deepEqual(a, b);
 });
 
 test('getResellers: gagal -> tidak di-cache, fetch berikutnya jalan', async () => {
