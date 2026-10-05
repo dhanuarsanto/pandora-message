@@ -8,18 +8,52 @@ export const RULES: Record<string, string> = {
 	opout: 'Operator Out'
 };
 
-export const INBOX_STATUS = identityMap([
-	20, 21, 22, 40, 41, 42, 43, 44, 45, 46, 47, 49, 52, 56, 64, 65, 69
-]);
+export const INBOX_STATUS = {
+	20: 'Sukses',
+	21: 'Sukses Masuk Outbox',
+	22: 'Sukses Masuk Transaksi',
+	40: 'Gagal',
+	41: 'Bukan Reseller',
+	42: 'Format Salah',
+	43: 'Saldo Tidak Cukup',
+	44: 'Produk Salah',
+	45: 'Stok Kosong',
+	46: 'Transaksi Dobel',
+	47: 'Produk Gangguan',
+	49: 'Pin Salah',
+	50: 'Dibatalkan',
+	52: 'Tujuan Salah',
+	56: 'Nomor Blacklist',
+	64: 'Diabaikan',
+	65: 'Unit Tidak Cukup',
+	69: 'Cutoff'
+};
 
-export const OUTBOX_STATUS = identityMap([20, 40, 50]);
+export const OUTBOX_STATUS = {
+	20: 'Sukses',
+	40: 'Gagal',
+	50: 'Dibatalkan'
+};
 
-const TIPE = identityMap([1, 'O', 'W', 'X']);
-export const TIPE_PENGIRIM: Record<string, string> = TIPE;
-export const TIPE_PENERIMA: Record<string, string> = TIPE;
+export const OUTBOX_STATUS_TABLE = {
+	20: 'Sukses',
+	40: 'Gagal',
+	50: 'Dibatalkan'
+};
+
+export const TIPE_PENGIRIM = {
+	S: 'SMS',
+	O: 'OH',
+	1: 'IP',
+	W: 'WA',
+	X: 'API'
+};
+export const TIPE_PENERIMA = {
+	S: 'SMS',
+	O: 'OH',
+	1: 'IP',
+	W: 'WA',
+	X: 'API'
+};
 
 export const KODE_TERMINAL = { 1: '#PANDORA' };
-
-function identityMap<T extends number | string>(keys: readonly T[]): Record<T, string> {
-	return Object.fromEntries(keys.map((k) => [k, String(k)])) as Record<T, string>;
-}

@@ -78,7 +78,10 @@
 			case 'terminal':
 				return Object.entries(KODE_TERMINAL).map(([value, label]) => ({ value, label }));
 			case 'status':
-				return statusOptions.map(([value, label]) => ({ value, label }));
+				return [
+					{ value: 'failed', label: '-- Gagal --' },
+					...statusOptions.map(([value, label]) => ({ value, label }))
+				];
 			case 'tipe':
 				return Object.entries(f.source).map(([value, label]) => ({ value, label }));
 			case 'reseller':

@@ -19,11 +19,8 @@ export function formatRules(code: string | null): string | null {
 export function statusClasses(raw: string | number | undefined): string {
 	const s = Number(raw);
 	if (s === 20) return 'bg-(--c-success-bg) text-(--c-success)';
-	if (s >= 40 && s < 50) return 'bg-(--c-danger-bg) text-(--c-danger)';
-	if (s === 50 || s === 52 || s === 55 || s === 69) {
-		return 'bg-(--c-warning-bg) text-(--c-warning)';
-	}
-	return 'bg-(--c-border) text-(--c-fg-muted)';
+	if (s >= 40) return 'bg-(--c-danger-bg) text-(--c-danger)';
+	return 'bg-(--c-success-bg) text-(--c-success)';
 }
 
 export function cellText(raw: string | number | undefined): string {

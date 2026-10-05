@@ -89,5 +89,6 @@ export function normalizeMessageBody(body: MessageBody): {
 }
 
 export function statusOptionsFor(path: '/inbox' | '/outbox'): [string, string][] {
-	return Object.entries(path === '/outbox' ? OUTBOX_STATUS : INBOX_STATUS);
+	const statusMap = path === '/outbox' ? OUTBOX_STATUS : INBOX_STATUS;
+	return Object.entries(statusMap).sort(([, a], [, b]) => a.localeCompare(b, 'id'));
 }

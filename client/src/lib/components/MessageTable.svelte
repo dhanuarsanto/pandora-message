@@ -8,7 +8,7 @@
 		rowKeyOf,
 		statusClasses
 	} from '$lib/format';
-	import type { ColSpec, FooterMeta, MessageItem } from '$lib/message/types';
+	import type { ColSpec, FooterMeta, MessageItem, OutboxItem } from '$lib/message/types';
 	import type { SortDir } from '$lib/sortRows';
 	import { cn } from '$lib/utils';
 	import { onDestroy } from 'svelte';
@@ -34,8 +34,7 @@
 		onPage,
 		onPageSizeChange,
 		onReorderColumns,
-		onRetry,
-		reloadPath
+		onRetry
 	}: {
 		data: { items: MessageItem[]; meta: FooterMeta } | null;
 		loading: boolean;
@@ -54,7 +53,6 @@
 		onPageSizeChange: (size: number) => void;
 		onReorderColumns: (keys: string[]) => void;
 		onRetry: () => void;
-		reloadPath: '/inbox' | '/outbox';
 	} = $props();
 
 	type CellRef = { row: number; col: string };
@@ -222,6 +220,9 @@
 									<tr class="transition-colors hover:bg-(--c-row-hover)">
 										{#each cols as c (c.key)}
 											{@const raw = (item as Record<string, string | number>)[c.key]}
+											{@const rendered = c.render
+												? c.render(item as OutboxItem)
+												: cellTextFor(c, raw)}
 											{#if c.badge}
 												<td
 													data-cell-row={i}
@@ -249,7 +250,7 @@
 														class={cn(
 															'inline-block rounded-full px-2.5 py-0.5 text-[11px] font-semibold whitespace-nowrap',
 															statusClasses(raw)
-														)}>{cellText(raw)}</span
+														)}>{rendered}</span
 													>
 												</td>
 											{:else}

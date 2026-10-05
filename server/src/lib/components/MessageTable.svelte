@@ -34,8 +34,7 @@
 		onPage,
 		onPageSizeChange,
 		onReorderColumns,
-		onRetry,
-		reloadPath
+		onRetry
 	}: {
 		data: { items: MessageItem[]; meta: FooterMeta } | null;
 		loading: boolean;
@@ -54,7 +53,6 @@
 		onPageSizeChange: (size: number) => void;
 		onReorderColumns: (keys: string[]) => void;
 		onRetry: () => void;
-		reloadPath: '/inbox' | '/outbox';
 	} = $props();
 
 	type CellRef = { row: number; col: string };
@@ -252,7 +250,7 @@
 														class={cn(
 															'inline-block rounded-full px-2.5 py-0.5 text-[11px] font-semibold whitespace-nowrap',
 															statusClasses(raw)
-														)}>{cellText(raw)}</span
+														)}>{rendered}</span
 													>
 												</td>
 											{:else}

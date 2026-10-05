@@ -170,10 +170,12 @@ test('normalizeMessageBody: gagal -> error + cause + default', () => {
 test('statusOptionsFor: inbox vs outbox', () => {
 	const inbox = statusOptionsFor('/inbox');
 	assert.ok(inbox.some(([k]) => k === '69'));
-	assert.ok(inbox.every(([k, v]) => k === v));
+	assert.ok(inbox.some(([k, v]) => k === '20' && v === 'Sukses'));
+	assert.ok(inbox.some(([k, v]) => k === '40' && v === 'Gagal'));
+	assert.ok(inbox.some(([k, v]) => k === '69' && v === 'Cutoff'));
 	const outbox = statusOptionsFor('/outbox');
 	assert.deepEqual(
 		outbox.map(([k]) => k),
-		['20', '40', '50']
+		['50', '40', '20']
 	);
 });

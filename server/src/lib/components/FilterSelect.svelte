@@ -38,7 +38,11 @@
 
 	const filteredOptions = $derived(
 		searchable
-			? options.filter((o) => o.label.toLowerCase().includes(search.trim().toLowerCase()))
+			? options.filter(
+					(o) =>
+						o.label.toLowerCase().includes(search.trim().toLowerCase()) ||
+						o.value.toLowerCase().includes(search.trim().toLowerCase())
+				)
 			: options
 	);
 

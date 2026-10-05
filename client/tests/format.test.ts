@@ -29,10 +29,10 @@ test('statusClasses mapping', () => {
 	assert.equal(statusClasses(20), 'bg-(--c-success-bg) text-(--c-success)');
 	assert.equal(statusClasses(40), 'bg-(--c-danger-bg) text-(--c-danger)');
 	assert.equal(statusClasses(49), 'bg-(--c-danger-bg) text-(--c-danger)');
-	assert.equal(statusClasses(50), 'bg-(--c-warning-bg) text-(--c-warning)');
-	assert.equal(statusClasses(69), 'bg-(--c-warning-bg) text-(--c-warning)');
-	assert.equal(statusClasses(0), 'bg-(--c-border) text-(--c-fg-muted)');
-	assert.equal(statusClasses('foo'), 'bg-(--c-border) text-(--c-fg-muted)');
+	assert.equal(statusClasses(50), 'bg-(--c-danger-bg) text-(--c-danger)');
+	assert.equal(statusClasses(69), 'bg-(--c-danger-bg) text-(--c-danger)');
+	assert.equal(statusClasses(0), 'bg-(--c-success-bg) text-(--c-success)');
+	assert.equal(statusClasses('foo'), 'bg-(--c-success-bg) text-(--c-success)');
 });
 
 test('formatRules: mapping label, trim, lower, fallback', () => {

@@ -1,4 +1,4 @@
-import { TIPE_PENGIRIM } from '$lib/config';
+import { INBOX_STATUS, TIPE_PENGIRIM } from '$lib/config';
 import type { ColSpec, FilterField, InboxItem } from '$lib/message/types';
 
 export const INBOX_PATH = '/inbox' as const;
@@ -13,6 +13,11 @@ function terminalLabel(value: string | number | null | undefined): string {
 	return String(value);
 }
 
+function statusLabel(value: string | number | null | undefined): string {
+	if (value === null || value === undefined || value === '') return '-';
+	return INBOX_STATUS[value as keyof typeof INBOX_STATUS] ?? String(value);
+}
+
 export const INBOX_COLS: ColSpec<InboxItem>[] = [
 	{ key: 'kode', label: 'Kode', mono: true, strong: true },
 	{ key: 'tgl_entri', label: 'Tgl Entri', muted: true, date: true },
@@ -21,9 +26,14 @@ export const INBOX_COLS: ColSpec<InboxItem>[] = [
 	{ key: 'kode_reseller', label: 'Kode Reseller', mono: true },
 	{ key: 'pesan', label: 'Pesan', muted: true, wrap: true },
 	{ key: 'nama_reseller', label: 'Nama Reseller' },
-	{ key: 'status', label: 'Status', status: true },
+	{ key: 'status', label: 'Status', status: true, render: (item) => statusLabel(item.status) },
 	{ key: 'kode_transaksi', label: 'TrxID', mono: true },
-	{ key: 'kode_terminal', label: 'Terminal', mono: true, render: (item) => terminalLabel(item.kode_terminal) },
+	{
+		key: 'kode_terminal',
+		label: 'Terminal',
+		mono: true,
+		render: (item) => terminalLabel(item.kode_terminal)
+	},
 	{ key: 'service_center', label: 'Service Center' }
 ];
 

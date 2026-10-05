@@ -82,7 +82,9 @@
 	let columnsBtn = $state<HTMLButtonElement | null>(null);
 
 	const orderedCols = $derived(
-		colPrefs.order.map((k) => cols.find((c) => c.key === k)).filter((c): c is ColSpec => c !== undefined)
+		colPrefs.order
+			.map((k) => cols.find((c) => c.key === k))
+			.filter((c): c is ColSpec => c !== undefined)
 	);
 	const visibleCols = $derived(visibleOf(orderedCols, colPrefs.hidden));
 
@@ -450,6 +452,5 @@
 		onPageSizeChange={changePageSize}
 		onReorderColumns={reorderFromVisible}
 		onRetry={retryLoad}
-		reloadPath={path}
 	/>
 </main>
