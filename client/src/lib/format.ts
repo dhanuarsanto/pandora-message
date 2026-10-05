@@ -33,6 +33,12 @@ export function statusClasses(raw: string | number | undefined): string {
 	return 'bg-(--c-success-bg) text-(--c-success)';
 }
 
+export function rowStatusClass(raw: string | number | undefined): string {
+	const s = Number(raw);
+	if (s >= 40) return 'bg-(--c-danger)/15 dark:bg-(--c-danger)/10';
+	return '';
+}
+
 export function cellText(raw: string | number | undefined): string {
 	if (raw === null || raw === undefined) return '-';
 	return String(raw);
