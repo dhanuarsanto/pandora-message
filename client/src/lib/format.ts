@@ -11,6 +11,16 @@ export function formatDate(raw: string | number | undefined): string {
 	return `${m[3]} ${BULAN_PENDEK[+m[2] - 1]} ${m[1]} ${m[4]}:${m[5]}${detik}`;
 }
 
+export function formatDateTime(raw: string | number | undefined): { date: string; time: string } {
+	if (raw === null || raw === undefined || raw === '') return { date: '-', time: '' };
+	const m = /^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})(?::(\d{2}))?/.exec(String(raw));
+	if (!m) return { date: String(raw), time: '' };
+	const detik = m[6] ? ':' + m[6] : '';
+	const date = `${m[3]} ${BULAN_PENDEK[+m[2] - 1]} ${m[1]}`;
+	const time = `${m[4]}:${m[5]}${detik}`;
+	return { date, time };
+}
+
 export function formatRules(code: string | null): string | null {
 	if (!code) return null;
 	return RULES[code.trim().toLowerCase()] ?? code;

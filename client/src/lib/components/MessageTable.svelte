@@ -6,7 +6,8 @@
 		cellText,
 		cellTextFor,
 		rowKeyOf,
-		statusClasses
+		statusClasses,
+		formatDateTime
 	} from '$lib/format';
 	import type { ColSpec, FooterMeta, MessageItem, OutboxItem } from '$lib/message/types';
 	import type { SortDir } from '$lib/sortRows';
@@ -257,14 +258,18 @@
 												<td
 													data-cell-row={i}
 													data-cell-col={c.key}
-													class={cn(
-														cellClass(c),
-														c.date && 'whitespace-nowrap',
-														selectedClass(i, c.key)
-													)}
+													class={cn(cellClass(c), selectedClass(i, c.key))}
 												>
-													<span class={cellBodyClass(c)}>{cellTextFor(c, raw)}</span></td
-												>
+													{#if c.date}
+														{@const dt = formatDateTime(raw)}
+														<div class="flex flex-col gap-0.5 leading-tight">
+															<span class="text-[11px] font-medium">{dt.date}</span>
+															<span class="text-[10px] text-(--c-fg-muted)">{dt.time}</span>
+														</div>
+													{:else}
+														<span class={cellBodyClass(c)}>{cellTextFor(c, raw)}</span>
+													{/if}
+												</td>
 											{/if}
 										{/each}
 									</tr>
