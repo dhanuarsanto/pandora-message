@@ -214,7 +214,7 @@
 							</div>
 						</div>
 					{:else}
-						<table class="min-w-full border-separate border-spacing-0">
+						<table class="min-w-full table-fixed border-separate border-spacing-0">
 							<TableHeader {cols} {onReorderColumns} {sortKey} {sortDir} {onSort} />
 							<tbody>
 								{#each data.items as item, i (rowKeyOf(item, i))}
