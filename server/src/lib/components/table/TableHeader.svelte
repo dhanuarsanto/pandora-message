@@ -114,7 +114,7 @@
 				scope="col"
 				data-key={c.key}
 				class={cn(
-					'sticky top-0 z-2 border-b border-(--c-table-line) bg-(--c-table-head) text-left text-[11px] font-semibold tracking-widest whitespace-nowrap text-(--c-fg-soft) uppercase select-none',
+					'sticky top-0 z-2 border-b border-(--c-table-line) bg-(--c-table-head) text-left text-[11px] font-semibold tracking-widest text-balance whitespace-nowrap text-(--c-fg-soft) uppercase select-none',
 					cols.length > 1 && 'cursor-grab active:cursor-grabbing',
 					c.key === dropInfo?.key &&
 						dropInfo.side === 'before' &&
@@ -123,6 +123,13 @@
 						dropInfo.side === 'after' &&
 						'shadow-[3px_0_0_0_var(--c-accent)]'
 				)}
+				style={c.width && c.minWidth
+					? `width: ${c.width}; min-width: ${c.minWidth};`
+					: c.width
+						? `width: ${c.width};`
+						: c.minWidth
+							? `min-width: ${c.minWidth};`
+							: ''}
 				draggable={cols.length > 1}
 				tabindex={cols.length > 1 ? 0 : undefined}
 				aria-sort={ariaSort(c.key)}

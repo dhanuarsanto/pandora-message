@@ -9,6 +9,8 @@ export type ColSpec<T = MessageItem> = {
 	status?: boolean;
 	wrap?: boolean;
 	render?: (item: T) => string;
+	width?: string;
+	minWidth?: string;
 };
 
 export type FilterField =

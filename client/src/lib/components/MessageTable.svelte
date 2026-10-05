@@ -232,6 +232,13 @@
 														'border-b border-(--c-table-line) px-3.5 py-3',
 														selectedClass(i, c.key)
 													)}
+													style={c.width && c.minWidth
+														? `width: ${c.width}; min-width: ${c.minWidth};`
+														: c.width
+															? `width: ${c.width};`
+															: c.minWidth
+																? `min-width: ${c.minWidth};`
+																: ''}
 												>
 													<span
 														class="inline-block rounded bg-(--c-border) px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap text-(--c-fg-muted)"
@@ -246,6 +253,13 @@
 														'border-b border-(--c-table-line) px-3.5 py-3',
 														selectedClass(i, c.key)
 													)}
+													style={c.width && c.minWidth
+														? `width: ${c.width}; min-width: ${c.minWidth};`
+														: c.width
+															? `width: ${c.width};`
+															: c.minWidth
+																? `min-width: ${c.minWidth};`
+																: ''}
 												>
 													<span
 														class={cn(
@@ -259,6 +273,13 @@
 													data-cell-row={i}
 													data-cell-col={c.key}
 													class={cn(cellClass(c), selectedClass(i, c.key))}
+													style={c.width && c.minWidth
+														? `width: ${c.width}; min-width: ${c.minWidth};`
+														: c.width
+															? `width: ${c.width};`
+															: c.minWidth
+																? `min-width: ${c.minWidth};`
+																: ''}
 												>
 													{#if c.date}
 														{@const dt = formatDateTime(raw)}

@@ -11,17 +11,28 @@ function statusLabel(value: string | number | null | undefined): string {
 }
 
 export const OUTBOX_COLS: ColSpec<OutboxItem>[] = [
-	{ key: 'kode', label: 'Kode', mono: true, strong: true },
-	{ key: 'tgl_entri', label: 'Tgl. Entri', muted: true, date: true },
-	{ key: 'tgl_status', label: 'Tgl. Status', muted: true, date: true },
-	{ key: 'penerima', label: 'Penerima', strong: true },
-	{ key: 'kode_reseller', label: 'Kode Reseller', mono: true },
-	{ key: 'nama_reseller', label: 'Nama Reseller' },
+	{ key: 'kode', label: 'Kode', mono: true, strong: true, width: '80px' },
+	{ key: 'tgl_entri', label: 'Tgl. Entri', muted: true, date: true, minWidth: '160px' },
+	{ key: 'tgl_status', label: 'Tgl. Status', muted: true, date: true, minWidth: '160px' },
+	{ key: 'penerima', label: 'Penerima', strong: true, minWidth: '120px' },
+	{ key: 'kode_reseller', label: 'Kode Reseller', mono: true, width: '110px' },
+	{ key: 'nama_reseller', label: 'Nama Reseller', minWidth: '140px' },
 	{ key: 'pesan', label: 'Pesan', muted: true, wrap: true },
-	{ key: 'status', label: 'Status', status: true, render: (item) => statusLabel(item.status) },
-	{ key: 'kode_inbox', label: 'Kode Inbox', mono: true },
-	{ key: 'kode_transaksi', label: 'TrxID', mono: true },
-	{ key: 'sender', label: 'Sender', render: (item) => (item.tipe_penerima === '1' ? 'IP' : '-') }
+	{
+		key: 'status',
+		label: 'Status',
+		status: true,
+		render: (item) => statusLabel(item.status),
+		width: '100px'
+	},
+	{ key: 'kode_inbox', label: 'Kode Inbox', mono: true, width: '100px' },
+	{ key: 'kode_transaksi', label: 'TrxID', mono: true, width: '100px' },
+	{
+		key: 'sender',
+		label: 'Sender',
+		width: '60px',
+		render: (item) => (item.tipe_penerima === '1' ? 'IP' : '-')
+	}
 ];
 
 export const OUTBOX_FILTERS: FilterField[] = [

@@ -19,22 +19,29 @@ function statusLabel(value: string | number | null | undefined): string {
 }
 
 export const INBOX_COLS: ColSpec<InboxItem>[] = [
-	{ key: 'kode', label: 'Kode', mono: true, strong: true },
-	{ key: 'tgl_entri', label: 'Tgl Entri', muted: true, date: true },
-	{ key: 'tgl_status', label: 'Tgl Status', muted: true, date: true },
-	{ key: 'pengirim', label: 'Pengirim', strong: true },
-	{ key: 'kode_reseller', label: 'Kode Reseller', mono: true },
+	{ key: 'kode', label: 'Kode', mono: true, strong: true, width: '80px' },
+	{ key: 'tgl_entri', label: 'Tgl Entri', muted: true, date: true, minWidth: '160px' },
+	{ key: 'tgl_status', label: 'Tgl Status', muted: true, date: true, minWidth: '160px' },
+	{ key: 'pengirim', label: 'Pengirim', strong: true, minWidth: '120px' },
+	{ key: 'kode_reseller', label: 'Kode Reseller', mono: true, width: '110px' },
 	{ key: 'pesan', label: 'Pesan', muted: true, wrap: true },
-	{ key: 'nama_reseller', label: 'Nama Reseller' },
-	{ key: 'status', label: 'Status', status: true, render: (item) => statusLabel(item.status) },
-	{ key: 'kode_transaksi', label: 'TrxID', mono: true },
+	{ key: 'nama_reseller', label: 'Nama Reseller', minWidth: '140px' },
+	{
+		key: 'status',
+		label: 'Status',
+		status: true,
+		render: (item) => statusLabel(item.status),
+		width: '100px'
+	},
+	{ key: 'kode_transaksi', label: 'TrxID', mono: true, width: '100px' },
 	{
 		key: 'kode_terminal',
 		label: 'Terminal',
 		mono: true,
+		width: '120px',
 		render: (item) => terminalLabel(item.kode_terminal)
 	},
-	{ key: 'service_center', label: 'Service Center' }
+	{ key: 'service_center', label: 'Service Center', minWidth: '120px' }
 ];
 
 export const INBOX_FILTERS: FilterField[] = [
