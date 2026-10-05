@@ -59,5 +59,5 @@ export function cellClass(c: ColSpec): string {
 
 export function cellBodyClass(c: ColSpec): string {
 	if (!c.wrap) return '';
-	return 'block max-w-[40rem] whitespace-normal break-words leading-[1.6]';
+	return 'block min-w-[20rem] max-w-[40rem] whitespace-normal break-words leading-[1.6]';
 }

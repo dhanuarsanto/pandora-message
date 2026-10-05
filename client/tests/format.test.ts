@@ -79,8 +79,8 @@ test('cellBodyClass: hanya kolom wrap yang dibungkus', () => {
 	assert.equal(cellBodyClass({ key: 'a', label: 'a', mono: true }), '');
 	assert.equal(
 		cellBodyClass({ key: 'a', label: 'a', wrap: true }),
-		'block max-w-[40rem] whitespace-normal break-words leading-[1.6]',
-		'isi penuh dibungkus baris dengan jarak baca lega, bukan dipotong'
+		'block min-w-[20rem] max-w-[40rem] whitespace-normal break-words leading-[1.6]',
+		'isi penuh dibungkus baris dengan jarak baca lega, min-w mencegah kolom collapse'
 	);
 });
 
