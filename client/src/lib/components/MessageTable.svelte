@@ -214,7 +214,7 @@
 							</div>
 						</div>
 					{:else}
-						<table class="min-w-full table-fixed border-separate border-spacing-0">
+						<table class="min-w-full table-auto border-separate border-spacing-0">
 							<TableHeader {cols} {onReorderColumns} {sortKey} {sortDir} {onSort} />
 							<tbody>
 								{#each data.items as item, i (rowKeyOf(item, i))}
@@ -283,9 +283,11 @@
 												>
 													{#if c.date}
 														{@const dt = formatDateTime(raw)}
-														<div class="flex flex-col gap-0.5 leading-tight">
-															<span class="text-[11px] font-medium">{dt.date}</span>
-															<span class="text-[10px] text-(--c-fg-muted)">{dt.time}</span>
+														<div class="flex flex-col gap-1 leading-snug">
+															<span class="text-[12px] font-medium text-(--c-fg)">{dt.date}</span>
+															<span class="font-mono text-[11px] text-(--c-fg-muted) tabular-nums"
+																>{dt.time}</span
+															>
 														</div>
 													{:else}
 														<span class={cellBodyClass(c)}>{cellTextFor(c, raw)}</span>

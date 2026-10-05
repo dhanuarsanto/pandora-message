@@ -12,8 +12,8 @@ function statusLabel(value: string | number | null | undefined): string {
 
 export const OUTBOX_COLS: ColSpec<OutboxItem>[] = [
 	{ key: 'kode', label: 'Kode', mono: true, strong: true, width: '80px' },
-	{ key: 'tgl_entri', label: 'Tgl. Entri', muted: true, date: true, minWidth: '160px' },
-	{ key: 'tgl_status', label: 'Tgl. Status', muted: true, date: true, minWidth: '160px' },
+	{ key: 'tgl_entri', label: 'Tgl. Entri', muted: true, date: true, width: '1px' },
+	{ key: 'tgl_status', label: 'Tgl. Status', muted: true, date: true, width: '1px' },
 	{ key: 'penerima', label: 'Penerima', strong: true, minWidth: '120px' },
 	{ key: 'kode_reseller', label: 'Kode Reseller', mono: true, width: '110px' },
 	{ key: 'nama_reseller', label: 'Nama Reseller', minWidth: '140px' },
