@@ -8,7 +8,7 @@
 		rowKeyOf,
 		statusClasses
 	} from '$lib/format';
-	import type { ColSpec, FooterMeta, MessageItem } from '$lib/message/types';
+	import type { ColSpec, FooterMeta, MessageItem, OutboxItem } from '$lib/message/types';
 	import type { SortDir } from '$lib/sortRows';
 	import { cn } from '$lib/utils';
 	import { onDestroy } from 'svelte';
@@ -222,6 +222,9 @@
 									<tr class="transition-colors hover:bg-(--c-row-hover)">
 										{#each cols as c (c.key)}
 											{@const raw = (item as Record<string, string | number>)[c.key]}
+											{@const rendered = c.render
+												? c.render(item as OutboxItem)
+												: cellTextFor(c, raw)}
 											{#if c.badge}
 												<td
 													data-cell-row={i}
@@ -262,7 +265,7 @@
 														selectedClass(i, c.key)
 													)}
 												>
-													<span class={cellBodyClass(c)}>{cellTextFor(c, raw)}</span></td
+													<span class={cellBodyClass(c)}>{rendered}</span></td
 												>
 											{/if}
 										{/each}

@@ -1,30 +1,22 @@
 import { TIPE_PENERIMA } from '$lib/config';
-import type { ColSpec, FilterField } from '$lib/message/types';
+import type { ColSpec, FilterField, OutboxItem } from '$lib/message/types';
 
 export const OUTBOX_PATH = '/outbox' as const;
 export const OUTBOX_LABEL = 'Kotak Keluar';
 export const OUTBOX_SUBTITLE = 'Pesan terkirim dari sistem.';
 
-export const OUTBOX_COLS: ColSpec[] = [
-	// { key: 'kode', label: 'Kode', mono: true, strong: true },
+export const OUTBOX_COLS: ColSpec<OutboxItem>[] = [
+	{ key: 'kode', label: 'Kode', mono: true, strong: true },
 	{ key: 'tgl_entri', label: 'Tgl Entri', muted: true, date: true },
+	{ key: 'tgl_status', label: 'Tgl Status', muted: true, date: true },
 	{ key: 'penerima', label: 'Penerima', strong: true },
-	// { key: 'tipe_penerima', label: 'Tipe Penerima', badge: true },
+	{ key: 'kode_reseller', label: 'Kode Reseller', mono: true },
+	{ key: 'nama_reseller', label: 'Nama Reseller' },
 	{ key: 'pesan', label: 'Pesan', muted: true, wrap: true },
 	{ key: 'status', label: 'Status', status: true },
-	{ key: 'tgl_status', label: 'Tgl Status', muted: true, date: true },
-	// { key: 'kode_inbox', label: 'Kode Inbox', mono: true },
-	{ key: 'kode_transaksi', label: 'Kode Transaksi', mono: true },
-	{ key: 'kode_reseller', label: 'Kode Reseller', mono: true },
-	{ key: 'nama_reseller', label: 'Nama Reseller' }
-	// { key: 'bebas_biaya', label: 'Bebas Biaya' },
-	// { key: 'is_perintah', label: 'Perintah' },
-	// { key: 'kode_modul', label: 'Kode Modul', mono: true },
-	// { key: 'prioritas', label: 'Prioritas' },
-	// { key: 'modul_proses', label: 'Modul Proses' },
-	// { key: 'pengirim', label: 'Pengirim', strong: true },
-	// { key: 'kode_terminal', label: 'Kode Terminal', mono: true },
-	// { key: 'ctr_kirim', label: 'Ctr Kirim' }
+	{ key: 'kode_inbox', label: 'Kode Inbox', mono: true },
+	{ key: 'kode_transaksi', label: 'TrxID', mono: true },
+	{ key: 'sender', label: 'Sender', render: (item) => (item.tipe_penerima === '1' ? 'IP' : '-') }
 ];
 
 export const OUTBOX_FILTERS: FilterField[] = [

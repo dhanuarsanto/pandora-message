@@ -2,15 +2,15 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
 	addDaysISO,
+	BULAN,
+	BULAN_PENDEK,
 	endOfMonthISO,
 	firstOfMonthISO,
 	HARI,
 	monthCells,
 	parseISODate,
-	toISODate,
 	todayISO,
-	BULAN,
-	BULAN_PENDEK
+	toISODate
 } from '../src/lib/date.ts';
 
 test('HARI/BULAN: konstanta lengkap', () => {
@@ -51,7 +51,7 @@ test('todayISO: format valid & = hari ini', () => {
 });
 
 test('addDaysISO: geser hari (bulan lintas)', () => {
-	const from = new Date(2026, 1, 27); // 27 Feb 2026
+	const from = new Date(2026, 1, 27);
 	const plus = new Date(from);
 	plus.setDate(plus.getDate() - 2);
 	assert.equal(toISODate(plus), '2026-02-25');
@@ -77,7 +77,7 @@ test('endOfMonthISO: hari terakhir bulan', () => {
 
 test('monthCells: September 2026 (mulai Selasa, 30 hari)', () => {
 	const cells = monthCells(2026, 8);
-	const hariPertama = new Date(2026, 8, 1).getDay(); // 0=Min
+	const hariPertama = new Date(2026, 8, 1).getDay();
 	const offset = hariPertama === 0 ? 6 : hariPertama - 1;
 	assert.equal(cells.length, offset + 30);
 	assert.equal(cells[0].d, null);

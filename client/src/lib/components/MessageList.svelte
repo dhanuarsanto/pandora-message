@@ -50,7 +50,7 @@
 		path: '/inbox' | '/outbox';
 		title: string;
 		subtitle: string;
-		cols: ColSpec[];
+		cols: ColSpec<unknown>[];
 		filters: FilterField[];
 	} = $props();
 

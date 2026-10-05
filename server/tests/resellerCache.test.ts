@@ -6,9 +6,7 @@ function makeGetter() {
 	let n = 0;
 	let fail = false;
 	const getter = async (
-		token: string,
-		// eslint-disable-next-line @typescript-eslint/no-unused-vars
-		_clientIp?: string
+		token: string
 	): Promise<{
 		status: string;
 		data: { items: { kode: string; nama: string }[]; trace_id: string };

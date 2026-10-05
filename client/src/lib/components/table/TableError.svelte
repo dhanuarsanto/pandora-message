@@ -5,14 +5,25 @@
 	let {
 		error,
 		errorDetail,
-		onRetry,
-		reloadPath
+		onRetry
 	}: {
 		error: string;
 		errorDetail: string | null;
 		onRetry: () => void;
-		reloadPath: '/inbox' | '/outbox';
 	} = $props();
+
+	const isSessionExpired = $derived(error.includes('Sesi berakhir'));
+	let loggingOut = $state(false);
+
+	async function handleLogout() {
+		if (loggingOut) return;
+		loggingOut = true;
+		try {
+			await fetch('/api/auth/logout', { method: 'POST' });
+		} finally {
+			await goto(resolve('/login'));
+		}
+	}
 </script>
 
 <div
@@ -25,18 +36,29 @@
 			<p class="mt-1 font-mono text-[11px] text-(--c-fg-faint)">{errorDetail}</p>
 		{/if}
 		<div class="mt-4 flex flex-wrap items-center justify-center gap-2">
-			<button
-				onclick={onRetry}
-				class="rounded-lg bg-(--c-accent) px-4 py-1.5 text-xs font-semibold text-(--c-on-accent) transition-colors hover:opacity-90"
-			>
-				Coba lagi
-			</button>
-			<button
-				onclick={() => goto(resolve(reloadPath), { invalidateAll: true })}
-				class="rounded-lg border border-(--c-border) px-4 py-1.5 text-xs font-medium text-(--c-fg-muted) transition-colors hover:border-(--c-accent) hover:text-(--c-accent)"
-			>
-				Muat ulang halaman
-			</button>
+			{#if isSessionExpired}
+				<button
+					onclick={handleLogout}
+					disabled={loggingOut}
+					class="rounded-lg bg-(--c-danger) px-5 py-2 text-[13px] font-semibold text-(--c-on-accent) transition-colors hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+				>
+					{#if loggingOut}
+						<span
+							class="mr-1.5 inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-(--c-on-accent)/30 border-t-(--c-on-accent)"
+						></span>
+						Keluar...
+					{:else}
+						Keluar
+					{/if}
+				</button>
+			{:else}
+				<button
+					onclick={onRetry}
+					class="rounded-lg bg-(--c-accent) px-5 py-2 text-[13px] font-semibold text-(--c-on-accent) transition-colors hover:opacity-90"
+				>
+					Coba lagi
+				</button>
+			{/if}
 		</div>
 	</div>
 </div>

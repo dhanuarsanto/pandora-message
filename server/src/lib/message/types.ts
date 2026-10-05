@@ -1,4 +1,4 @@
-export type ColSpec = {
+export type ColSpec<T = MessageItem> = {
 	key: string;
 	label: string;
 	mono?: boolean;
@@ -8,6 +8,7 @@ export type ColSpec = {
 	date?: boolean;
 	status?: boolean;
 	wrap?: boolean;
+	render?: (item: T) => string;
 };
 
 export type FilterField =
@@ -27,44 +28,28 @@ export type FooterMeta = {
 };
 
 export type OutboxItem = {
-	// kode: number;
 	tgl_entri: string;
 	penerima: string;
-	// tipe_penerima: string;
+	tipe_penerima: string;
 	pesan: string;
 	status: number;
 	tgl_status: string;
-	// kode_inbox: number;
 	kode_transaksi: number;
 	kode_reseller: string;
-	// bebas_biaya: number;
-	// is_perintah: number;
-	// kode_modul: number;
-	// prioritas: number;
-	// modul_proses: string;
-	// pengirim: string;
-	// kode_terminal: number;
-	// ctr_kirim: number;
-	// nama_reseller?: string;
+	nama_reseller?: string;
 };
 
 export type InboxItem = {
 	kode: number;
 	tgl_entri: string;
-	// penerima: string;
 	pengirim: string;
-	// tipe_pengirim: string;
 	pesan: string;
 	status: number;
 	kode_terminal: number;
 	tgl_status: string;
 	kode_reseller: string;
 	kode_transaksi: number;
-	// is_jawaban: number;
 	service_center: string;
-	// is_cs: number;
-	// kode_jawaban_cs: number;
-	// hash: string;
 	nama_reseller?: string;
 };
 
