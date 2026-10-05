@@ -10,7 +10,7 @@
 	import { describeError } from '$lib/api/messageError';
 	import { getResellers } from '$lib/api/resellerClient';
 	import type { InboxResponse, OutboxResponse } from '$lib/message/types';
-	import type { ColSpec, FilterField } from '$lib/message/types';
+	import type { ColSpec, FilterField, InboxItem, OutboxItem } from '$lib/message/types';
 	import type { ResellerResponse } from '$lib/references/types';
 	import { paramsEqual } from '$lib/params';
 	import { buildQuery, cn, initFilterFromUrl, sortedParamsString } from '$lib/utils';
@@ -50,7 +50,7 @@
 		path: '/inbox' | '/outbox';
 		title: string;
 		subtitle: string;
-		cols: ColSpec<unknown>[];
+		cols: ColSpec<InboxItem>[] | ColSpec<OutboxItem>[];
 		filters: FilterField[];
 	} = $props();
 
@@ -82,7 +82,7 @@
 	let columnsBtn = $state<HTMLButtonElement | null>(null);
 
 	const orderedCols = $derived(
-		colPrefs.order.map((k) => cols.find((c) => c.key === k)).filter((c): c is ColSpec => !!c)
+		colPrefs.order.map((k) => cols.find((c) => c.key === k)).filter((c): c is ColSpec => c !== undefined)
 	);
 	const visibleCols = $derived(visibleOf(orderedCols, colPrefs.hidden));
 

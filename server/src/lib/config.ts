@@ -18,7 +18,7 @@ const TIPE = identityMap([1, 'O', 'W', 'X']);
 export const TIPE_PENGIRIM: Record<string, string> = TIPE;
 export const TIPE_PENERIMA: Record<string, string> = TIPE;
 
-export const KODE_TERMINAL = identityMap([1, 2, 3]);
+export const KODE_TERMINAL = { 1: '#PANDORA' };
 
 function identityMap<T extends number | string>(keys: readonly T[]): Record<T, string> {
 	return Object.fromEntries(keys.map((k) => [k, String(k)])) as Record<T, string>;

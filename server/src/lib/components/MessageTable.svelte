@@ -183,7 +183,7 @@
 </script>
 
 {#if error}
-	<TableError {error} {errorDetail} {onRetry} {reloadPath} />
+	<TableError {error} {errorDetail} {onRetry} />
 {:else}
 	<div
 		class="relative flex min-h-72 flex-1 flex-col overflow-clip rounded-xl border border-(--c-border) bg-(--c-surface)"
