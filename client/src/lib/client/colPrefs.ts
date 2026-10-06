@@ -42,7 +42,6 @@ function writeStore(store: ColsStore): void {
 	try {
 		window.localStorage.setItem(STORE_KEY, JSON.stringify(store));
 	} catch {
-		// localStorage penuh atau diblokir — abaikan
 	}
 }
 
@@ -52,7 +51,6 @@ function dropLegacy(): void {
 		try {
 			window.localStorage.removeItem(k);
 		} catch {
-			// abaikan
 		}
 	}
 }

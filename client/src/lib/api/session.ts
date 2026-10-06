@@ -57,7 +57,6 @@ export function saveSession(data: LoginData): void {
 	try {
 		window.localStorage.setItem(STORAGE_KEY, JSON.stringify(session));
 	} catch {
-		// storage penuh atau diblokir — abaikan
 	}
 }
 
@@ -70,6 +69,5 @@ export function clearSession(): void {
 	try {
 		window.localStorage.removeItem(STORAGE_KEY);
 	} catch {
-		// abaikan
 	}
 }

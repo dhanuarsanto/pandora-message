@@ -9,7 +9,6 @@ function safeGet(key: string): string | null {
 	try {
 		return localStorage.getItem(key);
 	} catch {
-		// akses storage diblokir — anggap kosong
 		return null;
 	}
 }
@@ -18,7 +17,6 @@ function safeSet(key: string, value: string): void {
 	try {
 		localStorage.setItem(key, value);
 	} catch {
-		// storage penuh atau diblokir — abaikan
 	}
 }
 
