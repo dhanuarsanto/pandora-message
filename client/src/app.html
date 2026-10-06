@@ -18,11 +18,8 @@
 				display: flex;
 				align-items: center;
 				justify-content: center;
-				background: #f4f6f3;
+				background: var(--c-bg);
 				transition: opacity 0.3s ease;
-			}
-			html.dark #pandora-preloader {
-				background: #111814;
 			}
 			#pandora-preloader.is-hiding {
 				opacity: 0;
@@ -38,11 +35,11 @@
 				width: 56px;
 				height: 56px;
 				border-radius: 16px;
-				background: linear-gradient(135deg, #16a34a, #0a5f3a);
+				background: linear-gradient(135deg, var(--c-login-accent-from), var(--c-login-accent-to));
 				display: flex;
 				align-items: center;
 				justify-content: center;
-				box-shadow: 0 12px 28px -8px rgba(14, 122, 74, 0.55);
+				box-shadow: 0 12px 28px -8px rgba(var(--c-login-accent-to-rgb), 0.55);
 			}
 			.preloader-logo svg {
 				width: 28px;
@@ -60,22 +57,15 @@
 				font-size: 17px;
 				font-weight: 700;
 				letter-spacing: -0.01em;
-				color: #14201a;
-			}
-			html.dark .preloader-name {
-				color: #e8eee9;
+				color: var(--c-fg);
 			}
 			.preloader-spinner {
 				width: 22px;
 				height: 22px;
 				border-radius: 50%;
-				border: 2px solid rgba(14, 122, 74, 0.15);
-				border-top-color: #0e7a4a;
+				border: 2px solid rgba(var(--c-login-accent-to-rgb), 0.15);
+				border-top-color: var(--c-login-accent-to);
 				animation: preloader-spin 0.7s linear infinite;
-			}
-			html.dark .preloader-spinner {
-				border-color: rgba(22, 163, 74, 0.2);
-				border-top-color: #16a34a;
 			}
 			@keyframes preloader-spin {
 				to {
