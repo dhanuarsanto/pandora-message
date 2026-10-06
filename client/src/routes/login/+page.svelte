@@ -78,9 +78,10 @@
 	>
 		<!-- Panel kiri (visual) -->
 		<div class="relative hidden overflow-hidden text-white lg:block">
-			<div class="absolute inset-0 bg-[linear-gradient(160deg,#0c1613,#10201a_55%,#0f2e20)]"></div>
 			<div
-				class="absolute inset-0 bg-[radial-gradient(60%_50%_at_20%_0%,rgba(14,122,74,0.35),transparent_60%),radial-gradient(50%_40%_at_100%_100%,rgba(255,255,255,0.05),transparent_60%)]"
+				class="absolute inset-0 bg-[linear-gradient(160deg,var(--c-login-bg-from),var(--c-login-bg-mid)_55%,var(--c-login-bg-to))]"></div>
+			<div
+				class="absolute inset-0 bg-[radial-gradient(60%_50%_at_20%_0%,rgba(22,163,74,0.35),transparent_60%),radial-gradient(50%_40%_at_100%_100%,rgba(255,255,255,0.05),transparent_60%)]"
 			></div>
 			<div
 				class="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.5)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.5)_1px,transparent_1px)] bg-size-[42px_42px] opacity-5"
@@ -89,7 +90,7 @@
 			<div class="relative flex h-full flex-col justify-between p-9 lg:p-11">
 				<div class="flex items-center gap-3">
 					<div
-						class="flex h-9 w-9 items-center justify-center rounded-[11px] bg-linear-to-br from-[#16a34a] to-[#0a5f3a] shadow-[0_8px_20px_-6px_rgba(14,122,74,0.6)]"
+						class="flex h-9 w-9 items-center justify-center rounded-[11px] bg-linear-to-br from-[var(--c-login-accent-from)] to-[var(--c-login-accent-to)] shadow-[0_8px_20px_-6px_rgba(14,122,74,0.6)]"
 					>
 						<Mail class="h-5 w-5 text-white" />
 					</div>
@@ -98,9 +99,9 @@
 
 				<div class="flex flex-1 flex-col justify-center py-6">
 					<span
-						class="mb-5 inline-flex w-max items-center gap-2 rounded-full border border-[rgba(127,212,168,0.25)] px-3 py-1 text-[11px] font-semibold tracking-[0.14em] text-[#7fd4a8] uppercase"
+						class="mb-5 inline-flex w-max items-center gap-2 rounded-full border border-[rgba(127,212,168,0.25)] px-3 py-1 text-[11px] font-semibold tracking-[0.14em] text-[var(--c-login-accent-soft)] uppercase"
 					>
-						<Clock class="h-3 w-3 text-[#7fd4a8]" />
+						<Clock class="h-3 w-3 text-[var(--c-login-accent-soft)]" />
 						Internal System
 					</span>
 					<h1 class="text-[clamp(38px,4.4vw,56px)] leading-[1.02] font-bold tracking-[-0.035em]">
@@ -125,7 +126,7 @@
 			<div class="w-full max-w-92.5">
 				<div class="mb-7 flex items-center gap-2.5 lg:hidden">
 					<div
-						class="flex h-10 w-10 items-center justify-center rounded-xl bg-linear-to-br from-[#16a34a] to-[#0a5f3a] shadow-[0_8px_18px_-6px_rgba(14,122,74,0.45)]"
+						class="flex h-10 w-10 items-center justify-center rounded-xl bg-linear-to-br from-[var(--c-login-accent-from)] to-[var(--c-login-accent-to)] shadow-[0_8px_18px_-6px_rgba(14,122,74,0.45)]"
 					>
 						<Mail class="h-5 w-5 text-white" />
 					</div>
@@ -215,7 +216,7 @@
 
 					<button
 						type="submit"
-						class="mt-1.5 flex h-12.5 w-full cursor-pointer items-center justify-center gap-2.5 rounded-xl border-none bg-linear-to-br from-[#10965a] to-[#0a5f3a] text-[15px] font-semibold tracking-[0.02em] text-white shadow-[0_10px_24px_-10px_rgba(14,122,74,0.55)] transition-[transform,box-shadow,filter] duration-200 hover:shadow-[0_14px_30px_-10px_rgba(14,122,74,0.6)] hover:brightness-105 active:translate-y-px active:scale-[0.995] disabled:cursor-not-allowed disabled:opacity-75"
+						class="mt-1.5 flex h-12.5 w-full cursor-pointer items-center justify-center gap-2.5 rounded-xl border-none bg-linear-to-br from-[var(--c-login-btn-from)] to-[var(--c-login-btn-to)] text-[15px] font-semibold tracking-[0.02em] text-white shadow-[0_10px_24px_-10px_rgba(14,122,74,0.55)] transition-[transform,box-shadow,filter] duration-200 hover:shadow-[0_14px_30px_-10px_rgba(14,122,74,0.6)] hover:brightness-105 active:translate-y-px active:scale-[0.995] disabled:cursor-not-allowed disabled:opacity-75"
 						disabled={loading}
 					>
 						{#if loading}

@@ -219,7 +219,7 @@
 							<TableHeader {cols} {onReorderColumns} {sortKey} {sortDir} {onSort} />
 							<tbody>
 								{#each data.items as item, i (rowKeyOf(item, i))}
-									<tr class={cn('transition-colors', rowStatusClass(item.status), Number(item.status) >= 40 ? 'hover:bg-(--c-danger)/20 dark:hover:bg-(--c-danger)/30' : 'hover:bg-(--c-row-hover)')}>
+									<tr class={cn('transition-colors', rowStatusClass(item.status), Number(item.status) >= 40 && 'hover:bg-(--c-danger)/20 dark:hover:bg-(--c-danger)/30', Number(item.status) < 40 && 'hover:bg-(--c-row-hover)')}>
 										{#each cols as c (c.key)}
 											{@const raw = (item as Record<string, string | number>)[c.key]}
 											{@const rendered = c.render

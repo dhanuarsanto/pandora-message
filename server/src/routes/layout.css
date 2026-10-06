@@ -35,6 +35,16 @@
 	--c-success-bg: #ecfdf3;
 	--c-muted-bg: #f1f4f1;
 	--c-focus: rgba(14, 122, 74, 0.14);
+
+	/* Login page brand colors */
+	--c-login-bg-from: #0c1613;
+	--c-login-bg-mid: #10201a;
+	--c-login-bg-to: #0f2e20;
+	--c-login-accent-from: #16a34a;
+	--c-login-accent-to: #0a5f3a;
+	--c-login-accent-soft: #7fd4a8;
+	--c-login-btn-from: #10965a;
+	--c-login-btn-to: #0a5f3a;
 }
 
 html.dark {
@@ -66,6 +76,16 @@ html.dark {
 	--c-success-bg: #10241a;
 	--c-muted-bg: #202b23;
 	--c-focus: rgba(22, 163, 74, 0.25);
+
+	/* Login page brand colors - dark mode */
+	--c-login-bg-from: #08120f;
+	--c-login-bg-mid: #0d1a15;
+	--c-login-bg-to: #0b251a;
+	--c-login-accent-from: #22c55e;
+	--c-login-accent-to: #16a34a;
+	--c-login-accent-soft: #86efac;
+	--c-login-btn-from: #16a34a;
+	--c-login-btn-to: #16a34a;
 	color-scheme: dark;
 }
 
