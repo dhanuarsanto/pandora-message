@@ -48,8 +48,8 @@ test('kunci penyimpanan mengikuti APP_UNIT', () => {
 	assert.equal(readSession()?.token, 'tok123');
 });
 
-test('session ttl satu hari', () => {
-	assert.equal(SESSION_TTL_SEC, 86400);
+test('session ttl 1 jam', () => {
+	assert.equal(SESSION_TTL_SEC, 3600);
 });
 
 test('readSession: tidak ada -> null', () => {

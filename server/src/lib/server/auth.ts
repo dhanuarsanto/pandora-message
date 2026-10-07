@@ -5,6 +5,11 @@ export const COOKIE_USERNAME = 'username';
 export const COOKIE_RULES = 'rules';
 export const SESSION_TTL_SEC = 86400;
 
+export function cookieMaxAge(): number | undefined {
+	const mode = process.env.SESSION_COOKIE_MODE;
+	return mode === 'session' ? undefined : 3600;
+}
+
 export type LoginRequest = {
 	username: string;
 	password: string;
@@ -31,7 +36,7 @@ export function setSessionCookies(
 ): void {
 	const opts = {
 		path: '/',
-		maxAge: SESSION_TTL_SEC,
+		maxAge: cookieMaxAge(),
 		httpOnly: true,
 		secure: secureCookie(),
 		sameSite: 'strict' as const

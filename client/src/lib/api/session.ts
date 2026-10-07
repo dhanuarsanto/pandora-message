@@ -1,7 +1,23 @@
 import { APP_UNIT } from '../config.ts';
 
 const STORAGE_KEY = `${APP_UNIT}-session`;
-export const SESSION_TTL_SEC = 86400;
+export const SESSION_TTL_SEC = 3600;
+
+type StorageMode = 'session' | 'persistent';
+
+function getMode(): StorageMode {
+	if (typeof window === 'undefined') return 'persistent';
+	const env = (import.meta as { env?: Record<string, string> }).env?.PUBLIC_SESSION_COOKIE_MODE;
+	if (env === 'session' || env === 'persistent') {
+		return env;
+	}
+	return 'persistent';
+}
+
+function getStore(mode: StorageMode): Storage | null {
+	if (typeof window === 'undefined') return null;
+	return mode === 'session' ? window.sessionStorage : window.localStorage;
+}
 
 export type LoginRequest = {
 	username: string;
@@ -28,8 +44,11 @@ export type Session = {
 
 export function readSession(): Session | null {
 	if (typeof window === 'undefined') return null;
+	const mode = getMode();
+	const store = getStore(mode);
+	if (!store) return null;
 	try {
-		const raw = window.localStorage.getItem(STORAGE_KEY);
+		const raw = store.getItem(STORAGE_KEY);
 		if (!raw) return null;
 		const parsed: unknown = JSON.parse(raw);
 		if (typeof parsed !== 'object' || parsed === null) return null;
@@ -48,6 +67,9 @@ export function readSession(): Session | null {
 
 export function saveSession(data: LoginData): void {
 	if (typeof window === 'undefined') return;
+	const mode = getMode();
+	const store = getStore(mode);
+	if (!store) return;
 	const session: Session = {
 		token: data.token,
 		username: data.username,
@@ -55,7 +77,7 @@ export function saveSession(data: LoginData): void {
 		expiresAt: Date.now() + SESSION_TTL_SEC * 1000
 	};
 	try {
-		window.localStorage.setItem(STORAGE_KEY, JSON.stringify(session));
+		store.setItem(STORAGE_KEY, JSON.stringify(session));
 	} catch {
 	}
 }
@@ -66,8 +88,11 @@ export function getToken(): string | null {
 
 export function clearSession(): void {
 	if (typeof window === 'undefined') return;
+	const mode = getMode();
+	const store = getStore(mode);
+	if (!store) return;
 	try {
-		window.localStorage.removeItem(STORAGE_KEY);
+		store.removeItem(STORAGE_KEY);
 	} catch {
 	}
 }

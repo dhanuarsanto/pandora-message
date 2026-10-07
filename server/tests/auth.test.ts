@@ -8,7 +8,8 @@ import {
 	getToken,
 	secureCookie,
 	SESSION_TTL_SEC,
-	setSessionCookies
+	setSessionCookies,
+	cookieMaxAge
 } from '../src/lib/server/auth.ts';
 
 type Ctx = {
@@ -48,8 +49,9 @@ test('setSessionCookies: set token, username, rules', () => {
 	const event = { cookies: c.cookies } as unknown as Parameters<typeof setSessionCookies>[0];
 	setSessionCookies(event, { token: 'T', username: 'U', rules: 'sa' });
 	assert.deepEqual(c.store, { [COOKIE_TOKEN]: 'T', [COOKIE_USERNAME]: 'U', [COOKIE_RULES]: 'sa' });
+	const expectedMaxAge = cookieMaxAge();
 	for (const name of [COOKIE_TOKEN, COOKIE_USERNAME, COOKIE_RULES]) {
-		assert.equal(c.opts[name].maxAge, SESSION_TTL_SEC);
+		assert.equal(c.opts[name].maxAge, expectedMaxAge);
 		assert.equal(c.opts[name].httpOnly, true);
 		assert.equal(c.opts[name].sameSite, 'strict');
 		assert.equal(c.opts[name].secure, false);
