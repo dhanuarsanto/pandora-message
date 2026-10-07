@@ -7,7 +7,6 @@ import {
 	COOKIE_USERNAME,
 	getToken,
 	secureCookie,
-	SESSION_TTL_SEC,
 	setSessionCookies,
 	cookieMaxAge
 } from '../src/lib/server/auth.ts';

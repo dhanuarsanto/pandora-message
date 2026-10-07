@@ -79,6 +79,7 @@ export function saveSession(data: LoginData): void {
 	try {
 		store.setItem(STORAGE_KEY, JSON.stringify(session));
 	} catch {
+		// ignore storage errors
 	}
 }
 
@@ -94,5 +95,6 @@ export function clearSession(): void {
 	try {
 		store.removeItem(STORAGE_KEY);
 	} catch {
+		// ignore storage errors
 	}
 }
