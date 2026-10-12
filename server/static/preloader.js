@@ -1,5 +1,5 @@
 (function () {
-	var preloader = document.getElementById('pandora-preloader');
+	var preloader = document.getElementById('preloader');
 	if (!preloader) return;
 	var MIN_MS = 500;
 	var start = performance.now();

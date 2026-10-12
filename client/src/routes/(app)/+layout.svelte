@@ -84,7 +84,7 @@
 				class={cn('mr-auto flex items-center gap-2.5', navBusy && 'pointer-events-none')}
 			>
 				<div
-					class="flex h-8 w-8 items-center justify-center rounded-[10px] bg-linear-to-br from-(--c-accent) to-(--c-accent-strong) shadow-[0_6px_14px_-6px_rgba(14,122,74,0.5)]"
+					class="flex h-8 w-8 items-center justify-center rounded-[10px] bg-linear-to-br from-(--c-accent) to-(--c-accent-strong) shadow-[0_6px_14px_-6px_rgba(var(--c-accent-rgb),0.5)]"
 				>
 					<Mail class="h-4 w-4 text-white" />
 				</div>

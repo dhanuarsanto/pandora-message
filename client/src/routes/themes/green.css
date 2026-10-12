@@ -27,6 +27,7 @@
 	--c-success-bg: #ecfdf3;
 	--c-muted-bg: #f1f4f1;
 	--c-focus: rgba(22, 122, 74, 0.14);
+	--c-accent-rgb: 22, 122, 74;
 
 	--c-login-bg-from: #0c1613;
 	--c-login-bg-mid: #10201a;
@@ -72,6 +73,7 @@ html.dark {
 	--c-success-bg: #10241a;
 	--c-muted-bg: #202b23;
 	--c-focus: rgba(22, 163, 74, 0.25);
+	--c-accent-rgb: 34, 197, 94;
 
 	--c-login-bg-from: #08120f;
 	--c-login-bg-mid: #0d1a15;

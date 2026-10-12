@@ -25,7 +25,7 @@
 		<div class="flex items-center justify-between border-b border-(--c-border) px-8 py-6">
 			<div class="flex items-center gap-2.5">
 				<div
-					class="flex h-9 w-9 items-center justify-center rounded-[11px] bg-linear-to-br from-(--c-accent) to-(--c-accent-strong) shadow-[0_6px_14px_-6px_rgba(14,122,74,0.5)]"
+					class="flex h-9 w-9 items-center justify-center rounded-[11px] bg-linear-to-br from-(--c-accent) to-(--c-accent-strong) shadow-[0_6px_14px_-6px_rgba(var(--c-accent-rgb),0.5)]"
 				>
 					<Mail class="h-4.75 w-4.75 text-white" />
 				</div>
