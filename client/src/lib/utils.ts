@@ -30,7 +30,7 @@ export function initFilterFromUrl(
 export function buildQuery(query: Record<string, string>): URLSearchParams {
 	const u = new SvelteURLSearchParams();
 	for (const [k, v] of Object.entries(query)) {
-		if (v === '') continue;
+		if (!v) continue;
 		u.set(k, v);
 	}
 	return sortedParams(u);
