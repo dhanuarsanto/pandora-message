@@ -71,6 +71,7 @@
 	let query = $state<Record<string, string>>(initialQuery());
 	let showFilter = $state(false);
 	let showColumns = $state(false);
+	let limitTouched = $state(false);
 
 	const username = $derived(session.username);
 	const colsRoute = $derived(path === '/outbox' ? 'outbox' : 'inbox');
@@ -197,6 +198,7 @@
 			.catch((err: unknown) => {
 				if (lastFetch !== current) return;
 				if (err instanceof ApiError && err.status === 401) {
+					loading = false;
 					session.logout();
 					void goto(resolve('/login'));
 					return;
@@ -274,7 +276,8 @@
 		raw.delete('pageSize');
 		const hasAnyDate = !!(raw.get('startDate') || raw.get('endDate'));
 		dateScope = raw.size === 0 || hasAnyDate ? 'today' : 'all';
-		const u = applyLimitDefault(applyDateDefaults(raw, dateScope));
+		const dated = applyDateDefaults(raw, dateScope);
+		const u = limitTouched ? dated : applyLimitDefault(dated);
 		query = initFilterFromUrl(filters, u);
 	});
 
@@ -346,6 +349,7 @@
 		if (query['startDate'] && !query['endDate']) {
 			query['endDate'] = todayISO();
 		}
+		if (!query['limit']) limitTouched = true;
 		const next = buildQuery(query);
 		if (paramsEqual(next, page.url.searchParams)) return false;
 		navigate(path, next.toString());
@@ -353,6 +357,7 @@
 	}
 
 	function resetFilters() {
+		limitTouched = false;
 		query = { startDate: todayISO(), endDate: todayISO(), limit: '20' };
 		dateScope = 'today';
 		navigate(path, buildQuery(query).toString());
