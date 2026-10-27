@@ -48,7 +48,6 @@ export const INBOX_FILTERS: FilterField[] = [
 	{ type: 'date', param: 'startDate', label: 'Tgl Mulai' },
 	{ type: 'date', param: 'endDate', label: 'Tgl Akhir' },
 	{ type: 'number', param: 'limit', label: 'Limit', placeholder: 'Mis. 20' },
-	{ type: 'terminal', param: 'terminal', label: 'Terminal' },
 	{ type: 'reseller', param: 'reseller', label: 'Reseller' },
 	{ type: 'text', param: 'pengirim', label: 'Pengirim', placeholder: 'Cari pengirim...' },
 	{ type: 'tipe', param: 'tipe', label: 'Tipe Pengirim', source: TIPE_PENGIRIM },
